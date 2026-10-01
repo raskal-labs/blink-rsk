@@ -18,7 +18,7 @@ jobs:
     timeout-minutes: 90
     env:
       BUILDER_REPO: https://github.com/NewsGuyTor/Blink-Shell-GPL-Builder.git
-      BUILDER_COMMIT: 07a48144a687ad38899375685017082514574765
+      BUILDER_COMMIT: e9d5191d5dfc0b5519deab16f2531681789f4e57
 
     steps:
       - name: Checkout Blink-RSK
@@ -32,8 +32,7 @@ jobs:
           xcrun --sdk iphoneos --show-sdk-version
 
       - name: Install build prerequisites
-        run: |
-          brew install jq || true
+        run: brew install jq || true
 
       - name: Fetch pinned GPL builder
         run: |
@@ -58,10 +57,7 @@ jobs:
           mkdir -p artifact
           find builder/dist -maxdepth 1 -type f -name '*.ipa' -exec cp {} artifact/ \;
           test -n "$(find artifact -maxdepth 1 -type f -name '*.ipa' -print -quit)"
-          (
-            cd artifact
-            shasum -a 256 *.ipa > SHA256SUMS
-          )
+          (cd artifact && shasum -a 256 *.ipa > SHA256SUMS)
           BLINK_COMMIT="$(git -C builder/blink-src rev-parse HEAD)"
           XCODE_VERSION="$(xcodebuild -version | tr '\n' ' ' | sed 's/ $//')"
           SDK_VERSION="$(xcrun --sdk iphoneos --show-sdk-version)"
