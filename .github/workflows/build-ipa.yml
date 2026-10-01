@@ -94,12 +94,14 @@ jobs:
           shasum -a 256 artifact/*.ipa > artifact/SHA256SUMS
 
       - name: Write provenance manifest
+        env:
+          BLINK_REF: ${{ inputs.blink_ref }}
         run: |
           set -euxo pipefail
-          BLINK_COMMIT="$(cat blink-commit.txt)"
-          XCODE_VERSION="$(xcodebuild -version | tr '\n' ' ' | sed 's/ $//')"
-          SDK_VERSION="$(xcrun --sdk iphoneos --show-sdk-version)"
-          python3 - <<PY
+          export BLINK_COMMIT="$(cat blink-commit.txt)"
+          export XCODE_VERSION="$(xcodebuild -version | tr '\n' ' ' | sed 's/ $//')"
+          export SDK_VERSION="$(xcrun --sdk iphoneos --show-sdk-version)"
+          python3 - <<'PY'
           import json, os
           manifest = {
             "schema": 1,
@@ -118,11 +120,6 @@ jobs:
           PY
           cat artifact/build-manifest.json
           cat artifact/SHA256SUMS
-        env:
-          BLINK_REF: ${{ inputs.blink_ref }}
-          BLINK_COMMIT: ${{ env.BLINK_COMMIT }}
-          XCODE_VERSION: ${{ env.XCODE_VERSION }}
-          SDK_VERSION: ${{ env.SDK_VERSION }}
 
       - name: Upload diagnostics on failure
         if: failure()
