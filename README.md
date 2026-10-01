@@ -4,7 +4,9 @@ Reproducible, auditable sideload builds of [Blink Shell](https://github.com/blin
 
 ## Status
 
-**Phase 0: bootstrap.** The first milestone intentionally builds an unmodified GPL Blink baseline as an unsigned IPA on a GitHub-hosted macOS runner. Once that succeeds, additional commands will be introduced atomically so build failures can be attributed to a specific change.
+**Phase 0: verified upstream baseline.** The first milestone builds an unmodified GPL Blink baseline as an unsigned IPA on a GitHub-hosted macOS runner. Once that succeeds, additional commands will be introduced atomically so build failures can be attributed to a specific change.
+
+The initial baseline is Blink **18.4.2 build 1051**, upstream commit `99660bf1b9f9c8b5580720b7b22a94c4daec4cb7`. Upstream exposes `v18.4.2` as a branch pointing to that commit; it is not treated as a Git tag by this repository.
 
 ### Planned command work
 
@@ -12,13 +14,13 @@ Initial candidates: `find`, `sort`, `uniq`, `head`, `tail`, `cut`, `tr`, `tee`, 
 
 ## Build
 
-Run **Actions → Build Blink-RSK → Run workflow**. The workflow currently defaults to the builder's known-good Blink `v18.4.2` baseline; the Blink version is an input so newer upstream revisions can be tested without rewriting CI.
+Run **Actions → Build Blink-RSK baseline → Run workflow**. The default input is the verified upstream Blink 18.4.2 commit SHA. The workflow also accepts an explicit upstream branch name or full 40-character commit SHA.
 
-The artifact contains the unsigned IPA plus provenance files. SideStore performs device-side signing/install.
+The workflow follows Blink's upstream preparation path (`get_frameworks.sh`, `get_resources.sh`, `template_setup.xcconfig`) and performs an unsigned Release device build with `xcodebuild`. It does not regex-edit Blink's Xcode project. The resulting `.app` is packaged as an unsigned IPA for SideStore to re-sign/install on-device.
 
 ## Provenance
 
-The bootstrap uses the open-source [Blink-Shell-GPL-Builder](https://github.com/NewsGuyTor/Blink-Shell-GPL-Builder) at a pinned commit. CI records the Blink version, builder revision, Blink-RSK revision, macOS/Xcode information, and SHA-256 hashes of produced IPA files.
+CI records the requested Blink ref, resolved Blink commit, Blink-RSK revision, macOS/Xcode/iPhoneOS SDK information, and SHA-256 hash of the produced IPA. The third-party GPL-builder experiment used during bootstrap is retained only in repository history/archive and is not part of the current baseline build path.
 
 ## Licensing
 
