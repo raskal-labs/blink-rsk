@@ -1,10 +1,10 @@
-name: Build Blink-RSK
+name: Build Blink-RSK baseline
 
 on:
   workflow_dispatch:
     inputs:
-      blink_version:
-        description: Blink tag/version to build
+      blink_ref:
+        description: Blink tag/commit to build
         required: true
         default: v18.4.2
         type: string
@@ -16,9 +16,6 @@ jobs:
   build:
     runs-on: macos-15
     timeout-minutes: 90
-    env:
-      BUILDER_REPO: https://github.com/NewsGuyTor/Blink-Shell-GPL-Builder.git
-      BUILDER_COMMIT: e9d5191d5dfc0b5519deab16f2531681789f4e57
 
     steps:
       - name: Checkout Blink-RSK
@@ -28,72 +25,121 @@ jobs:
         run: |
           set -euxo pipefail
           sw_vers
+          xcode-select -p
           xcodebuild -version
           xcrun --sdk iphoneos --show-sdk-version
 
-      - name: Install build prerequisites
-        run: brew install jq || true
-
-      - name: Fetch pinned GPL builder
+      - name: Clone upstream Blink exactly
+        env:
+          BLINK_REF: ${{ inputs.blink_ref }}
         run: |
           set -euxo pipefail
-          git clone "$BUILDER_REPO" builder
-          git -C builder checkout "$BUILDER_COMMIT"
-          test "$(git -C builder rev-parse HEAD)" = "$BUILDER_COMMIT"
+          git clone --recursive https://github.com/blinksh/blink.git blink
+          git -C blink checkout --detach "$BLINK_REF"
+          git -C blink submodule update --init --recursive
+          git -C blink status --short
+          git -C blink rev-parse HEAD | tee blink-commit.txt
 
-      - name: Patch builder for Xcode project syntax
+      - name: Prepare upstream dependencies and resources
+        working-directory: blink
         run: |
           set -euxo pipefail
-          python3 - <<'PY'
-          from pathlib import Path
+          ./get_frameworks.sh
+          ./get_resources.sh
+          cp template_setup.xcconfig developer_setup.xcconfig
 
-          p = Path("builder/build-blink-shell-gpl.sh")
-          s = p.read_text()
-          old = r'''sed -i '' "s/${HARDCODED_TEAM}/\${TEAM_ID}/g" "$PROJECT_FILE"'''
-          new = r'''sed -i '' "s/${HARDCODED_TEAM}//g" "$PROJECT_FILE"'''
-          if old not in s:
-              raise SystemExit("Pinned builder TEAM_ID patch not found; refusing an unverified edit")
-          p.write_text(s.replace(old, new, 1))
-          PY
-          grep -n -A8 -B3 'fix_team_id' builder/build-blink-shell-gpl.sh
-
-      - name: Build unsigned Blink IPA
+      - name: Validate untouched Xcode project
+        working-directory: blink
         run: |
           set -euxo pipefail
-          chmod +x builder/build-blink-shell-gpl.sh
-          ./builder/build-blink-shell-gpl.sh \
-            --version "${{ inputs.blink_version }}" \
-            --overwrite \
-            --clean \
-            --keep-source
+          test -f Blink.xcodeproj/project.pbxproj
+          xcodebuild -project Blink.xcodeproj -list
+          xcodebuild -project Blink.xcodeproj -scheme Blink -showBuildSettings \
+            -configuration Release \
+            -sdk iphoneos \
+            -destination 'generic/platform=iOS' \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            | head -n 200
 
-      - name: Collect artifact and provenance
+      - name: Build vanilla Blink unsigned
+        working-directory: blink
+        run: |
+          set -o pipefail
+          rm -rf ../DerivedData
+          xcodebuild \
+            -project Blink.xcodeproj \
+            -scheme Blink \
+            -configuration Release \
+            -sdk iphoneos \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath ../DerivedData \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            build 2>&1 | tee ../xcodebuild.log
+
+      - name: Package unsigned IPA
         run: |
           set -euxo pipefail
-          mkdir -p artifact
-          find builder/dist -maxdepth 1 -type f -name '*.ipa' -exec cp {} artifact/ \;
-          test -n "$(find artifact -maxdepth 1 -type f -name '*.ipa' -print -quit)"
-          (cd artifact && shasum -a 256 *.ipa > SHA256SUMS)
-          BLINK_COMMIT="$(git -C builder/blink-src rev-parse HEAD)"
+          APP="$(find DerivedData/Build/Products/Release-iphoneos -maxdepth 1 -type d -name '*.app' -print -quit)"
+          test -n "$APP"
+          test -f "$APP/Info.plist"
+          rm -rf "$APP/_CodeSignature"
+          rm -f "$APP/embedded.mobileprovision"
+          mkdir -p stage/Payload artifact
+          cp -R "$APP" stage/Payload/
+          (cd stage && zip -qry ../artifact/Blink-RSK-baseline-unsigned.ipa Payload)
+          shasum -a 256 artifact/*.ipa > artifact/SHA256SUMS
+
+      - name: Write provenance manifest
+        run: |
+          set -euxo pipefail
+          BLINK_COMMIT="$(cat blink-commit.txt)"
           XCODE_VERSION="$(xcodebuild -version | tr '\n' ' ' | sed 's/ $//')"
           SDK_VERSION="$(xcrun --sdk iphoneos --show-sdk-version)"
-          jq -n \
-            --arg blink_version "${{ inputs.blink_version }}" \
-            --arg blink_commit "$BLINK_COMMIT" \
-            --arg builder_commit "$BUILDER_COMMIT" \
-            --arg blink_rsk_commit "$GITHUB_SHA" \
-            --arg xcode "$XCODE_VERSION" \
-            --arg sdk "$SDK_VERSION" \
-            --arg runner "$RUNNER_OS/$RUNNER_ARCH" \
-            '{schema:1, blink_version:$blink_version, blink_commit:$blink_commit, builder_commit:$builder_commit, blink_rsk_commit:$blink_rsk_commit, xcode:$xcode, iphoneos_sdk:$sdk, runner:$runner}' \
-            > artifact/build-manifest.json
+          python3 - <<PY
+          import json, os
+          manifest = {
+            "schema": 1,
+            "stage": "vanilla-upstream-baseline",
+            "blink_ref": os.environ["BLINK_REF"],
+            "blink_commit": os.environ["BLINK_COMMIT"],
+            "blink_rsk_commit": os.environ["GITHUB_SHA"],
+            "xcode": os.environ["XCODE_VERSION"],
+            "iphoneos_sdk": os.environ["SDK_VERSION"],
+            "runner": f'{os.environ.get("RUNNER_OS")}/{os.environ.get("RUNNER_ARCH")}',
+            "signed": False,
+            "packaging": "Payload/<app>.app zipped as IPA; intended for SideStore re-signing"
+          }
+          with open("artifact/build-manifest.json", "w") as f:
+              json.dump(manifest, f, indent=2)
+          PY
           cat artifact/build-manifest.json
           cat artifact/SHA256SUMS
+        env:
+          BLINK_REF: ${{ inputs.blink_ref }}
+          BLINK_COMMIT: ${{ env.BLINK_COMMIT }}
+          XCODE_VERSION: ${{ env.XCODE_VERSION }}
+          SDK_VERSION: ${{ env.SDK_VERSION }}
 
-      - name: Upload unsigned IPA
+      - name: Upload diagnostics on failure
+        if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: Blink-RSK-${{ inputs.blink_version }}-${{ github.sha }}
+          name: Blink-RSK-baseline-diagnostics-${{ github.run_number }}
+          path: |
+            xcodebuild.log
+            blink-commit.txt
+          if-no-files-found: ignore
+          retention-days: 7
+
+      - name: Upload unsigned IPA
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Blink-RSK-baseline-${{ inputs.blink_ref }}-${{ github.sha }}
           path: artifact/
           if-no-files-found: error
           retention-days: 14
