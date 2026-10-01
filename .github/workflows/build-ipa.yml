@@ -4,9 +4,9 @@ on:
   workflow_dispatch:
     inputs:
       blink_ref:
-        description: Blink tag/commit to build
+        description: Blink branch or commit to build
         required: true
-        default: v18.4.2
+        default: 99660bf1b9f9c8b5580720b7b22a94c4daec4cb7
         type: string
 
 permissions:
@@ -34,9 +34,18 @@ jobs:
           BLINK_REF: ${{ inputs.blink_ref }}
         run: |
           set -euxo pipefail
-          git clone --no-checkout https://github.com/blinksh/blink.git blink
-          git -C blink fetch --force --tags origin
-          BLINK_COMMIT="$(git -C blink rev-parse --verify "${BLINK_REF}^{commit}")"
+          git clone --no-checkout --filter=blob:none https://github.com/blinksh/blink.git blink
+
+          # Resolve only explicit commit IDs or remote branch names. Blink's release
+          # lines (including v18.4.2) are branches, not Git tags.
+          if [[ "$BLINK_REF" =~ ^[0-9a-fA-F]{40}$ ]]; then
+            git -C blink fetch --no-tags origin "$BLINK_REF"
+            BLINK_COMMIT="$(git -C blink rev-parse --verify FETCH_HEAD^{commit})"
+          else
+            git -C blink fetch --no-tags origin "refs/heads/${BLINK_REF}:refs/remotes/origin/${BLINK_REF}"
+            BLINK_COMMIT="$(git -C blink rev-parse --verify "refs/remotes/origin/${BLINK_REF}^{commit}")"
+          fi
+
           git -C blink checkout --force "$BLINK_COMMIT"
           git -C blink submodule sync --recursive
           git -C blink submodule update --init --recursive
