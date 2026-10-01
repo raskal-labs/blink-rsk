@@ -1,0 +1,87 @@
+name: Build Blink-RSK
+
+on:
+  workflow_dispatch:
+    inputs:
+      blink_version:
+        description: Blink tag/version to build
+        required: true
+        default: v18.4.2
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: macos-15
+    timeout-minutes: 90
+    env:
+      BUILDER_REPO: https://github.com/NewsGuyTor/Blink-Shell-GPL-Builder.git
+      BUILDER_COMMIT: 07a48144a687ad38899375685017082514574765
+
+    steps:
+      - name: Checkout Blink-RSK
+        uses: actions/checkout@v4
+
+      - name: Record toolchain
+        run: |
+          set -euxo pipefail
+          sw_vers
+          xcodebuild -version
+          xcrun --sdk iphoneos --show-sdk-version
+
+      - name: Install build prerequisites
+        run: |
+          brew install jq || true
+
+      - name: Fetch pinned GPL builder
+        run: |
+          set -euxo pipefail
+          git clone "$BUILDER_REPO" builder
+          git -C builder checkout "$BUILDER_COMMIT"
+          test "$(git -C builder rev-parse HEAD)" = "$BUILDER_COMMIT"
+
+      - name: Build unsigned Blink IPA
+        run: |
+          set -euxo pipefail
+          chmod +x builder/build-blink-shell-gpl.sh
+          ./builder/build-blink-shell-gpl.sh \
+            --version "${{ inputs.blink_version }}" \
+            --overwrite \
+            --clean \
+            --keep-source
+
+      - name: Collect artifact and provenance
+        run: |
+          set -euxo pipefail
+          mkdir -p artifact
+          find builder/dist -maxdepth 1 -type f -name '*.ipa' -exec cp {} artifact/ \;
+          test -n "$(find artifact -maxdepth 1 -type f -name '*.ipa' -print -quit)"
+          (
+            cd artifact
+            shasum -a 256 *.ipa > SHA256SUMS
+          )
+          BLINK_COMMIT="$(git -C builder/blink-src rev-parse HEAD)"
+          XCODE_VERSION="$(xcodebuild -version | tr '\n' ' ' | sed 's/ $//')"
+          SDK_VERSION="$(xcrun --sdk iphoneos --show-sdk-version)"
+          jq -n \
+            --arg blink_version "${{ inputs.blink_version }}" \
+            --arg blink_commit "$BLINK_COMMIT" \
+            --arg builder_commit "$BUILDER_COMMIT" \
+            --arg blink_rsk_commit "$GITHUB_SHA" \
+            --arg xcode "$XCODE_VERSION" \
+            --arg sdk "$SDK_VERSION" \
+            --arg runner "$RUNNER_OS/$RUNNER_ARCH" \
+            '{schema:1, blink_version:$blink_version, blink_commit:$blink_commit, builder_commit:$builder_commit, blink_rsk_commit:$blink_rsk_commit, xcode:$xcode, iphoneos_sdk:$sdk, runner:$runner}' \
+            > artifact/build-manifest.json
+          cat artifact/build-manifest.json
+          cat artifact/SHA256SUMS
+
+      - name: Upload unsigned IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: Blink-RSK-${{ inputs.blink_version }}-${{ github.sha }}
+          path: artifact/
+          if-no-files-found: error
+          retention-days: 14
