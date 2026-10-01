@@ -41,6 +41,22 @@ jobs:
           git -C builder checkout "$BUILDER_COMMIT"
           test "$(git -C builder rev-parse HEAD)" = "$BUILDER_COMMIT"
 
+      - name: Patch builder for Xcode project syntax
+        run: |
+          set -euxo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          p = Path("builder/build-blink-shell-gpl.sh")
+          s = p.read_text()
+          old = r'''sed -i '' "s/${HARDCODED_TEAM}/\${TEAM_ID}/g" "$PROJECT_FILE"'''
+          new = r'''sed -i '' "s/${HARDCODED_TEAM}//g" "$PROJECT_FILE"'''
+          if old not in s:
+              raise SystemExit("Pinned builder TEAM_ID patch not found; refusing an unverified edit")
+          p.write_text(s.replace(old, new, 1))
+          PY
+          grep -n -A8 -B3 'fix_team_id' builder/build-blink-shell-gpl.sh
+
       - name: Build unsigned Blink IPA
         run: |
           set -euxo pipefail
