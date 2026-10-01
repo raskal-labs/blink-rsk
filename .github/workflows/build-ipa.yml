@@ -34,11 +34,15 @@ jobs:
           BLINK_REF: ${{ inputs.blink_ref }}
         run: |
           set -euxo pipefail
-          git clone --recursive https://github.com/blinksh/blink.git blink
-          git -C blink checkout --detach "$BLINK_REF"
+          git clone --no-checkout https://github.com/blinksh/blink.git blink
+          git -C blink fetch --force --tags origin
+          BLINK_COMMIT="$(git -C blink rev-parse --verify "${BLINK_REF}^{commit}")"
+          git -C blink checkout --force "$BLINK_COMMIT"
+          git -C blink submodule sync --recursive
           git -C blink submodule update --init --recursive
+          test "$(git -C blink rev-parse HEAD)" = "$BLINK_COMMIT"
+          printf '%s\n' "$BLINK_COMMIT" | tee blink-commit.txt
           git -C blink status --short
-          git -C blink rev-parse HEAD | tee blink-commit.txt
 
       - name: Prepare upstream dependencies and resources
         working-directory: blink
@@ -88,6 +92,7 @@ jobs:
           test -f "$APP/Info.plist"
           rm -rf "$APP/_CodeSignature"
           rm -f "$APP/embedded.mobileprovision"
+          rm -rf stage artifact
           mkdir -p stage/Payload artifact
           cp -R "$APP" stage/Payload/
           (cd stage && zip -qry ../artifact/Blink-RSK-baseline-unsigned.ipa Payload)
