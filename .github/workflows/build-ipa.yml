@@ -1,16 +1,21 @@
-name: Build Blink-RSK baseline
+name: Build Blink-RSK
 
 on:
   workflow_dispatch:
-    inputs:
-      blink_ref:
-        description: Blink branch or commit to build
-        required: true
-        default: 99660bf1b9f9c8b5580720b7b22a94c4daec4cb7
-        type: string
 
 permissions:
   contents: read
+
+env:
+  # Newest stable source revision currently published in blinksh/blink.
+  # Blink 18.7.1 is shipping in the App Store, but its corresponding source
+  # revision is not currently exposed by an upstream public branch/tag.
+  BLINK_BRANCH: v18.6.0
+  BLINK_COMMIT: c1b07ea97ac94f2ada190f7d6554f81502774a77
+  BLINK_VERSION: 18.6.3
+  BLINK_BUILD: "2009"
+  BLINK_RSK_BUNDLE_ID: io.raskal.blink-rsk
+  XCODE_DEVELOPER_DIR: /Applications/Xcode_16.4.app/Contents/Developer
 
 jobs:
   build:
@@ -21,62 +26,86 @@ jobs:
       - name: Checkout Blink-RSK
         uses: actions/checkout@v4
 
-      - name: Record toolchain
+      - name: Select and verify Xcode
         run: |
           set -euxo pipefail
+          test -d "$XCODE_DEVELOPER_DIR"
+          sudo xcode-select -s "$XCODE_DEVELOPER_DIR"
+          test "$(xcode-select -p)" = "$XCODE_DEVELOPER_DIR"
           sw_vers
-          xcode-select -p
           xcodebuild -version
           xcrun --sdk iphoneos --show-sdk-version
 
-      - name: Clone upstream Blink exactly
-        env:
-          BLINK_REF: ${{ inputs.blink_ref }}
+      - name: Clone and verify upstream source
         run: |
           set -euxo pipefail
-          git clone --no-checkout --filter=blob:none https://github.com/blinksh/blink.git blink
+          git clone \
+            --recurse-submodules \
+            --depth 1 \
+            --branch "$BLINK_BRANCH" \
+            https://github.com/blinksh/blink.git blink
 
-          # Resolve only explicit commit IDs or remote branch names. Blink's release
-          # lines (including v18.4.2) are branches, not Git tags.
-          if [[ "$BLINK_REF" =~ ^[0-9a-fA-F]{40}$ ]]; then
-            git -C blink fetch --no-tags origin "$BLINK_REF"
-            BLINK_COMMIT="$(git -C blink rev-parse --verify FETCH_HEAD^{commit})"
-          else
-            git -C blink fetch --no-tags origin "refs/heads/${BLINK_REF}:refs/remotes/origin/${BLINK_REF}"
-            BLINK_COMMIT="$(git -C blink rev-parse --verify "refs/remotes/origin/${BLINK_REF}^{commit}")"
-          fi
+          ACTUAL_COMMIT="$(git -C blink rev-parse HEAD)"
+          test "$ACTUAL_COMMIT" = "$BLINK_COMMIT"
+          printf '%s\n' "$ACTUAL_COMMIT" | tee blink-commit.txt
 
-          git -C blink checkout --force "$BLINK_COMMIT"
-          git -C blink submodule sync --recursive
-          git -C blink submodule update --init --recursive
-          test "$(git -C blink rev-parse HEAD)" = "$BLINK_COMMIT"
-          printf '%s\n' "$BLINK_COMMIT" | tee blink-commit.txt
-          git -C blink status --short
+          # Verify that the pinned source really identifies itself as the
+          # expected stable Blink build before spending macOS runner time.
+          grep -q "MARKETING_VERSION = ${BLINK_VERSION};" blink/Blink.xcodeproj/project.pbxproj
+          grep -q "CURRENT_PROJECT_VERSION = ${BLINK_BUILD};" blink/Blink.xcodeproj/project.pbxproj
 
-      - name: Prepare upstream dependencies and resources
+          git -C blink submodule status --recursive | tee submodules.txt
+          test -z "$(git -C blink status --porcelain)"
+
+      - name: Prepare Blink dependencies, resources, and RSK config
         working-directory: blink
         run: |
           set -euxo pipefail
-          ./get_frameworks.sh
-          ./get_resources.sh
-          cp template_setup.xcconfig developer_setup.xcconfig
+          ./get_frameworks.sh 2>&1 | tee ../frameworks.log
+          ./get_resources.sh 2>&1 | tee ../resources.log
 
-      - name: Validate untouched Xcode project
+          # This cleanup is part of Blink's own documented source-build path;
+          # it prevents stale shared workspace metadata from steering package resolution.
+          rm -rf Blink.xcodeproj/project.xcworkspace/xcshareddata/
+
+          cp template_setup.xcconfig developer_setup.xcconfig
+          cat "$GITHUB_WORKSPACE/config/blink-rsk.xcconfig" >> developer_setup.xcconfig
+          cat developer_setup.xcconfig
+
+      - name: Resolve Xcode package dependencies
+        working-directory: blink
+        run: |
+          set -o pipefail
+          xcodebuild \
+            -project Blink.xcodeproj \
+            -scheme Blink \
+            -clonedSourcePackagesDirPath ../SourcePackages \
+            -resolvePackageDependencies \
+            2>&1 | tee ../packages.log
+
+      - name: Validate project and effective build settings
         working-directory: blink
         run: |
           set -euxo pipefail
           test -f Blink.xcodeproj/project.pbxproj
-          xcodebuild -project Blink.xcodeproj -list
-          xcodebuild -project Blink.xcodeproj -scheme Blink -showBuildSettings \
+          xcodebuild -project Blink.xcodeproj -list | tee ../xcode-list.txt
+          xcodebuild \
+            -project Blink.xcodeproj \
+            -scheme Blink \
             -configuration Release \
             -sdk iphoneos \
             -destination 'generic/platform=iOS' \
+            -clonedSourcePackagesDirPath ../SourcePackages \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGN_IDENTITY="" \
-            | head -n 200
+            DEVELOPMENT_TEAM="" \
+            -showBuildSettings \
+            > ../build-settings.txt
 
-      - name: Build vanilla Blink unsigned
+          grep -E '(^| )[[:space:]]*(PRODUCT_BUNDLE_IDENTIFIER|MARKETING_VERSION|CURRENT_PROJECT_VERSION|IPHONEOS_DEPLOYMENT_TARGET|SWIFT_ACTIVE_COMPILATION_CONDITIONS) =' ../build-settings.txt | head -n 40 || true
+
+      - name: Build unsigned Release app
         working-directory: blink
         run: |
           set -o pipefail
@@ -88,46 +117,90 @@ jobs:
             -sdk iphoneos \
             -destination 'generic/platform=iOS' \
             -derivedDataPath ../DerivedData \
+            -clonedSourcePackagesDirPath ../SourcePackages \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGN_IDENTITY="" \
+            DEVELOPMENT_TEAM="" \
+            COMPILER_INDEX_STORE_ENABLE=NO \
             build 2>&1 | tee ../xcodebuild.log
 
-      - name: Package unsigned IPA
+      - name: Assemble SideStore IPA
         run: |
           set -euxo pipefail
-          APP="$(find DerivedData/Build/Products/Release-iphoneos -maxdepth 1 -type d -name '*.app' -print -quit)"
+          APP="$(find DerivedData/Build/Products/Release-iphoneos -maxdepth 1 -type d -name 'Blink.app' -print -quit)"
           test -n "$APP"
           test -f "$APP/Info.plist"
-          rm -rf "$APP/_CodeSignature"
-          rm -f "$APP/embedded.mobileprovision"
+
           rm -rf stage artifact
           mkdir -p stage/Payload artifact
-          cp -R "$APP" stage/Payload/
-          (cd stage && zip -qry ../artifact/Blink-RSK-baseline-unsigned.ipa Payload)
+          cp -R "$APP" stage/Payload/Blink.app
+          STAGED_APP="stage/Payload/Blink.app"
+
+          # The build is deliberately unsigned. Remove any stray signing material
+          # from nested products before SideStore performs the real on-device signing.
+          find "$STAGED_APP" -type d -name _CodeSignature -prune -exec rm -rf {} +
+          find "$STAGED_APP" -type f -name embedded.mobileprovision -delete
+
+          # Blink embeds File Provider app extensions. A free Apple account has a
+          # 10-App-ID weekly limit, and each .appex consumes another App ID when
+          # SideStore signs it. Blink-RSK v0.1 keeps the terminal app but strips
+          # .appex bundles so the IPA consumes one App ID instead of several.
+          if [ -d "$STAGED_APP/PlugIns" ]; then
+            find "$STAGED_APP/PlugIns" -maxdepth 1 -type d -name '*.appex' -prune -exec rm -rf {} +
+          fi
+          test -z "$(find "$STAGED_APP" -type d -name '*.appex' -print -quit)"
+
+          /usr/libexec/PlistBuddy -c 'Set :CFBundleDisplayName Blink-RSK' "$STAGED_APP/Info.plist"
+
+          ACTUAL_ID="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$STAGED_APP/Info.plist")"
+          ACTUAL_VERSION="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "$STAGED_APP/Info.plist")"
+          ACTUAL_BUILD="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleVersion' "$STAGED_APP/Info.plist")"
+
+          test "$ACTUAL_ID" = "$BLINK_RSK_BUNDLE_ID"
+          test "$ACTUAL_VERSION" = "$BLINK_VERSION"
+          test "$ACTUAL_BUILD" = "$BLINK_BUILD"
+
+          file "$STAGED_APP/Blink"
+          (cd stage && zip -qry "../artifact/Blink-RSK-${BLINK_VERSION}-${BLINK_BUILD}-unsigned.ipa" Payload)
+          unzip -t "artifact/Blink-RSK-${BLINK_VERSION}-${BLINK_BUILD}-unsigned.ipa"
           shasum -a 256 artifact/*.ipa > artifact/SHA256SUMS
 
+          printf '%s\n' "$ACTUAL_ID" > artifact/bundle-id.txt
+          printf '%s\n' "$ACTUAL_VERSION" > artifact/blink-version.txt
+          printf '%s\n' "$ACTUAL_BUILD" > artifact/blink-build.txt
+
       - name: Write provenance manifest
-        env:
-          BLINK_REF: ${{ inputs.blink_ref }}
         run: |
           set -euxo pipefail
-          export BLINK_COMMIT="$(cat blink-commit.txt)"
           export XCODE_VERSION="$(xcodebuild -version | tr '\n' ' ' | sed 's/ $//')"
           export SDK_VERSION="$(xcrun --sdk iphoneos --show-sdk-version)"
+          export ACTUAL_COMMIT="$(cat blink-commit.txt)"
           python3 - <<'PY'
           import json, os
+
           manifest = {
-            "schema": 1,
-            "stage": "vanilla-upstream-baseline",
-            "blink_ref": os.environ["BLINK_REF"],
-            "blink_commit": os.environ["BLINK_COMMIT"],
-            "blink_rsk_commit": os.environ["GITHUB_SHA"],
-            "xcode": os.environ["XCODE_VERSION"],
-            "iphoneos_sdk": os.environ["SDK_VERSION"],
-            "runner": f'{os.environ.get("RUNNER_OS")}/{os.environ.get("RUNNER_ARCH")}',
-            "signed": False,
-            "packaging": "Payload/<app>.app zipped as IPA; intended for SideStore re-signing"
+              "schema": 2,
+              "artifact": "Blink-RSK",
+              "stage": "verified-upstream-sideload-baseline",
+              "upstream": {
+                  "repository": "blinksh/blink",
+                  "branch": os.environ["BLINK_BRANCH"],
+                  "commit": os.environ["ACTUAL_COMMIT"],
+                  "version": os.environ["BLINK_VERSION"],
+                  "build": os.environ["BLINK_BUILD"],
+              },
+              "blink_rsk_commit": os.environ["GITHUB_SHA"],
+              "bundle_id": os.environ["BLINK_RSK_BUNDLE_ID"],
+              "configuration": "Release",
+              "publishing_option": "developer",
+              "signed": False,
+              "app_extensions_stripped": True,
+              "expected_sidestore_app_ids": 1,
+              "xcode": os.environ["XCODE_VERSION"],
+              "iphoneos_sdk": os.environ["SDK_VERSION"],
+              "runner": f'{os.environ.get("RUNNER_OS")}/{os.environ.get("RUNNER_ARCH")}',
+              "packaging": "Payload/Blink.app zipped as unsigned IPA; SideStore performs final signing",
           }
           with open("artifact/build-manifest.json", "w") as f:
               json.dump(manifest, f, indent=2)
@@ -139,10 +212,17 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: Blink-RSK-baseline-diagnostics-${{ github.run_number }}
+          name: Blink-RSK-diagnostics-${{ github.run_number }}
           path: |
-            xcodebuild.log
             blink-commit.txt
+            submodules.txt
+            frameworks.log
+            resources.log
+            packages.log
+            xcode-list.txt
+            build-settings.txt
+            xcodebuild.log
+            blink/Blink.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved
           if-no-files-found: ignore
           retention-days: 7
 
@@ -150,7 +230,7 @@ jobs:
         if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: Blink-RSK-baseline-${{ inputs.blink_ref }}-${{ github.sha }}
+          name: Blink-RSK-${{ env.BLINK_VERSION }}-${{ env.BLINK_BUILD }}-${{ github.sha }}
           path: artifact/
           if-no-files-found: error
           retention-days: 14
