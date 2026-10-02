@@ -15,11 +15,13 @@ env:
   BLINK_VERSION: 18.6.3
   BLINK_BUILD: "2009"
   BLINK_RSK_BUNDLE_ID: io.raskal.blink-rsk
-  XCODE_DEVELOPER_DIR: /Applications/Xcode_16.4.app/Contents/Developer
+  # Blink 18.6 uses iOS 26 UIKit APIs such as UIGlassEffect. Xcode 16.4's
+  # iOS 18.5 SDK cannot compile those symbols even behind @available guards.
+  XCODE_DEVELOPER_DIR: /Applications/Xcode_26.6.app/Contents/Developer
 
 jobs:
   build:
-    runs-on: macos-15
+    runs-on: macos-26
     timeout-minutes: 90
 
     steps:
