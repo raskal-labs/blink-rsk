@@ -1,0 +1,11 @@
+// Blink-RSK overrides appended after Blink's template_setup.xcconfig.
+// The CI artifact is unsigned; SideStore supplies the user's signing identity.
+
+TEAM_ID =
+BUNDLE_ID = io.raskal.blink-rsk
+GROUP_ID = io.raskal.blink-rsk
+CLOUD_ID = io.raskal.blink-rsk
+KEYCHAIN_ID1 = io.raskal.blink-rsk
+
+// Keep Release optimizations while selecting Blink's developer feature set.
+SWIFT_ACTIVE_COMPILATION_CONDITIONS[config=Release] = BLINK_PUBLISHING_OPTION_DEVELOPER
