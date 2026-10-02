@@ -1,27 +1,63 @@
 # Blink-RSK
 
-Reproducible, auditable sideload builds of [Blink Shell](https://github.com/blinksh/blink), with Raskal Labs extensions planned on top of the upstream `ios_system` command environment.
+Reproducible, auditable SideStore builds of [Blink Shell](https://github.com/blinksh/blink), with Raskal Labs command extensions planned on top of Blink's `ios_system` environment.
 
-## Status
+## Upstream baseline
 
-**Phase 0: verified upstream baseline.** The first milestone builds an unmodified GPL Blink baseline as an unsigned IPA on a GitHub-hosted macOS runner. Once that succeeds, additional commands will be introduced atomically so build failures can be attributed to a specific change.
+The App Store currently ships Blink **18.7.1**. As of this repository update, the corresponding 18.7.x source revision is not exposed by a public branch, tag, or GitHub release in `blinksh/blink`, so Blink-RSK does not pretend that it can reproduce that binary.
 
-The initial baseline is Blink **18.4.2 build 1051**, upstream commit `99660bf1b9f9c8b5580720b7b22a94c4daec4cb7`. Upstream exposes `v18.4.2` as a branch pointing to that commit; it is not treated as a Git tag by this repository.
+The newest stable source revision that can currently be pinned and verified from the public upstream repository is:
 
-### Planned command work
+- Blink **18.6.3**
+- build **2009**
+- upstream branch `v18.6.0`
+- commit `c1b07ea97ac94f2ada190f7d6554f81502774a77`
 
-Initial candidates: `find`, `sort`, `uniq`, `head`, `tail`, `cut`, `tr`, `tee`, and SHA-256 tooling. Later candidates include `jq`, `sqlite3`, `file`/libmagic, BLAKE3, and a deterministic `rsk-scan` command. Pipeline syntax is a separate investigation.
+CI verifies both the commit and the version/build values in the Xcode project before compiling. When upstream publishes the 18.7.1 source, updating this pin is a separate reviewed change.
+
+## Current milestone
+
+**Phase 0: verified upstream sideload baseline.** Build the pinned Blink source on GitHub's macOS runner without an Apple signing identity, package it as an IPA, and let SideStore perform the final signing on-device.
+
+The build intentionally uses:
+
+- `macos-15`
+- explicitly selected Xcode **16.4** rather than the runner's moving default
+- Blink's documented `get_frameworks.sh` and `get_resources.sh` preparation path
+- Blink's documented removal of stale `project.xcworkspace/xcshareddata` before Xcode package resolution
+- Release optimization with Blink's `BLINK_PUBLISHING_OPTION_DEVELOPER` feature set
+- bundle identifier `io.raskal.blink-rsk`
+- no regex or scripted mutation of `project.pbxproj`
+
+### SideStore / App-ID policy
+
+Blink normally embeds File Provider app extensions. SideStore signs each app extension as another App ID, which is undesirable on a free Apple account with a limited weekly App-ID budget. The Phase-0 IPA therefore strips only `.appex` bundles after the unsigned build and keeps the main Blink app and non-extension bundles intact.
+
+Expected result: **one SideStore App ID** for Blink-RSK.
+
+File Provider integration can be restored later as an explicit build variant if it is worth spending the additional App IDs.
 
 ## Build
 
-Run **Actions → Build Blink-RSK baseline → Run workflow**. The default input is the verified upstream Blink 18.4.2 commit SHA. The workflow also accepts an explicit upstream branch name or full 40-character commit SHA.
+Run **Actions → Build Blink-RSK → Run workflow**.
 
-The workflow follows Blink's upstream preparation path (`get_frameworks.sh`, `get_resources.sh`, `template_setup.xcconfig`) and performs an unsigned Release device build with `xcodebuild`. It does not regex-edit Blink's Xcode project. The resulting `.app` is packaged as an unsigned IPA for SideStore to re-sign/install on-device.
+A successful run uploads:
+
+- `Blink-RSK-18.6.3-2009-unsigned.ipa`
+- `SHA256SUMS`
+- `build-manifest.json`
+- version/build/bundle-ID receipts
+
+A failed run uploads the dependency, package-resolution, build-settings, and `xcodebuild` diagnostics needed to diagnose the actual failing layer.
+
+## Planned command work
+
+Only after the vanilla baseline builds and installs cleanly will command changes begin. Initial candidates are `find`, `sort`, `uniq`, `head`, `tail`, `cut`, `tr`, `tee`, and SHA-256 tooling. Later candidates include `jq`, `sqlite3`, `file`/libmagic, BLAKE3, and a deterministic `rsk-scan` command. Pipeline syntax remains a separate investigation.
 
 ## Provenance
 
-CI records the requested Blink ref, resolved Blink commit, Blink-RSK revision, macOS/Xcode/iPhoneOS SDK information, and SHA-256 hash of the produced IPA. The third-party GPL-builder experiment used during bootstrap is retained only in repository history/archive and is not part of the current baseline build path.
+The build manifest records the exact Blink commit/version/build, Blink-RSK commit, bundle identifier, Xcode version, iPhoneOS SDK, runner architecture, whether app extensions were stripped, and the expected SideStore App-ID count. The IPA is hashed with SHA-256.
 
 ## Licensing
 
-Blink Shell is GPL-3.0. Blink-RSK modifications to Blink-derived code must remain compatible with Blink's license. Build/automation material original to this repository will be licensed explicitly as it is added.
+Blink Shell is GPL-3.0. Blink-RSK modifications to Blink-derived code must remain compatible with Blink's license.
