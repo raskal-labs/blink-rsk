@@ -163,7 +163,7 @@ jobs:
           IPA="artifact/Blink-upstream-${ACTUAL_VERSION}-${ACTUAL_BUILD}-unsigned.ipa"
           (cd stage && zip -qry "../$IPA" Payload)
           unzip -t "$IPA"
-          shasum -a 256 "$IPA" > artifact/SHA256SUMS
+          (cd artifact && shasum -a 256 "$(basename "$IPA")" > SHA256SUMS)
 
           printf '%s\n' "$ACTUAL_ID" > artifact/bundle-id.txt
           printf '%s\n' "$ACTUAL_VERSION" > artifact/blink-version.txt
