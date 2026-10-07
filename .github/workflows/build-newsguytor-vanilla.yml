@@ -65,27 +65,6 @@ jobs:
           printf '%s\n' "$BUILDER_COMMIT" | tee builder-commit.txt
           chmod +x builder/build-blink-shell-gpl.sh
 
-      - name: Neutralize signed-build TEAM_ID rewrite
-        run: |
-          set -euxo pipefail
-          python3 - <<'PY'
-          from pathlib import Path
-
-          path = Path("builder/build-blink-shell-gpl.sh")
-          data = path.read_text()
-          needle = "\n    fix_team_id\n"
-          count = data.count(needle)
-          if count != 3:
-              raise SystemExit(f"expected exactly 3 fix_team_id calls, found {count}")
-
-          data = data.replace(
-              needle,
-              "\n    : # fix_team_id skipped: unsigned CI overrides DEVELOPMENT_TEAM at xcodebuild time\n",
-          )
-          path.write_text(data)
-          PY
-          grep -q 'fix_team_id skipped' builder/build-blink-shell-gpl.sh
-
       - name: Prepare upstream source with NewsGuyTor patches
         env:
           BLINK_REF: ${{ steps.ref.outputs.blink_ref }}
@@ -99,6 +78,31 @@ jobs:
               --overwrite \
               --keep-source
           ) 2>&1 | tee setup.log
+
+      - name: Repair builder TEAM_ID project mutation
+        run: |
+          set -euxo pipefail
+          PROJECT="$GITHUB_WORKSPACE/builder/blink-src/Blink.xcodeproj/project.pbxproj"
+
+          # NewsGuyTor's current fix_team_id writes literal ${TEAM_ID} into the
+          # pbxproj. That syntax is not valid in an Xcode project file. Preserve
+          # every other builder patch and restore only the original team token;
+          # the unsigned build later overrides DEVELOPMENT_TEAM="" explicitly.
+          python3 - "$PROJECT" <<'PY'
+          from pathlib import Path
+          import sys
+
+          path = Path(sys.argv[1])
+          data = path.read_text()
+          bad = "${TEAM_ID}"
+          count = data.count(bad)
+          if count < 1:
+              raise SystemExit("builder did not produce the expected TEAM_ID mutation")
+          data = data.replace(bad, "A2H2CL32AG")
+          path.write_text(data)
+          print(count)
+          PY
+          ! grep -Fq '${TEAM_ID}' "$PROJECT"
 
       - name: Audit prepared source before build
         env:
@@ -315,7 +319,7 @@ jobs:
                   "repository": "NewsGuyTor/Blink-Shell-GPL-Builder",
                   "commit": os.environ["BUILDER_COMMIT"],
                   "usage": "setup/patch phase only; unsigned build and packaging are CI-hardened by this workflow",
-                  "team_id_rewrite": "disabled for unsigned build because it corrupts current project syntax",
+                  "team_id_rewrite": "builder mutation repaired after setup; unsigned xcodebuild overrides DEVELOPMENT_TEAM",
               },
               "sideload": {
                   "app_extensions_stripped": True,
