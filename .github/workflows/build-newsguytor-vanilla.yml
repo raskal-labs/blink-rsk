@@ -7,12 +7,6 @@ on:
         description: "Upstream Blink branch/ref to prepare with NewsGuyTor"
         required: true
         default: "raw"
-  push:
-    branches:
-      - main
-    paths:
-      - .github/workflows/build-newsguytor-vanilla.yml
-
 permissions:
   contents: read
 
@@ -239,6 +233,12 @@ jobs:
           printf '%s  %s\n' "$SIDELOAD_FIX_SHA256" "$CACHE/SideloadFix.dylib" | shasum -a 256 -c -
           file "$CACHE/SideloadFix.dylib" | tee artifact/sideload-fix-file.txt
           lipo -info "$CACHE/SideloadFix.dylib" | tee artifact/sideload-fix-architectures.txt
+          grep -qw 'arm64' artifact/sideload-fix-architectures.txt
+          otool -L "$CACHE/SideloadFix.dylib" | tee artifact/sideload-fix-linked-libraries.txt
+          if grep -Eiq 'CydiaSubstrate|SubstrateLoader|libhooker|ElleKit' artifact/sideload-fix-linked-libraries.txt; then
+            echo "SideloadFix unexpectedly depends on a jailbreak injection runtime"
+            exit 1
+          fi
           mkdir -p "$STAGED_APP/Frameworks"
           cp "$CACHE/SideloadFix.dylib" "$STAGED_APP/Frameworks/SideloadFix.dylib"
 
