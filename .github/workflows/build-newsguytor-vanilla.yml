@@ -1,0 +1,131 @@
+name: Build vanilla Blink with NewsGuyTor
+
+on:
+  workflow_dispatch:
+    inputs:
+      blink_ref:
+        description: "Upstream Blink branch/ref for NewsGuyTor builder"
+        required: true
+        default: "raw"
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/build-newsguytor-vanilla.yml
+
+permissions:
+  contents: read
+
+env:
+  XCODE_DEVELOPER_DIR: /Applications/Xcode_26.6.app/Contents/Developer
+  BUILDER_REPO: https://github.com/NewsGuyTor/Blink-Shell-GPL-Builder.git
+  BUILDER_COMMIT: e9d5191d5dfc0b5519deab16f2531681789f4e57
+
+jobs:
+  build:
+    runs-on: macos-26
+    timeout-minutes: 90
+
+    steps:
+      - name: Checkout harness
+        uses: actions/checkout@v4
+
+      - name: Select and verify Xcode
+        run: |
+          set -euxo pipefail
+          test -d "$XCODE_DEVELOPER_DIR"
+          sudo xcode-select -s "$XCODE_DEVELOPER_DIR"
+          sw_vers
+          xcodebuild -version
+          xcrun --sdk iphoneos --show-sdk-version
+          command -v jq >/dev/null || brew install jq
+
+      - name: Resolve Blink ref
+        id: ref
+        env:
+          DISPATCH_REF: ${{ github.event.inputs.blink_ref }}
+        run: |
+          set -euxo pipefail
+          BLINK_REF="${DISPATCH_REF:-raw}"
+          echo "blink_ref=$BLINK_REF" >> "$GITHUB_OUTPUT"
+          echo "$BLINK_REF" | tee blink-ref.txt
+
+      - name: Checkout pinned NewsGuyTor builder
+        run: |
+          set -euxo pipefail
+          git clone "$BUILDER_REPO" builder
+          git -C builder checkout --detach "$BUILDER_COMMIT"
+          test "$(git -C builder rev-parse HEAD)" = "$BUILDER_COMMIT"
+          printf '%s\n' "$BUILDER_COMMIT" | tee builder-commit.txt
+          chmod +x builder/build-blink-shell-gpl.sh
+
+      - name: Build vanilla sideload-patched Blink IPA
+        working-directory: builder
+        env:
+          BLINK_REF: ${{ steps.ref.outputs.blink_ref }}
+        run: |
+          set -o pipefail
+          ./build-blink-shell-gpl.sh \
+            --version "$BLINK_REF" \
+            --overwrite \
+            --keep-build \
+            --keep-source \
+            2>&1 | tee ../builder-console.log
+
+      - name: Inspect produced IPA
+        run: |
+          set -euxo pipefail
+          IPA="$(find builder/dist -maxdepth 1 -type f -name 'Blink-unsigned-*.ipa' -print -quit)"
+          test -n "$IPA"
+          rm -rf inspect artifact
+          mkdir -p inspect artifact
+          unzip -q "$IPA" -d inspect
+          APP="$(find inspect/Payload -maxdepth 1 -type d -name '*.app' -print -quit)"
+          test -n "$APP"
+
+          cp "$IPA" artifact/
+          shasum -a 256 "$IPA" | tee artifact/SHA256SUMS
+
+          /usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$APP/Info.plist" | tee artifact/bundle-id.txt
+          /usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "$APP/Info.plist" | tee artifact/version.txt
+          /usr/libexec/PlistBuddy -c 'Print :CFBundleVersion' "$APP/Info.plist" | tee artifact/build.txt
+
+          find "$APP" -type d -name '*.appex' -print | tee artifact/extensions.txt
+          find "$APP" -maxdepth 2 -type f -name 'SideloadFix.dylib' -print | tee artifact/sideload-fix.txt
+
+          file "$APP/Blink" | tee artifact/macho.txt
+          otool -L "$APP/Blink" | tee artifact/linked-libraries.txt
+
+          cat > artifact/provenance.txt <<EOF
+          harness_repo=raskal-labs/blink-rsk
+          harness_commit=$GITHUB_SHA
+          builder_repo=NewsGuyTor/Blink-Shell-GPL-Builder
+          builder_commit=$BUILDER_COMMIT
+          blink_ref=${{ steps.ref.outputs.blink_ref }}
+          xcode=$(xcodebuild -version | tr '\n' ' ')
+          iphoneos_sdk=$(xcrun --sdk iphoneos --show-sdk-version)
+          signed=false
+          intended_signer=SideStore
+          EOF
+
+      - name: Upload IPA and inspection
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Blink-NewsGuyTor-${{ steps.ref.outputs.blink_ref }}-${{ github.run_number }}
+          path: artifact/
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Upload diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Blink-NewsGuyTor-diagnostics-${{ github.run_number }}
+          path: |
+            blink-ref.txt
+            builder-commit.txt
+            builder-console.log
+            builder/build-output/build.log
+          if-no-files-found: ignore
+          retention-days: 7
