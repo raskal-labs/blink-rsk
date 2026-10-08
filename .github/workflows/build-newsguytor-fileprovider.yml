@@ -1,0 +1,424 @@
+name: Build vanilla Blink with File Provider
+
+on:
+  workflow_dispatch:
+    inputs:
+      blink_ref:
+        description: "Upstream Blink branch/ref to prepare with NewsGuyTor"
+        required: true
+        default: "raw"
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/build-newsguytor-fileprovider.yml
+permissions:
+  contents: read
+
+env:
+  XCODE_DEVELOPER_DIR: /Applications/Xcode_26.6.app/Contents/Developer
+  BUILDER_REPO: https://github.com/NewsGuyTor/Blink-Shell-GPL-Builder.git
+  BUILDER_COMMIT: e9d5191d5dfc0b5519deab16f2531681789f4e57
+  BLINK_RAW_COMMIT: a90b4423c8b7a86770c24a7eaa6c13b0a5904b18
+  SIDELOAD_FIX_URL: https://github.com/waruhachi/SideloadFix/releases/download/release/SideloadFix.dylib
+  SIDELOAD_FIX_SHA256: 90069388c885e99e5ce48bcaa080a21d1bc8c1f3abb3016a64c3e7ba1031fa4d
+  INSERT_DYLIB_REPO: https://github.com/tyilo/insert_dylib.git
+  INSERT_DYLIB_COMMIT: eb7278162af8fcc372e7f2946a2dee6a386b17d8
+
+jobs:
+  build:
+    runs-on: macos-26
+    timeout-minutes: 90
+
+    steps:
+      - name: Checkout harness
+        uses: actions/checkout@v4
+
+      - name: Select and verify Xcode
+        run: |
+          set -euxo pipefail
+          test -d "$XCODE_DEVELOPER_DIR"
+          sudo xcode-select -s "$XCODE_DEVELOPER_DIR"
+          test "$(xcode-select -p)" = "$XCODE_DEVELOPER_DIR"
+          sw_vers | tee macos-version.txt
+          xcodebuild -version | tee xcode-version.txt
+          xcrun --sdk iphoneos --show-sdk-version | tee iphoneos-sdk.txt
+          command -v jq >/dev/null || brew install jq
+
+      - name: Resolve requested Blink ref
+        id: ref
+        env:
+          DISPATCH_REF: ${{ github.event.inputs.blink_ref }}
+        run: |
+          set -euxo pipefail
+          BLINK_REF="${DISPATCH_REF:-raw}"
+          echo "blink_ref=$BLINK_REF" >> "$GITHUB_OUTPUT"
+          printf '%s\n' "$BLINK_REF" | tee blink-ref.txt
+
+      - name: Checkout pinned NewsGuyTor builder
+        run: |
+          set -euxo pipefail
+          git clone "$BUILDER_REPO" builder
+          git -C builder checkout --detach "$BUILDER_COMMIT"
+          test "$(git -C builder rev-parse HEAD)" = "$BUILDER_COMMIT"
+          printf '%s\n' "$BUILDER_COMMIT" | tee builder-commit.txt
+          chmod +x builder/build-blink-shell-gpl.sh
+
+      - name: Prepare upstream source with NewsGuyTor patches
+        env:
+          BLINK_REF: ${{ steps.ref.outputs.blink_ref }}
+        run: |
+          set -euxo pipefail
+          (
+            cd builder
+            ./build-blink-shell-gpl.sh \
+              --setup-only \
+              --version "$BLINK_REF" \
+              --overwrite \
+              --keep-source
+          ) 2>&1 | tee setup.log
+
+      - name: Repair builder TEAM_ID project mutation
+        run: |
+          set -euxo pipefail
+          PROJECT="$GITHUB_WORKSPACE/builder/blink-src/Blink.xcodeproj/project.pbxproj"
+
+          # NewsGuyTor's current fix_team_id writes literal ${TEAM_ID} into the
+          # pbxproj. That syntax is not valid in an Xcode project file. Preserve
+          # every other builder patch and restore only the original team token;
+          # the unsigned build later overrides DEVELOPMENT_TEAM="" explicitly.
+          python3 - "$PROJECT" <<'PY'
+          from pathlib import Path
+          import sys
+
+          path = Path(sys.argv[1])
+          data = path.read_text()
+          bad = "${TEAM_ID}"
+          count = data.count(bad)
+          if count < 1:
+              raise SystemExit("builder did not produce the expected TEAM_ID mutation")
+          data = data.replace(bad, "A2H2CL32AG")
+          path.write_text(data)
+          print(count)
+          PY
+          ! grep -Fq '${TEAM_ID}' "$PROJECT"
+
+      - name: Audit prepared source before build
+        env:
+          BLINK_REF: ${{ steps.ref.outputs.blink_ref }}
+        run: |
+          set -euxo pipefail
+          SRC="$GITHUB_WORKSPACE/builder/blink-src"
+          PROJECT="$SRC/Blink.xcodeproj"
+
+          test -d "$SRC/.git"
+          test -f "$PROJECT/project.pbxproj"
+          test -f "$SRC/Blink/Blink-sideload.entitlements"
+
+          UPSTREAM_COMMIT="$(git -C "$SRC" rev-parse HEAD)"
+          printf '%s\n' "$UPSTREAM_COMMIT" | tee blink-commit.txt
+
+          if [ "$BLINK_REF" = "raw" ]; then
+            test "$UPSTREAM_COMMIT" = "$BLINK_RAW_COMMIT"
+          fi
+
+          git -C "$SRC" submodule status --recursive | tee submodules.txt
+          git -C "$SRC" diff --check
+          git -C "$SRC" diff --name-status | tee builder-patch-files.txt
+          git -C "$SRC" diff --no-ext-diff --binary > builder-patches.diff
+
+          grep -q 'BLINK_WRAPPER_PATCH' "$SRC/Blink/Subscriptions/EntitlementsManager.swift"
+          ! grep -Eq '^[[:space:]]*\[Migrator perform\];' "$SRC/Blink/AppDelegate.m"
+          grep -q 'FileProviderAvailability.isAvailable' "$SRC/Settings/Model/FileProviderDomain.swift"
+          grep -q 'FileProviderAvailability isAvailable' "$SRC/Blink/AppDelegate.m"
+          grep -q 'FileProviderAvailability.isAvailable' "$SRC/Blink/Migrator/1810Migration.swift"
+          ! grep -Fq '${TEAM_ID}' "$PROJECT/project.pbxproj"
+          plutil -lint "$SRC/Blink/Blink-sideload.entitlements"
+
+          (
+            cd "$SRC"
+            xcodebuild -project Blink.xcodeproj -list
+          ) 2>&1 | tee xcode-list.txt
+
+          (
+            cd "$SRC"
+            xcodebuild \
+              -project Blink.xcodeproj \
+              -scheme Blink \
+              -configuration Release \
+              -sdk iphoneos \
+              -destination 'generic/platform=iOS' \
+              CODE_SIGNING_ALLOWED=NO \
+              CODE_SIGNING_REQUIRED=NO \
+              CODE_SIGN_IDENTITY="" \
+              DEVELOPMENT_TEAM="" \
+              CODE_SIGN_ENTITLEMENTS="$SRC/Blink/Blink-sideload.entitlements" \
+              -showBuildSettings
+          ) > build-settings.txt
+
+          grep -E '(^| )[[:space:]]*(PRODUCT_BUNDLE_IDENTIFIER|MARKETING_VERSION|CURRENT_PROJECT_VERSION|IPHONEOS_DEPLOYMENT_TARGET|SWIFT_ACTIVE_COMPILATION_CONDITIONS|CODE_SIGN_ENTITLEMENTS) =' build-settings.txt | head -n 100 || true
+
+      - name: Resolve Swift packages
+        run: |
+          set -euxo pipefail
+          SRC="$GITHUB_WORKSPACE/builder/blink-src"
+          rm -rf SourcePackages
+          (
+            cd "$SRC"
+            xcodebuild \
+              -project Blink.xcodeproj \
+              -scheme Blink \
+              -clonedSourcePackagesDirPath "$GITHUB_WORKSPACE/SourcePackages" \
+              -resolvePackageDependencies
+          ) 2>&1 | tee packages.log
+
+          RESOLVED="$(find "$SRC/Blink.xcodeproj" -path '*/swiftpm/Package.resolved' -print -quit)"
+          if [ -n "$RESOLVED" ]; then
+            cp "$RESOLVED" resolved-Packages.json
+          fi
+
+      - name: Build patched upstream Blink unsigned
+        run: |
+          set -euxo pipefail
+          SRC="$GITHUB_WORKSPACE/builder/blink-src"
+          rm -rf DerivedData
+          (
+            cd "$SRC"
+            xcodebuild \
+              -project Blink.xcodeproj \
+              -scheme Blink \
+              -configuration Release \
+              -sdk iphoneos \
+              -destination 'generic/platform=iOS' \
+              -derivedDataPath "$GITHUB_WORKSPACE/DerivedData" \
+              -clonedSourcePackagesDirPath "$GITHUB_WORKSPACE/SourcePackages" \
+              CODE_SIGNING_ALLOWED=NO \
+              CODE_SIGNING_REQUIRED=NO \
+              CODE_SIGN_IDENTITY="" \
+              DEVELOPMENT_TEAM="" \
+              CODE_SIGN_ENTITLEMENTS="$SRC/Blink/Blink-sideload.entitlements" \
+              DEAD_CODE_STRIPPING=NO \
+              ENABLE_PREVIEWS=NO \
+              COMPILER_INDEX_STORE_ENABLE=NO \
+              build
+          ) 2>&1 | tee xcodebuild.log
+
+      - name: Stage app and preserve File Provider extensions
+        run: |
+          set -euxo pipefail
+          APP="$(find DerivedData/Build/Products/Release-iphoneos -maxdepth 1 -type d -name 'Blink.app' -print -quit)"
+          test -n "$APP"
+          test -f "$APP/Info.plist"
+          test -x "$APP/Blink"
+
+          rm -rf stage artifact
+          mkdir -p stage/Payload artifact
+          cp -R "$APP" stage/Payload/Blink.app
+          STAGED_APP="$GITHUB_WORKSPACE/stage/Payload/Blink.app"
+
+          FP="$STAGED_APP/PlugIns/BlinkFileProviderExtension.appex"
+          FPUI="$STAGED_APP/PlugIns/BlinkFileProviderExtensionUI.appex"
+          test -d "$FP"
+          test -d "$FPUI"
+
+          find "$STAGED_APP/PlugIns" -maxdepth 1 -type d -name '*.appex' -print | sort | tee artifact/extensions.txt
+          test "$(find "$STAGED_APP/PlugIns" -maxdepth 1 -type d -name '*.appex' | wc -l | tr -d ' ')" = "2"
+
+          FP_GROUP="$(/usr/libexec/PlistBuddy -c 'Print :NSExtension:NSExtensionFileProviderDocumentGroup' "$FP/Info.plist")"
+          test "$FP_GROUP" = "group.sh.blink"
+          printf '%s\n' "$FP_GROUP" > artifact/fileprovider-document-group.txt
+
+          find "$STAGED_APP" -type d -name _CodeSignature -prune -exec rm -rf {} +
+          find "$STAGED_APP" -type f -name embedded.mobileprovision -delete
+
+      - name: Embed requested App Group entitlements for SideStore
+        run: |
+          set -euxo pipefail
+          STAGED_APP="$GITHUB_WORKSPACE/stage/Payload/Blink.app"
+          FP="$STAGED_APP/PlugIns/BlinkFileProviderExtension.appex"
+          FPUI="$STAGED_APP/PlugIns/BlinkFileProviderExtensionUI.appex"
+
+          cat > artifact/main-requested.entitlements.plist <<'EOF'
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>com.apple.developer.default-data-protection</key>
+            <string>NSFileProtectionComplete</string>
+            <key>com.apple.security.app-sandbox</key>
+            <true/>
+            <key>com.apple.security.application-groups</key>
+            <array>
+              <string>group.sh.blink</string>
+            </array>
+            <key>com.apple.security.device.bluetooth</key>
+            <true/>
+            <key>com.apple.security.device.camera</key>
+            <true/>
+            <key>com.apple.security.files.user-selected.read-write</key>
+            <true/>
+            <key>com.apple.security.network.client</key>
+            <true/>
+            <key>com.apple.security.network.server</key>
+            <true/>
+            <key>com.apple.security.personal-information.location</key>
+            <true/>
+          </dict>
+          </plist>
+          EOF
+
+          cat > artifact/fileprovider-requested.entitlements.plist <<'EOF'
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>com.apple.security.app-sandbox</key>
+            <true/>
+            <key>com.apple.security.application-groups</key>
+            <array>
+              <string>group.sh.blink</string>
+            </array>
+            <key>com.apple.security.network.client</key>
+            <true/>
+          </dict>
+          </plist>
+          EOF
+
+          plutil -lint artifact/main-requested.entitlements.plist
+          plutil -lint artifact/fileprovider-requested.entitlements.plist
+
+          # SideStore discovers requested capabilities from the bundle's existing
+          # entitlements before replacing these ad-hoc signatures with its own.
+          while IFS= read -r code; do
+            codesign --force --sign - "$code"
+          done < <(find "$STAGED_APP/Frameworks" -maxdepth 2 \( -name '*.framework' -o -name '*.dylib' \) -print | sort)
+
+          codesign --force --sign - --entitlements artifact/fileprovider-requested.entitlements.plist "$FP"
+          codesign --force --sign - "$FPUI"
+          codesign --force --sign - --entitlements artifact/main-requested.entitlements.plist "$STAGED_APP"
+
+          codesign -d --entitlements :- "$STAGED_APP" 2> artifact/main-embedded-entitlements.plist
+          codesign -d --entitlements :- "$FP" 2> artifact/fileprovider-embedded-entitlements.plist
+
+          plutil -lint artifact/main-embedded-entitlements.plist
+          plutil -lint artifact/fileprovider-embedded-entitlements.plist
+          grep -q 'group.sh.blink' artifact/main-embedded-entitlements.plist
+          grep -q 'group.sh.blink' artifact/fileprovider-embedded-entitlements.plist
+
+      - name: Validate and package SideStore IPA
+        env:
+          BLINK_REF: ${{ steps.ref.outputs.blink_ref }}
+        run: |
+          set -euxo pipefail
+          STAGED_APP="$GITHUB_WORKSPACE/stage/Payload/Blink.app"
+
+          ACTUAL_ID="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$STAGED_APP/Info.plist")"
+          ACTUAL_VERSION="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "$STAGED_APP/Info.plist")"
+          ACTUAL_BUILD="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleVersion' "$STAGED_APP/Info.plist")"
+
+          test -n "$ACTUAL_ID"
+          test -n "$ACTUAL_VERSION"
+          test -n "$ACTUAL_BUILD"
+          test "$ACTUAL_ID" = "sh.blink.blinkshell"
+          test -d "$STAGED_APP/PlugIns/BlinkFileProviderExtension.appex"
+          test -d "$STAGED_APP/PlugIns/BlinkFileProviderExtensionUI.appex"
+          test "$(find "$STAGED_APP/PlugIns" -maxdepth 1 -type d -name '*.appex' | wc -l | tr -d ' ')" = "2"
+          test ! -f "$STAGED_APP/Frameworks/SideloadFix.dylib"
+          test -z "$(find "$STAGED_APP" -type f -name embedded.mobileprovision -print -quit)"
+
+          file "$STAGED_APP/Blink" | tee artifact/main-executable.txt
+          lipo -info "$STAGED_APP/Blink" | tee artifact/main-architectures.txt
+          find "$STAGED_APP" -type d -name _CodeSignature -print | tee artifact/residual-code-signatures.txt
+
+          IPA="artifact/Blink-NewsGuyTor-${ACTUAL_VERSION}-${ACTUAL_BUILD}-fileprovider.ipa"
+          (cd stage && zip -qry "../$IPA" Payload)
+          unzip -t "$IPA"
+          shasum -a 256 "$IPA" | tee artifact/SHA256SUMS
+
+          printf '%s\n' "$ACTUAL_ID" > artifact/bundle-id.txt
+          printf '%s\n' "$ACTUAL_VERSION" > artifact/version.txt
+          printf '%s\n' "$ACTUAL_BUILD" > artifact/build.txt
+          printf '%s\n' "$BLINK_REF" > artifact/blink-ref.txt
+          cp blink-commit.txt artifact/blink-commit.txt
+          cp builder-commit.txt artifact/builder-commit.txt
+          cp builder-patch-files.txt artifact/builder-patch-files.txt
+          cp builder-patches.diff artifact/builder-patches.diff
+          test ! -f resolved-Packages.json || cp resolved-Packages.json artifact/resolved-Packages.json
+
+          export ACTUAL_ID ACTUAL_VERSION ACTUAL_BUILD
+          python3 - <<'PY'
+          import json, os
+
+          manifest = {
+              "schema": 1,
+              "artifact": "Vanilla upstream Blink with File Provider extensions restored for SideStore",
+              "upstream": {
+                  "repository": "blinksh/blink",
+                  "ref": os.environ["BLINK_REF"],
+                  "commit": open("blink-commit.txt").read().strip(),
+                  "bundle_id": os.environ["ACTUAL_ID"],
+                  "version": os.environ["ACTUAL_VERSION"],
+                  "build": os.environ["ACTUAL_BUILD"],
+              },
+              "builder": {
+                  "repository": "NewsGuyTor/Blink-Shell-GPL-Builder",
+                  "commit": os.environ["BUILDER_COMMIT"],
+                  "usage": "setup/patch phase only; unsigned build and packaging are CI-hardened by this workflow",
+                  "team_id_rewrite": "builder mutation repaired after setup; unsigned xcodebuild overrides DEVELOPMENT_TEAM",
+              },
+              "sideload": {
+                  "app_extensions_stripped": False,
+                  "fileprovider_extensions": [
+                      "BlinkFileProviderExtension.appex",
+                      "BlinkFileProviderExtensionUI.appex",
+                  ],
+                  "migrator_disabled": True,
+                  "fileprovider_guards": True,
+                  "sideload_fix_injected": False,
+                  "requested_app_group": "group.sh.blink",
+                  "pre_signing": "ad-hoc signatures carry requested entitlements for SideStore capability discovery",
+                  "final_signer": "SideStore",
+              },
+              "toolchain": {
+                  "xcode_developer_dir": os.environ["XCODE_DEVELOPER_DIR"],
+              },
+          }
+          with open("artifact/provenance.json", "w") as fh:
+              json.dump(manifest, fh, indent=2)
+          PY
+
+      - name: Upload IPA and provenance
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Blink-NewsGuyTor-fileprovider-${{ steps.ref.outputs.blink_ref }}-${{ github.run_number }}
+          path: artifact/
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Upload diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Blink-NewsGuyTor-fileprovider-diagnostics-${{ github.run_number }}
+          path: |
+            blink-ref.txt
+            blink-commit.txt
+            builder-commit.txt
+            macos-version.txt
+            xcode-version.txt
+            iphoneos-sdk.txt
+            setup.log
+            builder-patch-files.txt
+            builder-patches.diff
+            xcode-list.txt
+            build-settings.txt
+            packages.log
+            resolved-Packages.json
+            xcodebuild.log
+            artifact/main-requested.entitlements.plist
+            artifact/fileprovider-requested.entitlements.plist
+            artifact/main-embedded-entitlements.plist
+            artifact/fileprovider-embedded-entitlements.plist
+          if-no-files-found: ignore
+          retention-days: 7
