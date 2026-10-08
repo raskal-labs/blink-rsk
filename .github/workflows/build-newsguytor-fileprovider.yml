@@ -7,11 +7,6 @@ on:
         description: "Upstream Blink branch/ref to prepare with NewsGuyTor"
         required: true
         default: "raw"
-  push:
-    branches:
-      - main
-    paths:
-      - .github/workflows/build-newsguytor-fileprovider.yml
 permissions:
   contents: read
 
