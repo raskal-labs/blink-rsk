@@ -1,6 +1,8 @@
 name: Build vanilla Blink with File Provider
 
 on:
+  push:
+    branches: [fix/sidestore-app-groups]
   workflow_dispatch:
     inputs:
       blink_ref:
@@ -97,6 +99,12 @@ jobs:
           print(count)
           PY
           ! grep -Fq '${TEAM_ID}' "$PROJECT"
+
+      - name: Resolve provisioned SideStore App Group in shared BlinkConfig
+        run: |
+          set -euxo pipefail
+          python3 scripts/patch-sidestore-app-groups.py "$GITHUB_WORKSPACE/builder/blink-src"
+          python3 scripts/test-sidestore-app-groups.py "$GITHUB_WORKSPACE/builder/blink-src"
 
       - name: Audit prepared source before build
         env:
@@ -210,6 +218,7 @@ jobs:
           mkdir -p stage/Payload artifact
           cp -R "$APP" stage/Payload/Blink.app
           STAGED_APP="$GITHUB_WORKSPACE/stage/Payload/Blink.app"
+          /usr/libexec/PlistBuddy -c 'Set :CFBundleDisplayName Blink FP Test' "$STAGED_APP/Info.plist"
 
           FP="$STAGED_APP/PlugIns/BlinkFileProviderExtension.appex"
           FPUI="$STAGED_APP/PlugIns/BlinkFileProviderExtensionUI.appex"
@@ -289,7 +298,7 @@ jobs:
           done < <(find "$STAGED_APP/Frameworks" -maxdepth 2 \( -name '*.framework' -o -name '*.dylib' \) -print | sort)
 
           codesign --force --sign - --entitlements artifact/fileprovider-requested.entitlements.plist "$FP"
-          codesign --force --sign - "$FPUI"
+          codesign --force --sign - --entitlements artifact/fileprovider-requested.entitlements.plist "$FPUI"
           codesign --force --sign - --entitlements artifact/main-requested.entitlements.plist "$STAGED_APP"
 
           codesign -d --entitlements :- "$STAGED_APP" > artifact/main-embedded-entitlements.plist 2> artifact/main-codesign-inspect.txt
@@ -377,6 +386,7 @@ jobs:
                   "migrator_disabled": True,
                   "fileprovider_guards": True,
                   "sideload_fix_injected": False,
+                  "app_group_resolution": "installed provisioning profile; shared BlinkConfig resolver for app and extensions",
                   "requested_app_group": "group.sh.blink",
                   "pre_signing": "ad-hoc signatures carry requested entitlements for SideStore capability discovery",
                   "final_signer": "SideStore",
