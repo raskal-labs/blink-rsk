@@ -7,6 +7,11 @@ on:
         description: "Upstream Blink branch/ref to prepare with NewsGuyTor"
         required: true
         default: "raw"
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/build-newsguytor-fileprovider.yml
 permissions:
   contents: read
 
@@ -292,13 +297,15 @@ jobs:
           codesign --force --sign - "$FPUI"
           codesign --force --sign - --entitlements artifact/main-requested.entitlements.plist "$STAGED_APP"
 
-          codesign -d --entitlements :- "$STAGED_APP" 2> artifact/main-embedded-entitlements.plist
-          codesign -d --entitlements :- "$FP" 2> artifact/fileprovider-embedded-entitlements.plist
+          codesign -d --entitlements :- "$STAGED_APP" > artifact/main-embedded-entitlements.plist 2> artifact/main-codesign-inspect.txt
+          codesign -d --entitlements :- "$FP" > artifact/fileprovider-embedded-entitlements.plist 2> artifact/fileprovider-codesign-inspect.txt
 
           plutil -lint artifact/main-embedded-entitlements.plist
           plutil -lint artifact/fileprovider-embedded-entitlements.plist
           grep -q 'group.sh.blink' artifact/main-embedded-entitlements.plist
           grep -q 'group.sh.blink' artifact/fileprovider-embedded-entitlements.plist
+
+          codesign --verify --deep --strict --verbose=2 "$STAGED_APP" 2>&1 | tee artifact/codesign-verify.txt
 
       - name: Validate and package SideStore IPA
         env:
@@ -315,9 +322,14 @@ jobs:
           test -n "$ACTUAL_VERSION"
           test -n "$ACTUAL_BUILD"
           test "$ACTUAL_ID" = "sh.blink.blinkshell"
-          test -d "$STAGED_APP/PlugIns/BlinkFileProviderExtension.appex"
-          test -d "$STAGED_APP/PlugIns/BlinkFileProviderExtensionUI.appex"
+          FP="$STAGED_APP/PlugIns/BlinkFileProviderExtension.appex"
+          FPUI="$STAGED_APP/PlugIns/BlinkFileProviderExtensionUI.appex"
+          test -d "$FP"
+          test -d "$FPUI"
           test "$(find "$STAGED_APP/PlugIns" -maxdepth 1 -type d -name '*.appex' | wc -l | tr -d ' ')" = "2"
+          test "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$FP/Info.plist")" = "sh.blink.blinkshell.BlinkFileProviderExtension"
+          test "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$FPUI/Info.plist")" = "sh.blink.blinkshell.BlinkFileProviderExtensionUI"
+          test "$(/usr/libexec/PlistBuddy -c 'Print :NSExtension:NSExtensionFileProviderDocumentGroup' "$FP/Info.plist")" = "group.sh.blink"
           test ! -f "$STAGED_APP/Frameworks/SideloadFix.dylib"
           test -z "$(find "$STAGED_APP" -type f -name embedded.mobileprovision -print -quit)"
 
@@ -415,5 +427,8 @@ jobs:
             artifact/fileprovider-requested.entitlements.plist
             artifact/main-embedded-entitlements.plist
             artifact/fileprovider-embedded-entitlements.plist
+            artifact/main-codesign-inspect.txt
+            artifact/fileprovider-codesign-inspect.txt
+            artifact/codesign-verify.txt
           if-no-files-found: ignore
           retention-days: 7
