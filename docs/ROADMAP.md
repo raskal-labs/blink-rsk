@@ -63,6 +63,23 @@ A documented set of real homelab workflows succeeds from the iPhone; source of t
 ### Stage 4 exit gate
 Optional UI and T9 can be disabled independently; SSH/Mosh input and interactive apps remain correct; no regression to earlier stages.
 
+## Evidence-first troubleshooting protocol (required for Stage 1 and subsequent blockers)
+1. Reproduce and capture the exact failure: device/iOS version, SideStore build and settings, provisioning account type, bundle and extension IDs, effective entitlements, logs and artifact SHA.
+2. Before changing code, search for both **successes and failures** in the same product/version first (Blink, SideStore), then related products (AltStore, LiveContainer, iOS File Provider apps), then Apple Developer Forums/documentation and relevant implementation code. Prefer primary issue threads with confirmed resolution and reproduction details.
+3. Compare the conditions of successful and unsuccessful cases. Track OS, signer, certificate/profile, account type, extension type, App Group, migration state and refresh behaviour. Distinguish confirmed fixes, reports, speculation and platform-inapplicable analogies.
+4. Rank candidate fixes by probability, cost, diagnostic value, reversibility and impact on working features. Start with the cheapest high-information experiment; change one variable at a time.
+5. After one or two unsuccessful attempts against the same hypothesis, **pause and repeat targeted external research**, explicitly challenging the hypothesis. No speculative chain of expensive CI builds.
+6. Record a short evidence ledger entry: failure signature, external links and dates, applicability, hypothesis, test performed, result, confidence update, next action. Avoid repeating failed tests without new evidence.
+7. Verify on the actual iPhone, including app restart and SideStore refresh; only then promote a candidate to known-good.
+
+### Initial related cases (2026-10-10)
+- SideStore App Groups failing for extensions despite working Xcode install: https://github.com/SideStore/SideStore/issues/1437 (report, not established general fix).
+- SideStore missing extension provisioning profile on iOS 27: https://github.com/SideStore/SideStore/issues/1394 (reported failure).
+- SideStore overlapping profile installations causing intermittent refresh failure, individual retry success: https://github.com/SideStore/SideStore/issues/1443 (reported workaround).
+- Apple Developer Forums File Provider/App Group signing diagnosis: https://developer.apple.com/forums/thread/817268 (macOS analogy, not iOS proof).
+- Apple File Provider architecture: https://developer.apple.com/documentation/fileprovider (authoritative framework reference).
+- Do not assume the current App Group resolver has been device-validated: Actions run 37819898107 predates the merged resolver patch (commits 8c43219d1, 8fd4248d6).
+
 ## Codex execution pattern
 1. Audit and propose smallest testable change.
 2. Add tests and receipts before modifying packaging or app behaviour.
