@@ -30,6 +30,22 @@ Produce the **smallest maintainable Blink 18.7.0-based SideStore IPA** that pres
 - SideStore already registered IDs for main + 2 extensions; native active app slots were full when last checked. In-app registered IDs or original bundle IDs are **not proof** of actual provisioned App Group/keychain grants. SideStore version observed: 0.7.0-20260918.492+12a496ca.
 - Upstream `Migrator.swift` checks `.migrator` version in shared storage; its 1400/1810/1860/1870 steps respectively handle config migration, old File Provider storage cleanup, style settings conversion, and suspended-session registry cleanup. Existing installed migration state **Unknown**. FP Test disables migration; don't restore blindly.
 
+## 2026-10-12 candidate checkpoint
+
+**Status: In Progress — structurally verified candidate; native test blocked on the data-safe installation decision.** The one IPA build that reached packaging is [run 38228198758](https://github.com/raskal-labs/blink-rsk/actions/runs/38228198758). Its IPA is archived at `/lab/blink-rsk-release/phase-01-20261012/artifact/Blink-SideStore-18.7.0-1097-native-fileprovider.ipa` and has SHA-256 `b2b3ce31f568035631102a583eb92dbf05d4cd77edbbd764bb9a2344d3b31a04`.
+
+Hypothesis: the prior FP Test reaches the provider and SSH transport, but its main app and non-UI File Provider omit Blink's common `keychain-access-groups` request. SideStore filters profile entitlements through the pre-signed request, so the extension may be unable to access the SSH credential. This is untested on-device.
+
+| Target | Input bundle ID | relevant requested entitlement | expected final value | File Provider document group |
+| --- | --- | --- | --- | --- |
+| Blink | `sh.blink.blinkshell` | App Group `group.sh.blink`; keychain suffix `sh.blink` | SideStore profile's App Group and team-prefixed `*.sh.blink` keychain group (**unverified**) | — |
+| File Provider | `sh.blink.blinkshell.BlinkFileProviderExtension` | App Group `group.sh.blink`; same keychain suffix; network client | Same shared App Group/keychain as Blink (**unverified**) | Input `group.sh.blink`; SideStore `12a496ca` remaps it from the provisioned profile |
+| File Provider UI | `sh.blink.blinkshell.BlinkFileProviderExtensionUI` | App Group `group.sh.blink` | SideStore profile's App Group (**unverified**) | — |
+
+The candidate's only source patch is the existing profile-based App Group resolver in `BlinkConfig/XCConfig.m`; upstream File Provider logic and migrations are unchanged. CI passed the resolver test cases, complete Release build, extension count/IDs, ad-hoc entitlement receipts, nested signing and IPA ZIP check. The prior FP Test archive remains the rollback IPA at `/lab/blink-rsk-release/fp-test-20261008/`.
+
+**Next action:** before an in-place SideStore update, the user must confirm a restorable private backup of the existing Blink configuration, keys, File Provider locations and `.migrator` state, then choose that update route. Re-check SideStore's live active-slot and App-ID counters immediately before installing. Do not test side-by-side, unregister identifiers, deactivate, uninstall or change signing account.
+
 ## Roadmap and task list
 
 ### 0. Freeze & quick inventory — no rebuild
