@@ -47,6 +47,10 @@ jobs:
           rm -rf Blink.xcodeproj/project.xcworkspace/xcshareddata/
           cp template_setup.xcconfig developer_setup.xcconfig
           cmp -s template_setup.xcconfig developer_setup.xcconfig
+          # Resource preparation is an upstream build prerequisite and may
+          # update tracked generated assets. Record that baseline so the next
+          # step can prove that its only additional source edit is the resolver.
+          git diff --name-only | sort > ../prepared-source-changes.txt
 
       - name: Apply and test the single SideStore source repair
         run: |
@@ -54,9 +58,10 @@ jobs:
           python3 scripts/patch-sidestore-app-groups.py "$GITHUB_WORKSPACE/blink"
           python3 scripts/test-sidestore-app-groups.py "$GITHUB_WORKSPACE/blink"
           git -C blink diff --check
-          git -C blink diff --no-ext-diff --binary > source-patches.diff
-          test "$(git -C blink diff --name-only | wc -l | tr -d ' ')" = "1"
-          test "$(git -C blink diff --name-only)" = "BlinkConfig/XCConfig.m"
+          git -C blink diff --name-only | sort > source-modified-files.txt
+          comm -13 prepared-source-changes.txt source-modified-files.txt > sidestore-patch-files.txt
+          test "$(cat sidestore-patch-files.txt)" = "BlinkConfig/XCConfig.m"
+          git -C blink diff --no-ext-diff --binary -- BlinkConfig/XCConfig.m > source-patches.diff
 
       - name: Resolve packages and build complete Release app
         working-directory: blink
@@ -166,7 +171,7 @@ jobs:
           (cd stage && zip -qry "../$IPA" Payload)
           unzip -t "$IPA"
           shasum -a 256 "$IPA" > artifact/SHA256SUMS
-          cp blink-commit.txt source-patches.diff artifact/
+          cp blink-commit.txt source-patches.diff prepared-source-changes.txt source-modified-files.txt sidestore-patch-files.txt artifact/
           export VERSION BUILD
           python3 - <<'PY'
           import json, os
