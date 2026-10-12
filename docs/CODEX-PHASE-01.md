@@ -12,6 +12,14 @@ Produce the **smallest maintainable Blink 18.7.0-based SideStore IPA** that pres
 
 **Minimal-interaction contract:** Codex completes read-only inspections, source patches, tests, documentation and at most **one justified CI IPA build** autonomously. Batch results. Ask the user only when an installed app, signing account, existing data, or iPhone interaction must change; then provide one short decision with implications. Never claim to have installed or verified the app on-device without user results. No continuous polling or background action unless explicitly supported by the execution environment.
 
+## Efficiency, SideStore limits, and external-first debugging (mandatory)
+
+- **Conserve usage:** Reuse the archived IPAs, previous reports, source diffs, logs, and CI results before any new download, query, test, or build. Prefer targeted searches, bounded logs, small source reads, local static checks and batched tool calls. Never repeatedly fetch, scan, build or poll the same unchanged result. Spend CI/macOS minutes only on a candidate that passed the safety/signing preflight. Keep evidence concise rather than accumulating long duplicate reports.
+- **SideStore ID/slot budget:** Free-account registrations are limited (typically **10 App IDs per rolling 7-day period**) separately from the **3 active-app limit** and 7-day certificate/provisioning validity. App extensions can consume separate IDs. The device last showed **4 App IDs remaining** and **3 active native apps**; its registered list included the FP Test main app plus two extension IDs. These numbers are a **time-stamped snapshot**, not perpetual capacity. Re-check the live SideStore counters before installing, refreshing, or registering anything; don't infer free native slots from remaining IDs or vice versa.
+- **Keep existing identities:** Prefer updating the existing FP Test's main + two extension identities with the same signing account only **after** an explicit data-safety decision. Avoid renaming, randomizing, installing side-by-side test apps, consuming fresh IDs, or deactivating installed apps merely for convenience. An in-place update still needs backup/rollback approval. If no safe slot or compatible provisioned App Group/keychain is available, **stop and report the narrow blocker**; do not burn IDs by trial and error.
+- **Research before diagnostics:** If stuck or after **one or two unsuccessful attempts** at a hypothesis, **search the web for comparable successes and failures before building a bespoke diagnostic suite**: first exact Blink and SideStore versions, then SideSign/AltStore, File Provider and iOS signing cases, then Apple Developer Forums and upstream code/issue threads. Look for actual resolved reports, reproduction conditions, and what fixed them; separate confirmed outcomes from speculation. Report 2–4 relevant links and a compact applicability verdict, not a sprawling literature review.
+- **Smallest next test:** Prefer a known workaround, a read-only entitlement/profile inspection, or a one-line targeted log/error check before instrumentation. A custom diagnostic utility or test harness is a **last resort**, justified only when external fixes and existing evidence cannot distinguish plausible causes. Never weaken protections or spoof entitlement grants to make a build appear successful.
+
 ## Baselines (already Verified)
 
 - Public upstream source `blinksh/blink@a90b4423c8b7a86770c24a7eaa6c13b0a5904b18`, Blink 18.7.0 (1097). Do not treat App Store 18.7.1 as the same source.
@@ -28,7 +36,7 @@ Produce the **smallest maintainable Blink 18.7.0-based SideStore IPA** that pres
 - [x] Preserve and hash both already-built IPAs.
 - [x] Record actual iPhone symptom, logs and GameCube-side SSH evidence (above; full evidence in issue #2).
 - [ ] Confirm the working branch is clean, latest repo state and current build-workflow inputs; don't force-push or rewrite history.
-- [ ] Identify which capabilities must be granted to the main app, FP extension and FP UI, and how the installed SideStore version signs each. Use its actual release/source, not just a newer SideSign implementation.
+- [ ] Identify which capabilities must be granted to the main app, FP extension and FP UI, and how the installed SideStore version signs each. Use its actual release/source, not just a newer SideSign implementation. Check SideStore's current App ID and active-slot budget before proposing an install.
 - [ ] Write one **compact matrix** of bundle ID, requested entitlements, provisioned/effective entitlements (mark **Unknown** where not measurable), App Group, keychain group, FP document group. No elaborate signing framework.
 - [ ] Compare upstream vs FP Test source patches; identify confirmed necessary, harmful and irrelevant changes. Only inspect files that affect current blocker.
 
@@ -39,7 +47,7 @@ Produce the **smallest maintainable Blink 18.7.0-based SideStore IPA** that pres
 - [ ] Document anything on the iPhone that cannot be backed up from available tools. If an in-place install may destroy inaccessible data, **Blocked pending user decision**; do not assume a rollback IPA also restores data.
 - [ ] Derive candidate from pinned upstream, preserving both app extensions and upstream File Provider logic. Change only necessary signing preparation and migration safety controls; do not blanket-remove entire subsystems.
 - [ ] Ensure consistent, legitimately provisioned App Group and keychain access between main app and FP; reconcile extension document-group value with reality. Source configuration and requested entitlements are not evidence of effective installed entitlements.
-- [ ] Add only small static assertions or targeted diagnostics where an existing test/log cannot discriminate. Do not create a generalized entitlements library, extensive harness, or product refactor.
+- [ ] Before writing new diagnostics, check comparable **resolved** external reports and try the cheapest discriminating check. Add only small static assertions or targeted logs where existing tests cannot discriminate; no generalized diagnostic suite or product refactor.
 
 **Gate:** Reviewable source diff, explicit migration policy, safety/backup receipt, extension+entitlement matrix and clear hypothesis. If no safe test path, report **Blocked** with one specific decision for user.
 
@@ -55,7 +63,7 @@ Produce the **smallest maintainable Blink 18.7.0-based SideStore IPA** that pres
 - [ ] User installs/signs natively in SideStore and supplies short results (not required to troubleshoot via LiveContainer).
 - [ ] Test in order: launch/restart → saved SSH key & host → SFTP → Files.app Validate Connection → Files.app **actual listing** of `/tmp` → download/open → upload/rename/delete *disposable* file → relaunch Files.app and re-check.
 - [ ] If Files.app fails, correlate one FP log excerpt and GameCube sshd timestamps; identify which of shared storage, keychain/SSH, root stat, or enumeration failed. Don't repeatedly ask for logs already supplied.
-- [ ] After failure, pick **one** smallest correction, first checking upstream and closely comparable SideStore/AltStore cases. Record result before another build; a second build requires a fresh justified decision, not automatic iteration.
+- [ ] If stuck or after one/two failed attempts, **search resolved external cases before making diagnostic tooling**. Pick **one** smallest correction or known workaround; record result before another build. A second build requires new evidence and a fresh justification.
 - [ ] If it passes, verify data persistence and refresh/restart, tag a new verified release, and record artifact/hash. Keep UX enhancements from [issue #3](https://github.com/raskal-labs/blink-rsk/issues/3) deferred.
 
 ## Decision points / stop rules
@@ -63,7 +71,7 @@ Produce the **smallest maintainable Blink 18.7.0-based SideStore IPA** that pres
 - **Codex may proceed without asking:** read files, diff source, inspect IPAs and CI, create isolated changes/tests, write docs/issue updates, build one justified IPA, and save non-secret artifacts. Keep changes on the Phase 01 branch (or a short-lived child branch); do not force-push or merge to `main` before iPhone acceptance.
 - **Ask user once, only when needed:** required access or backup is unavailable; replacing/deactivating an installed app or changing identifiers is necessary; in-place upgrade could lose unsaved keys/data; ready for iPhone install/test.
 - **Stop:** no legitimate provisioning solution, unresolved data-loss risk, CI artifact missing required extension, or a test failure with no discriminating evidence. Do not silently fall back to stripped File Provider or private storage.
-- **No scope creep:** no shell UX improvements, RSK commands, Mosh overhaul, UI changes, new automation or migration framework until Files.app is verified.
+- **No scope creep / no wasted usage:** no shell UX improvements, RSK commands, Mosh overhaul, UI changes, new automation, migration framework, speculative diagnostic suite, unnecessary CI runs or fresh App IDs until Files.app is verified.
 
 ## Codex deliverable format
 
