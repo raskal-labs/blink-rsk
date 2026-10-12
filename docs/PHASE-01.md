@@ -1,5 +1,7 @@
 # Phase 01 — Upstream parity and SideStore reliability
 
+**Current Codex execution roadmap/task checklist:** [CODEX-PHASE-01.md](CODEX-PHASE-01.md) · [GitHub issue #2](https://github.com/raskal-labs/blink-rsk/issues/2). The older exploratory notes below are historical context; use the newer runbook for task order and current verified device evidence.
+
 Started: 2026-10-11
 Working branch: `phase/01-upstream-parity`
 Base: `main` at `facc9a166df7e5db88840c3bb634172084ba16cf`
