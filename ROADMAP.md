@@ -13,6 +13,8 @@ Evolve Blink-RSK from a SideStore-compatible Blink Shell build into a **personal
 
 **Design intent:** Keep Blink's mature terminal, SSH, Mosh, SFTP/File Provider, sessions, and Blink Code components. Add a thin, discoverable user interface and useful integrations incrementally; run heavier operations on GameCube or the appropriate service. This is *not* a commitment to rewrite Blink or build a replacement operating system.
 
+**Document ownership:** [Product direction](docs/PRODUCT-DIRECTION.md) records boundaries and decisions; [iOS integrations](docs/IOS-INTEGRATIONS.md) and [UX research](docs/UX-RESEARCH.md) record evidence and open investigations; [AGENTS.md](AGENTS.md) defines agent safeguards. [docs/ROADMAP.md](docs/ROADMAP.md) is historical, not a second active plan. Confirmed implementation details belong in GitHub issues.
+
 ### Principles and constraints
 
 1. **Preserve the working app.** Every development milestone starts from a tagged, reproducible, installed baseline with a rollback artifact. Never equate CI success with iPhone success.
@@ -32,11 +34,11 @@ Evolve Blink-RSK from a SideStore-compatible Blink Shell build into a **personal
 
 | Capability / artifact | Status | Evidence / next distinction |
 | --- | --- | --- |
-| macOS GitHub Actions builds from pinned upstream Blink 18.7.0 | Verified | CI and archived artifacts recorded in [Phase 01](docs/PHASE-01.md) on its working branch; Xcode 26.6 was used. |
+| macOS GitHub Actions builds from pinned upstream Blink 18.7.0 | Verified | CI and archived artifacts recorded in [Phase 01](https://github.com/raskal-labs/blink-rsk/blob/phase/01-upstream-parity/docs/PHASE-01.md) on its working branch; Xcode 26.6 was used. |
 | A SideStore-installed Blink-RSK build launches and SSH/SFTP/SCP can work on iPhone | Verified | User observed working connections and transferred `hd-receipts.zip` from a local `iPhone` bookmark to GameCube `/lab`. |
 | Local file operations and persistence | In Progress | User reported successful local file operations and a persistence check. Record an exact acceptance receipt identifying the installed IPA/build, location and operations before promoting release status. |
 | iOS Files.app remote File Provider | In Progress | Earlier FP Test stayed at Loading; later device work showed GameCube's remote root. Reconcile which installed IPA passed listing, disposable upload/download/rename/delete, refresh and app relaunch. Do not treat “Validate Connection” as proof. |
-| 2026-10-12 signing/FP candidate IPA | Verified | Structurally built/archived; *native installation and acceptance for this exact SHA remain Unknown* in [Codex runbook](docs/CODEX-PHASE-01.md). |
+| 2026-10-12 signing/FP candidate IPA | Verified | Structurally built/archived; *native installation and acceptance for this exact SHA remain Unknown* in [Codex runbook](https://github.com/raskal-labs/blink-rsk/blob/phase/01-upstream-parity/docs/CODEX-PHASE-01.md). |
 | Touch scrolling/selection/keyboard behavior | Blocked | Intermittent freezes, difficult history selection and keyboard focus behavior remain unresolved; [issue #3](https://github.com/raskal-labs/blink-rsk/issues/3). |
 | SSH keys and host profiles across GameCube, u64, T480, Oxygen | In Progress | Several connections have been configured; inventory and test each separately. Oxygen's phone-hotspot IP is not stable. |
 | Branding, general workspace navigation, service integrations | Proposed | No implementation should be inferred from this roadmap. |
@@ -81,6 +83,7 @@ Milestones are **dependency ordered, not date estimates**. Ship one narrow incre
 - Retain existing signing/bundle/App Group identifiers during early rebrand; visible name and icon can change independently.
 - Provide a compact **workspace entry point**, not an obligatory heavyweight home screen: Terminal, Files, Projects, Devices, Actions and Tools are candidate destinations.
 - Add a command palette / contextual launcher and favorites/recent items, with phone-first ergonomics. Every module should remain optional and terminal access one gesture away.
+- **Proposed, not yet an engine:** evaluate a small typed action catalogue for native host/session navigation and a few scoped actions. Reuse the same action definition through an in-app palette, App Intents/Shortcuts and eventually other approved iOS surfaces. Distinguish navigation, read-only queries and privileged execution.
 - Preserve upstream fonts, themes, split views, Snips, keyboard shortcuts and external-display support when available.
 
 **Exit gate:** Consistent appearance and navigation, with no regression to core sessions or Files.
@@ -106,6 +109,7 @@ Milestones are **dependency ordered, not date estimates**. Ship one narrow incre
 - **Operations:** selected Home Assistant, infrastructure health, safe service actions and log views via authenticated existing APIs/SSH. Confirm target/scope; privileged or destructive actions require approval.
 - **Automation:** App Shortcuts/Siri/Shortcuts/share-sheet/Home Screen actions where supported; first expose concrete user workflows rather than invent a universal automation engine. **Integrate first:** reuse official Home Assistant widgets, actionable notifications and automations before building our own widget or Pushcut substitute. A first read-only source audit should assess upstream Blink's 2026-10-12 [session-link/App Intents commit](https://github.com/blinksh/blink/commit/7a427f3db37ec25869b24226905d89103a8ad99d) and the restored 18.7.1 callback scheme. Host-key trust and URI-triggered command execution require security review before porting; source existence is not device acceptance.
 - **Cross-app pilot:** using existing software and *no new IPA*, verify one safe Home Assistant widget/action → GameCube result → actionable notification. If deep links later prove safe, connect **View Logs** to a named Blink session. Keep the Godot apartment digital twin as its own HA client, not an engine embedded into Blink-RSK. Full integration research and experimental gates: [IOS-INTEGRATIONS.md](docs/IOS-INTEGRATIONS.md).
+- **Events and context (research):** evaluate a read-only, source-linked activity view after the notification pilot; retain source-side event history. Investigate existing HA context, network/Focus state, and optional beacon-based suggestions, not implicit permission to execute.
 - **Polaris/Porygon:** the app is a client and invocation surface, not an independent secret-holding agent brain. Respect project ownership and approval queues.
 
 **Exit gate:** Useful cross-system actions with explicit ownership, authentication, error feedback, and no duplicate canonical state.
@@ -114,7 +118,7 @@ Milestones are **dependency ordered, not date estimates**. Ship one narrow incre
 **Status:** Proposed / exploratory  
 **Goal:** Advance only after real use demonstrates demand.
 
-Candidates: personalized dashboard/widgets, lightweight notes/inbox/capture, search across selected known services, extensible action definitions, terminal-to-structured result views, TUI-like navigation, phone-friendly shortcuts/T9/pointer modes, external-display workflows, remote desktop or richer code views, media previews, and narrowly scoped AI assistance. **Native WidgetKit is a conditional spike, not a commitment:** first establish a use case official HA widgets cannot meet, then check SideStore ID budget, widget registration, App Group entitlement sharing, refresh and an entire reprovisioning cycle. Stop if the free-signing path is unreliable. See [iOS integration research](docs/IOS-INTEGRATIONS.md).
+Candidates: personalized dashboard/widgets and Control Centre extensions, lightweight notes/inbox/capture, search across selected known services, terminal-to-structured result views, an event inbox, optional iBeacon proximity and contextual suggestions, TUI-like navigation, phone-friendly shortcuts/T9/pointer modes, external-display workflows, remote desktop or richer code views, media previews, and narrowly scoped AI assistance. Evaluate the surrounding iOS interface and third-party apps before adding native extensions. **Native WidgetKit is a conditional spike, not a commitment:** first establish a use case official HA widgets cannot meet, then check SideStore ID budget, widget registration, App Group entitlement sharing, refresh and an entire reprovisioning cycle. Stop if the free-signing path is unreliable. See [iOS integration research](docs/IOS-INTEGRATIONS.md).
 
 **Do not precommit:** local AI runtime/JIT, replacing iOS Files, a custom SSH stack, a general browser/IDE rewrite, permanent autonomous agents, or wholesale modification of iOS restrictions. These are separate research proposals, not required milestones.
 
@@ -152,12 +156,9 @@ Use narrowly scoped adapters to existing commands/APIs. Avoid designing a genera
 
 ## 7. Immediate next sequence
 
-1. **Reconcile Phase 01 acceptance**, not repeat Phase 01: identify installed IPA; record user-tested success on local files, remote files, SCP and persistence; classify any remaining File Provider or signing unknowns. Update issue #2 and tag only if acceptance is satisfied.
-2. **Make issue #3 the next focused UX project:** reproduce the scrolling freeze and compare upstream, then fix/verify scrolling before layering a redesigned action dock or keyboard mode.
-3. **Audit already-present features** (gestures/context bar, Snips, Blink Code, File Provider, themes, bookmarks, Shortcuts and commands) and map *exposed/hidden/disabled/unsupported* before any new UX code.
-4. **Choose a small branded slice** (display name/icon/About, not bundle identity) and a first command-palette prototype after the stability gates.
-5. **Implement the first end-to-end nonterminal workflow**: file transfer or edit-on-GameCube, then assess whether the proposed workspace/navigation architecture is genuinely needed.
-6. **Parallel non-build integration study:** test one official HA action/notification workflow on existing apps and review upstream session links / App Intents **read-only**, using [IOS-INTEGRATIONS.md](docs/IOS-INTEGRATIONS.md). The code port, custom WidgetKit target and additional App IDs are **not** approved tasks.
+1. **M0 acceptance (issue #2):** reconcile the installed IPA/SideStore and File Provider evidence, confirm safe persistence/refresh and protect a rollback build. Do not repeat already proven tests or silently replace the working app.
+2. **M1 usability (issue #3):** reproduce the scrolling/selection/keyboard problems and audit upstream functionality first. Fix the narrowest verified defect before changing rendering or adding new UI.
+3. **Independent read-only research:** inventory existing Blink/iOS actions, test one official HA → approved GameCube action → actionable notification workflow without a new IPA, and review the upstream session-link/App Intents source for security and compatibility. Capture evidence in [iOS integrations](docs/IOS-INTEGRATIONS.md) and [UX research](docs/UX-RESEARCH.md); no build or new app identity is authorized.
 
 ## 8. Sources and linked tasks
 
