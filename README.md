@@ -16,6 +16,14 @@ Reproducible, auditable SideStore builds of [Blink Shell](https://github.com/bli
 
 **Maintenance rule:** canonical decisions belong in product direction, milestones in the root roadmap, accepted work in issues, research/evidence in supporting docs. Do not promote proposed capabilities to working features without device verification.
 
+## Build workflow roles
+
+- **Native SideStore File Provider candidate:** [build-newsguytor-fileprovider.yml](.github/workflows/build-newsguytor-fileprovider.yml) is the current pinned 18.7.0 build candidate, using upstream source and a minimal App Group resolver. It runs only by explicit manual dispatch; its 2026-10-12 CI result is **structural evidence, not completed iPhone acceptance**. Historical filename retained to avoid unnecessary workflow identity churn.
+- **Upstream control:** [build-ipa.yml](.github/workflows/build-ipa.yml) reproduces the unsigned upstream baseline; its existing push trigger is limited to changes to that workflow on `main`.
+- **Legacy comparison:** [build-newsguytor-vanilla.yml](.github/workflows/build-newsguytor-vanilla.yml) retains the third-party-builder reference path, manual dispatch only. Not the recommended current SideStore candidate.
+
+All workflows are build tools, not install authorization. Do not dispatch a build, change signing or replace the installed app without the specific acceptance/safety decision in [issue #2](https://github.com/raskal-labs/blink-rsk/issues/2). The former NewsGuyTor File Provider workflow remains recoverable from Git history.
+
 ## Upstream source target
 
 The App Store currently ships Blink **18.7.1**, but that exact release source is not exposed by a public upstream branch/tag that can be pinned reproducibly.
