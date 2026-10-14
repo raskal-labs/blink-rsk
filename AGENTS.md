@@ -1,6 +1,6 @@
 # Blink-RSK agent operating boundaries
 
-Read `README.md`, root `ROADMAP.md` (the sole active roadmap), and `docs/PRODUCT-DIRECTION.md`. Read `docs/IOS-INTEGRATIONS.md` or `docs/UX-RESEARCH.md` only when relevant. For Phase 01 implementation read the dedicated records on branch `phase/01-upstream-parity` and issue #2. Product ideas are proposals unless actual iPhone acceptance supports them. Protect the installed working app, keys, files, SideStore slots and File Provider identity.
+Read `README.md`, root `ROADMAP.md` (the sole active roadmap), and `docs/PRODUCT-DIRECTION.md`. Read `docs/IOS-INTEGRATIONS.md` or `docs/UX-RESEARCH.md` only when relevant. For Phase 01 implementation use the live [issue #2](https://github.com/raskal-labs/blink-rsk/issues/2) and read archived `docs/phase-01/PHASE-01.md` and `docs/phase-01/CODEX-PHASE-01.md` only for evidence; their dated instructions are not current authorization. Product ideas are proposals unless actual iPhone acceptance supports them. Protect the installed working app, keys, files, SideStore slots and File Provider identity.
 
 - Scoped source edits, documentation, reviews, static inspection and locally isolated tests are permitted by a corresponding work order. Commit only explicitly reviewed paths to the assigned branch; never force-push, implicitly merge, or silently replace a baseline.
 - A successful macOS build or structurally valid IPA is not proof of iPhone installation, persistence, Files.app integration or signing/refresh reliability. Keep source, build, installation and device evidence separate.
