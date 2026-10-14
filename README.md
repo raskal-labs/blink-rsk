@@ -12,7 +12,7 @@ Reproducible, auditable SideStore builds of [Blink Shell](https://github.com/bli
 - **[UX research](docs/UX-RESEARCH.md)** — detailed upstream issues and usability evidence.
 - **[AGENTS.md](AGENTS.md)** — operating rules and safety gates for contributors and agents.
 - **[Historical roadmap](docs/ROADMAP.md)** — superseded four-stage plan, retained as evidence.
-- **[Phase 01 history](https://github.com/raskal-labs/blink-rsk/tree/phase/01-upstream-parity/docs)** — active implementation investigation and receipts on its own branch; do not treat it as merged into `main`.
+- **[Phase 01 evidence](docs/phase-01/PHASE-01.md)** and **[2026-10-12 execution runbook](docs/phase-01/CODEX-PHASE-01.md)** — archived acceptance/signing records; [issue #2](https://github.com/raskal-labs/blink-rsk/issues/2) remains the live tracker.
 
 **Maintenance rule:** canonical decisions belong in product direction, milestones in the root roadmap, accepted work in issues, research/evidence in supporting docs. Do not promote proposed capabilities to working features without device verification.
 
