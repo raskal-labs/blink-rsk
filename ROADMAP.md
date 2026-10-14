@@ -1,6 +1,6 @@
 # Blink-RSK — Product roadmap
 
-**Updated:** 2026-10-13  
+**Updated:** 2026-10-13 (iOS integration/sideload snapshot merged)  
 **Status:** Proposed (product direction); individual capabilities have their own statuses below  
 **Primary repository:** [raskal-labs/blink-rsk](https://github.com/raskal-labs/blink-rsk)  
 **Audience:** Private/personal iOS installation; not currently intended for distribution.
@@ -26,6 +26,9 @@ Evolve Blink-RSK from a SideStore-compatible Blink Shell build into a **personal
 9. **Keep status honest.** Only use: Mentioned, Proposed, In Progress, Verified, Blocked, Unknown.
 
 ## 2. Baseline reconciliation (as of 2026-10-13)
+
+**New SideStore screenshot (2026-10-13 ~20:49 PDT):** Blink and LiveContainer are the two apps *listed* as Active, **5 App IDs remaining** (previous snapshot: 4), both showing **7 DAYS** to expiry; SideStore **0.7.0-20260918.492+12a496ca** and LiveContainer **3.8.10-Release** on iOS 27.0. SideStore itself is not listed, so do **not** infer a free third app slot. App IDs remaining are not a breakdown of extension IDs; seven days displayed are not proof refresh will succeed. For details and signing constraints see [iOS integration evidence](docs/IOS-INTEGRATIONS.md).
+
 
 | Capability / artifact | Status | Evidence / next distinction |
 | --- | --- | --- |
@@ -101,7 +104,8 @@ Milestones are **dependency ordered, not date estimates**. Ship one narrow incre
 - **Devices:** GameCube, u64, T480 and Oxygen host profiles, reachable state, SSH/Mosh launch, known network identity, VPN/hotspot handling and diagnostics. Prefer existing SSH config, DNS, WireGuard and service discovery.
 - **Projects:** read-only Atlas project overview, current task/roadmap, useful deep links to canonical documents, GitHub issues and local working directories. Add carefully scoped edit/approve actions only through the canonical Atlas workflow.
 - **Operations:** selected Home Assistant, infrastructure health, safe service actions and log views via authenticated existing APIs/SSH. Confirm target/scope; privileged or destructive actions require approval.
-- **Automation:** App Shortcuts/Siri/Shortcuts/share-sheet/Home Screen actions where supported; first expose concrete user workflows rather than invent a universal automation engine.
+- **Automation:** App Shortcuts/Siri/Shortcuts/share-sheet/Home Screen actions where supported; first expose concrete user workflows rather than invent a universal automation engine. **Integrate first:** reuse official Home Assistant widgets, actionable notifications and automations before building our own widget or Pushcut substitute. A first read-only source audit should assess upstream Blink's 2026-10-12 [session-link/App Intents commit](https://github.com/blinksh/blink/commit/7a427f3db37ec25869b24226905d89103a8ad99d) and the restored 18.7.1 callback scheme. Host-key trust and URI-triggered command execution require security review before porting; source existence is not device acceptance.
+- **Cross-app pilot:** using existing software and *no new IPA*, verify one safe Home Assistant widget/action → GameCube result → actionable notification. If deep links later prove safe, connect **View Logs** to a named Blink session. Keep the Godot apartment digital twin as its own HA client, not an engine embedded into Blink-RSK. Full integration research and experimental gates: [IOS-INTEGRATIONS.md](docs/IOS-INTEGRATIONS.md).
 - **Polaris/Porygon:** the app is a client and invocation surface, not an independent secret-holding agent brain. Respect project ownership and approval queues.
 
 **Exit gate:** Useful cross-system actions with explicit ownership, authentication, error feedback, and no duplicate canonical state.
@@ -110,7 +114,7 @@ Milestones are **dependency ordered, not date estimates**. Ship one narrow incre
 **Status:** Proposed / exploratory  
 **Goal:** Advance only after real use demonstrates demand.
 
-Candidates: personalized dashboard/widgets, lightweight notes/inbox/capture, search across selected known services, extensible action definitions, terminal-to-structured result views, TUI-like navigation, phone-friendly shortcuts/T9/pointer modes, external-display workflows, remote desktop or richer code views, media previews, and narrowly scoped AI assistance.
+Candidates: personalized dashboard/widgets, lightweight notes/inbox/capture, search across selected known services, extensible action definitions, terminal-to-structured result views, TUI-like navigation, phone-friendly shortcuts/T9/pointer modes, external-display workflows, remote desktop or richer code views, media previews, and narrowly scoped AI assistance. **Native WidgetKit is a conditional spike, not a commitment:** first establish a use case official HA widgets cannot meet, then check SideStore ID budget, widget registration, App Group entitlement sharing, refresh and an entire reprovisioning cycle. Stop if the free-signing path is unreliable. See [iOS integration research](docs/IOS-INTEGRATIONS.md).
 
 **Do not precommit:** local AI runtime/JIT, replacing iOS Files, a custom SSH stack, a general browser/IDE rewrite, permanent autonomous agents, or wholesale modification of iOS restrictions. These are separate research proposals, not required milestones.
 
@@ -122,7 +126,7 @@ Candidates: personalized dashboard/widgets, lightweight notes/inbox/capture, sea
 | **P1 — Friction** | Scrolling; input/selection/keyboard; sessions; paste/copy; host connection feedback | High daily impact, bounded changes |
 | **P2 — Discoverability** | Branding; contextual dock; palette; favorites; helpful existing features | High value without full rewrite |
 | **P3 — Workflows** | Transfers; `code`/code-server; useful shell gaps; iOS Shortcuts | Reduces app switching |
-| **P4 — Integration** | Atlas/Polaris, devices, HA, infrastructure, project actions | Benefits from stable navigation/auth |
+| **P4 — Integration** | Safe upstream session-link/Shortcuts audit; official HA widget/action/notification pilot; Atlas/Polaris and device actions | Reuse mature capabilities without sacrificing stability |
 | **P5 — Experiments** | Rich dashboards, visual controls, AI/native integrations, alternative input | Validate demand before complexity |
 
 ## 5. Product architecture boundaries
@@ -153,11 +157,13 @@ Use narrowly scoped adapters to existing commands/APIs. Avoid designing a genera
 3. **Audit already-present features** (gestures/context bar, Snips, Blink Code, File Provider, themes, bookmarks, Shortcuts and commands) and map *exposed/hidden/disabled/unsupported* before any new UX code.
 4. **Choose a small branded slice** (display name/icon/About, not bundle identity) and a first command-palette prototype after the stability gates.
 5. **Implement the first end-to-end nonterminal workflow**: file transfer or edit-on-GameCube, then assess whether the proposed workspace/navigation architecture is genuinely needed.
+6. **Parallel non-build integration study:** test one official HA action/notification workflow on existing apps and review upstream session links / App Intents **read-only**, using [IOS-INTEGRATIONS.md](docs/IOS-INTEGRATIONS.md). The code port, custom WidgetKit target and additional App IDs are **not** approved tasks.
 
 ## 8. Sources and linked tasks
 
 - [Phase 01 issue #2](https://github.com/raskal-labs/blink-rsk/issues/2)
 - [Terminal UX issue #3](https://github.com/raskal-labs/blink-rsk/issues/3)
+- [iOS Home Assistant, Shortcuts, deep-link and WidgetKit research](docs/IOS-INTEGRATIONS.md)
 - [Phase 01 background](https://github.com/raskal-labs/blink-rsk/blob/phase/01-upstream-parity/docs/PHASE-01.md)
 - [Phase 01 Codex runbook](https://github.com/raskal-labs/blink-rsk/blob/phase/01-upstream-parity/docs/CODEX-PHASE-01.md)
 - [Blink upstream repository](https://github.com/blinksh/blink) and [documentation](https://docs.blink.sh/)
