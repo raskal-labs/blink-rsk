@@ -1,8 +1,20 @@
 # Blink-RSK
 
-**Product direction and development roadmap:** [ROADMAP.md](ROADMAP.md) — personal iOS workspace built incrementally on Blink. This README retains historical baseline/build details; [Phase 01 issue #2](https://github.com/raskal-labs/blink-rsk/issues/2) tracks active SideStore/File Provider acceptance.
+**Current roadmap:** [ROADMAP.md](ROADMAP.md). Blink-RSK is a terminal-first personal iOS workspace built incrementally on Blink; the historical build details below are not the current work queue. [Phase 01 issue #2](https://github.com/raskal-labs/blink-rsk/issues/2) tracks SideStore/File Provider acceptance.
 
 Reproducible, auditable SideStore builds of [Blink Shell](https://github.com/blinksh/blink), with Raskal Labs command extensions planned on top of Blink's `ios_system` environment.
+
+## Project documents
+
+- **[ROADMAP.md](ROADMAP.md)** — the one active milestone roadmap and next actions.
+- **[Product direction](docs/PRODUCT-DIRECTION.md)** — purpose, boundaries, decisions and interface principles.
+- **[iOS integrations](docs/IOS-INTEGRATIONS.md)** — Siri, Shortcuts, Home Assistant, Pushcut, widgets, context and signing research.
+- **[UX research](docs/UX-RESEARCH.md)** — detailed upstream issues and usability evidence.
+- **[AGENTS.md](AGENTS.md)** — operating rules and safety gates for contributors and agents.
+- **[Historical roadmap](docs/ROADMAP.md)** — superseded four-stage plan, retained as evidence.
+- **[Phase 01 history](https://github.com/raskal-labs/blink-rsk/tree/phase/01-upstream-parity/docs)** — active implementation investigation and receipts on its own branch; do not treat it as merged into `main`.
+
+**Maintenance rule:** canonical decisions belong in product direction, milestones in the root roadmap, accepted work in issues, research/evidence in supporting docs. Do not promote proposed capabilities to working features without device verification.
 
 ## Upstream source target
 
