@@ -72,7 +72,7 @@ Use existing iOS extensions and third-party apps first. The canonical [iOS integ
 
 ## Cost discipline and build stages
 
-Current upstream roadmap has four stages (parity, local Unix tools, homelab integration, UI/T9). Research, prototype and design can proceed out of numerical stage order; implementation acceptance gates remain conservative. Do **not** defer all core UX improvements to Stage 4: slot small P0/P1 improvements into the first branded build after preserving the working Phase 01 milestone.
+The historical four-stage roadmap (parity, local Unix tools, homelab integration, UI/T9) is superseded by the root [M0–M5 roadmap](../ROADMAP.md). Research, prototyping and design may proceed out of milestone order; implementation acceptance gates remain conservative. Do **not** defer core UX improvements behind branding: prioritize verified P0/P1 fixes after protecting the working Phase 01 baseline.
 
 Near-term milestone (provisional): "Identity & Usability" — initial visible Raskal branding plus a bounded set of P0 controls, tested against native Files and remote interactive apps. Do not combine a renderer replacement, new File Provider, session rewrite and visual redesign into a single release.
 
