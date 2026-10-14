@@ -45,6 +45,21 @@ User-supplied SideStore My Apps screenshot at approximately **2026-10-13 20:49 P
 
 No reliable always-on arbitrary background SSH execution should be assumed on iOS.
 
+## iOS capability and interaction audit (proposed, non-build work)
+
+**Goal:** improve the entire iPhone experience, not merely the Blink icon layout. Inventory the current Home Screen, Lock Screen, Control Centre, Action Button, Share Sheet, Files locations, Siri/Spotlight actions, available widgets and app extensions. Include capabilities from apps not currently installed and privileged system roles (Network Extension, Screen Time, credentials, File Provider, etc.), but distinguish entitlement from functional permission on this exact device.
+
+For each candidate record: installed/configured/unused/unknown; required iOS role or extension; native or server-side ownership; Shortcuts/App Intents availability; signing and recurring costs; competing existing tool; observable benefit and device evidence. Use [UX research](UX-RESEARCH.md) for lengthy study notes and the [canonical roadmap](../ROADMAP.md) for justified milestones. Avoid a separate sprawling feature checklist until repeated audits demonstrate the need.
+
+**Objective measurement:** Screen Time summaries, Battery activity, layouts, Shortcuts executions, selected Home Assistant events and explicitly instrumented Blink actions may reveal workflow cost. These data do not grant Blink access to other apps' taps, a complete usage ledger, or Siri's private personal context. Siri prompts are discovery tests, not guaranteed introspection APIs. Any Blink telemetry must be opt-in, minimal, locally controlled and removable.
+
+### Pushcut, events and indoor proximity
+
+- **Pushcut:** evaluate its actionable notifications, URL/webhook actions, widgets, iBeacon proximity and iOS Automation Server against already-available HA Companion notifications, Shortcuts and GameCube. Reuse providers first; do not make an always-on iOS executor a prerequisite for Blink.
+- **Event inbox (Proposed):** a small view of *selected* HA/Atlas/host events with source IDs, timestamps, receipts and deep links, not another authoritative event ledger or a new APNs service. Start read-only after the external action/notification pilot passes.
+- **Context awareness (Proposed):** suggest or order actions by verified network, VPN, Focus or HA signals. Optional Core Location/iBeacon monitoring is a separate on-device experiment requiring permission, background-behaviour, signal-overlap and battery checks; proximity is never an authorization factor for sensitive actions.
+- **Unified entry points (Proposed):** a small typed catalogue of *existing* Blink navigation and approved remote actions could be exposed via command palette, App Intents, Home Screen quick actions and later widgets. Separate navigate/query/execute security scopes, use allowlisted targets, and never place bearer tokens or arbitrary shell commands in external URLs.
+
 ## New primary source finding: Blink session links and App Intents
 
 ### Verified source existence, not verified compatibility

@@ -1,3 +1,5 @@
+> **Historical reference (2026-10-10).** This four-stage plan is preserved for provenance, not the active work queue. The current roadmap is [../ROADMAP.md](../ROADMAP.md), current decisions are in [PRODUCT-DIRECTION.md](PRODUCT-DIRECTION.md), and implementation acceptance is tracked in [issue #2](https://github.com/raskal-labs/blink-rsk/issues/2). Later decisions, including Scout's ownership of filesystem scanning, supersede conflicting instructions below. Do not execute the historical “Immediate next actions” without checking current evidence and authorization.
+
 # Blink-RSK development roadmap
 
 Status: proposed · 2026-10-10
