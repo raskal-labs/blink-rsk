@@ -34,11 +34,11 @@ Evolve Blink-RSK from a SideStore-compatible Blink Shell build into a **personal
 
 | Capability / artifact | Status | Evidence / next distinction |
 | --- | --- | --- |
-| macOS GitHub Actions builds from pinned upstream Blink 18.7.0 | Verified | CI and archived artifacts recorded in [Phase 01](https://github.com/raskal-labs/blink-rsk/blob/phase/01-upstream-parity/docs/PHASE-01.md) on its working branch; Xcode 26.6 was used. |
+| macOS GitHub Actions builds from pinned upstream Blink 18.7.0 | Verified | CI and archived artifacts recorded in [Phase 01](docs/phase-01/PHASE-01.md) on its working branch; Xcode 26.6 was used. |
 | A SideStore-installed Blink-RSK build launches and SSH/SFTP/SCP can work on iPhone | Verified | User observed working connections and transferred `hd-receipts.zip` from a local `iPhone` bookmark to GameCube `/lab`. |
 | Local file operations and persistence | In Progress | User reported successful local file operations and a persistence check. Record an exact acceptance receipt identifying the installed IPA/build, location and operations before promoting release status. |
 | iOS Files.app remote File Provider | In Progress | Earlier FP Test stayed at Loading; later device work showed GameCube's remote root. Reconcile which installed IPA passed listing, disposable upload/download/rename/delete, refresh and app relaunch. Do not treat “Validate Connection” as proof. |
-| 2026-10-12 signing/FP candidate IPA | Verified | Structurally built/archived; *native installation and acceptance for this exact SHA remain Unknown* in [Codex runbook](https://github.com/raskal-labs/blink-rsk/blob/phase/01-upstream-parity/docs/CODEX-PHASE-01.md). |
+| 2026-10-12 signing/FP candidate IPA | Verified | Structurally built/archived; *native installation and acceptance for this exact SHA remain Unknown* in [Codex runbook](docs/phase-01/CODEX-PHASE-01.md). |
 | Touch scrolling/selection/keyboard behavior | Blocked | Intermittent freezes, difficult history selection and keyboard focus behavior remain unresolved; [issue #3](https://github.com/raskal-labs/blink-rsk/issues/3). |
 | SSH keys and host profiles across GameCube, u64, T480, Oxygen | In Progress | Several connections have been configured; inventory and test each separately. Oxygen's phone-hotspot IP is not stable. |
 | Branding, general workspace navigation, service integrations | Proposed | No implementation should be inferred from this roadmap. |
@@ -165,8 +165,8 @@ Use narrowly scoped adapters to existing commands/APIs. Avoid designing a genera
 - [Phase 01 issue #2](https://github.com/raskal-labs/blink-rsk/issues/2)
 - [Terminal UX issue #3](https://github.com/raskal-labs/blink-rsk/issues/3)
 - [iOS Home Assistant, Shortcuts, deep-link and WidgetKit research](docs/IOS-INTEGRATIONS.md)
-- [Phase 01 background](https://github.com/raskal-labs/blink-rsk/blob/phase/01-upstream-parity/docs/PHASE-01.md)
-- [Phase 01 Codex runbook](https://github.com/raskal-labs/blink-rsk/blob/phase/01-upstream-parity/docs/CODEX-PHASE-01.md)
+- [Phase 01 background](docs/phase-01/PHASE-01.md)
+- [Phase 01 Codex runbook](docs/phase-01/CODEX-PHASE-01.md)
 - [Blink upstream repository](https://github.com/blinksh/blink) and [documentation](https://docs.blink.sh/)
 - [Blink Files.app integration](https://github.com/blinksh/docs/blob/master/src/pages/advanced/files-app.md)
 - [Blink Code documentation](https://docs.blink.sh/advanced/code)
