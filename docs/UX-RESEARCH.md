@@ -70,7 +70,7 @@ The broader Home Screen / Control Centre study should compare app and system ent
 - [ ] Diff each promising PR against pinned hterm/SmartKeys/input paths; rate portability/risk.
 - [ ] Run device regression matrix: 300-line selection (UTF-8/wrap/tmux), app background/foreground, output flood, selection mode, SFTP File Provider, keyboard presence.
 - [ ] Compare missing/hard-to-discover UI with rootshell/gterm/Geistty/Shio actual code, not just marketing claims.
-- [ ] Reassess candidate ranking after measured regressions. Record results and dates here; move confirmed deliverables into ROADMAP and test evidence into the existing phase acceptance documents until PROJECT-STATE is created.
+- [ ] Reassess candidate ranking after measured regressions. Record results and dates here; move confirmed milestones into the [root roadmap](../ROADMAP.md), actionable implementation into GitHub issues, and test receipts into Phase 01 evidence records.
 
 ## Entry template
 
