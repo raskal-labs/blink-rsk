@@ -1,0 +1,10 @@
+# Role discovery only; selected product roadmap is tracked on main.
+version: 1
+project:
+  id: blink-rsk
+authority:
+  state: README.md
+  plan: ROADMAP.md
+  historical_plan: docs/ROADMAP.md
+git:
+  authoritative_branch: main
