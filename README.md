@@ -1,5 +1,7 @@
 # Blink-RSK
 
+**Product direction and development roadmap:** [ROADMAP.md](ROADMAP.md) — personal iOS workspace built incrementally on Blink. This README retains historical baseline/build details; [Phase 01 issue #2](https://github.com/raskal-labs/blink-rsk/issues/2) tracks active SideStore/File Provider acceptance.
+
 Reproducible, auditable SideStore builds of [Blink Shell](https://github.com/blinksh/blink), with Raskal Labs command extensions planned on top of Blink's `ios_system` environment.
 
 ## Upstream source target
@@ -14,7 +16,7 @@ The newest public **18.7** source currently exposed by `blinksh/blink` is the up
 
 The workflow pins that commit rather than following the moving branch. It verifies that the source declares Blink 18.7.0 before compiling. This is not claimed to reproduce the App Store 18.7.1 binary.
 
-## Current milestone
+## Historical initial milestone
 
 **Phase 0: complete upstream sideload control.** Before making Blink-RSK source changes, build the complete upstream application as faithfully as possible and determine whether SideStore can install and launch it.
 
