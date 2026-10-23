@@ -78,6 +78,8 @@ For each candidate record: installed/configured/unused/unknown; required iOS rol
 
 Source context: [Blink #2253](https://github.com/blinksh/blink/issues/2253), [Blink #2290](https://github.com/blinksh/blink/issues/2290), [commit 7a427f3](https://github.com/blinksh/blink/commit/7a427f3db37ec25869b24226905d89103a8ad99d).
 
+**Source availability rechecked 2026-10-23 on GameCube:** GitHub's public branch/tag listings still expose `raw` at `a90b4423` and no named 18.7.1 release ref. The October 12 commit above is nevertheless retrievable by its exact SHA; do not equate missing branch/tag names with all newer source being unavailable. Its project still declares app version 18.7.0/build 1097. `Settings/Model/BookmarkedLocationsManager.swift` has the same blob SHA (`baf1ab7111ab9422de6b29f82c570860a2ee8fe7`) at both commits, including the destructive filtering of inaccessible bookmarks. This confirms availability of the newer link/Intents patch, not the later bookmark hardening described in [discussion #2247](https://github.com/blinksh/blink/discussions/2247), exact App Store source parity, or safe compatibility. Review callback restoration, richer Intents and bookmark recovery separately.
+
 ## Narrow staged roadmap
 
 | Step | Status | Sequence, dependencies, exit criteria |

@@ -1,6 +1,6 @@
 # Blink-RSK — Product roadmap
 
-**Updated:** 2026-10-13 (iOS integration/sideload snapshot merged)  
+**Updated:** 2026-10-23 (bookmark recovery, Files evidence and scrolling scope reconciled)
 **Status:** Proposed (product direction); individual capabilities have their own statuses below  
 **Primary repository:** [raskal-labs/blink-rsk](https://github.com/raskal-labs/blink-rsk)  
 **Audience:** Private/personal iOS installation; not currently intended for distribution.
@@ -27,7 +27,7 @@ Evolve Blink-RSK from a SideStore-compatible Blink Shell build into a **personal
 8. **One coherent experience, not one giant implementation.** Lightweight native entry points can lead to Blink-native features, remote web views, Shortcuts, or existing iOS apps.
 9. **Keep status honest.** Only use: Mentioned, Proposed, In Progress, Verified, Blocked, Unknown.
 
-## 2. Baseline reconciliation (as of 2026-10-13)
+## 2. Baseline reconciliation (2026-10-13 evidence; 2026-10-23 clarification)
 
 **New SideStore screenshot (2026-10-13 ~20:49 PDT):** Blink and LiveContainer are the two apps *listed* as Active, **5 App IDs remaining** (previous snapshot: 4), both showing **7 DAYS** to expiry; SideStore **0.7.0-20260918.492+12a496ca** and LiveContainer **3.8.10-Release** on iOS 27.0. SideStore itself is not listed, so do **not** infer a free third app slot. App IDs remaining are not a breakdown of extension IDs; seven days displayed are not proof refresh will succeed. For details and signing constraints see [iOS integration evidence](docs/IOS-INTEGRATIONS.md).
 
@@ -36,10 +36,10 @@ Evolve Blink-RSK from a SideStore-compatible Blink Shell build into a **personal
 | --- | --- | --- |
 | macOS GitHub Actions builds from pinned upstream Blink 18.7.0 | Verified | CI and archived artifacts recorded in [Phase 01](docs/phase-01/PHASE-01.md) on its working branch; Xcode 26.6 was used. |
 | A SideStore-installed Blink-RSK build launches and SSH/SFTP/SCP can work on iPhone | Verified | User observed working connections and transferred `hd-receipts.zip` from a local `iPhone` bookmark to GameCube `/lab`. |
-| Local file operations and persistence | In Progress | User reported successful local file operations and a persistence check. Record an exact acceptance receipt identifying the installed IPA/build, location and operations before promoting release status. |
-| iOS Files.app remote File Provider | In Progress | Earlier FP Test stayed at Loading; later device work showed GameCube's remote root. Reconcile which installed IPA passed listing, disposable upload/download/rename/delete, refresh and app relaunch. Do not treat “Validate Connection” as proof. |
+| Local file operations and bookmark persistence | In Progress | Earlier local operations and an initial persistence check succeeded. Later reports show inaccessible folder links and an empty Bookmarks list. Proposed M0 outcome: bookmarks survive temporary access failures and can recover; implementation and device acceptance remain unverified. Details belong in issue #2. |
+| iOS Files.app remote File Provider | Unknown | Earlier FP Test stayed at Loading; later listing and file operations were reported successful. Preserve that evidence: current reliability and persistence remain unverified. Reconcile the installed IPA and check browse/transfer/reopen separately from local bookmarks. Do not treat “Validate Connection” as proof. |
 | 2026-10-12 signing/FP candidate IPA | Verified | Structurally built/archived; *native installation and acceptance for this exact SHA remain Unknown* in [Codex runbook](docs/phase-01/CODEX-PHASE-01.md). |
-| Touch scrolling/selection/keyboard behavior | Blocked | Intermittent freezes, difficult history selection and keyboard focus behavior remain unresolved; [issue #3](https://github.com/raskal-labs/blink-rsk/issues/3). |
+| Touch scrolling/selection/keyboard behavior | Proposed | Investigate reported scrolling behavior across local shell, SSH and Mosh, first outside Zellij/tmux. Whether Blink, Mosh or the remote application causes it remains Unknown; no scrolling code fix is assumed. Selection and keyboard improvements remain Proposed in [issue #3](https://github.com/raskal-labs/blink-rsk/issues/3). |
 | SSH keys and host profiles across GameCube, u64, T480, Oxygen | In Progress | Several connections have been configured; inventory and test each separately. Oxygen's phone-hotspot IP is not stable. |
 | Branding, general workspace navigation, service integrations | Proposed | No implementation should be inferred from this roadmap. |
 | `blink-rsk-release` as second GitHub repository | Unknown | Local artifact archive on GameCube is documented as `/lab/blink-rsk-release`; the separately named GitHub repository could not be verified through the available GitHub connection. Do not assume it is an accessible canonical source repo. |
@@ -56,7 +56,8 @@ Milestones are **dependency ordered, not date estimates**. Ship one narrow incre
 
 - Reconcile the actual installed IPA/version/SHA with the latest candidate and archived rollback build.
 - Confirm iPhone launch/restart, SSH, Mosh where available, original keys and host profiles, SFTP/SCP, and iOS Files *listing and transfers*; preserve earlier successful test evidence.
-- Verify storage persistence, Files provider relaunch/refresh, SideStore refresh/signing, app configuration backup/migration feasibility.
+- Ensure saved folder bookmarks survive temporary access failures and can recover (**Proposed**; issue #2); verify across relaunch and refresh. Preserve earlier successful file-operation evidence and check current Files provider browse/transfer/reopen separately.
+- Verify other storage persistence, SideStore refresh/signing, app configuration backup/migration feasibility.
 - Audit App Group, keychain group and extension identities *without* altering them unnecessarily; do not expose secrets.
 - Record known-good release/tag, source revision, manifest, SHA and tested iOS version.
 - Resolve or narrow [issue #2](https://github.com/raskal-labs/blink-rsk/issues/2), and sync its acceptance checklist.
@@ -67,7 +68,7 @@ Milestones are **dependency ordered, not date estimates**. Ship one narrow incre
 **Status:** Proposed; issue #3 is already open  
 **Goal:** Remove high-frequency frustrations with minimal terminal regressions.
 
-**Priority A:** Fix touch-scrolling freeze; independent Input versus Select/Scroll interaction; dependable Hide/Show Keyboard; accessible Select All (define scope); reliable selection and copying across scrollback; normal arrow-key option. Test local Blink shell, SSH and Mosh, landscape/portrait, software/hardware keyboard.
+**Priority A:** Investigate scrolling behavior across local Blink shell, SSH and Mosh, first outside Zellij/tmux; distinguish client defects from transport/application behavior before proposing a code fix. Other proposed improvements: independent Input versus Select/Scroll interaction; dependable Hide/Show Keyboard; accessible Select All (define scope); reliable selection and copying across scrollback; normal arrow-key option. Test landscape/portrait and software/hardware keyboard.
 
 **Priority B:** Session overview/switcher and recovery; compact contextual action dock; jump to latest output; history search; clear connection status; clipboard Copy / Copy Raw / Share / Save Output; safer large/sensitive paste handling; quick help for gestures and shortcuts.
 
@@ -127,11 +128,13 @@ Candidates: personalized dashboard/widgets and Control Centre extensions, lightw
 | Tier | First tasks | Why |
 | --- | --- | --- |
 | **P0 — Protect** | Verify build/data/Files receipts; signing/refresh and backup/restore; preserve known-good rollback | Prevent regression and lost access |
-| **P1 — Friction** | Scrolling; input/selection/keyboard; sessions; paste/copy; host connection feedback | High daily impact, bounded changes |
+| **P1 — Friction** | Investigate scrolling behavior; input/selection/keyboard; sessions; paste/copy; host connection feedback | High daily impact, bounded changes |
 | **P2 — Discoverability** | Branding; contextual dock; palette; favorites; helpful existing features | High value without full rewrite |
 | **P3 — Workflows** | Transfers; `code`/code-server; useful shell gaps; iOS Shortcuts | Reduces app switching |
 | **P4 — Integration** | Safe upstream session-link/Shortcuts audit; official HA widget/action/notification pilot; Atlas/Polaris and device actions | Reuse mature capabilities without sacrificing stability |
 | **P5 — Experiments** | Rich dashboards, visual controls, AI/native integrations, alternative input | Validate demand before complexity |
+
+**Proposed backlog:** Review the 18.7.1 callback restoration separately from the October 12 session-link/Shortcuts changes. Before implementing bookmark recovery, check existing work and source availability: public `raw` still points to April 14 pin `a90b4423`; October 12 commit `7a427f3` is retrievable by SHA but contains the identical bookmark manager. An exact shipping 18.7.1 source ref and the later documented bookmark fix remain unestablished. Prefer a compatible upstream repair if found; otherwise make the focused patch without automatically changing the baseline. Preservation will not recover already-erased bookmark data; folder reselection may be necessary. This is context and bounded preflight, not a new parity milestone. See issue #2 and [iOS integration research](docs/IOS-INTEGRATIONS.md).
 
 ## 5. Product architecture boundaries
 
@@ -156,8 +159,8 @@ Use narrowly scoped adapters to existing commands/APIs. Avoid designing a genera
 
 ## 7. Immediate next sequence
 
-1. **M0 acceptance (issue #2):** reconcile the installed IPA/SideStore and File Provider evidence, confirm safe persistence/refresh and protect a rollback build. Do not repeat already proven tests or silently replace the working app.
-2. **M1 usability (issue #3):** reproduce the scrolling/selection/keyboard problems and audit upstream functionality first. Fix the narrowest verified defect before changing rendering or adding new UI.
+1. **M0 reliability and acceptance (issue #2):** implement bookmark persistence/recovery, reconcile installed-build evidence and verify current Files.app browse/transfer/reopen behavior independently. Confirm refresh and protect a rollback build; preserve earlier successful tests.
+2. **M1 usability (issue #3):** compare scrolling in local shell, SSH and Mosh and audit existing controls. Establish whether a defect exists before choosing a scrolling fix; keep selection/keyboard improvements scoped.
 3. **Independent read-only research:** inventory existing Blink/iOS actions, test one official HA → approved GameCube action → actionable notification workflow without a new IPA, and review the upstream session-link/App Intents source for security and compatibility. Capture evidence in [iOS integrations](docs/IOS-INTEGRATIONS.md) and [UX research](docs/UX-RESEARCH.md); no build or new app identity is authorized.
 
 ## 8. Sources and linked tasks
