@@ -1,6 +1,6 @@
 # Session links and Shortcuts candidate — 2026-10-24
 
-**Status: In Progress.** This record accompanies the bookmark candidate under [issue #2](https://github.com/raskal-labs/blink-rsk/issues/2). The user's October 24 work order authorizes source work, a PR and **one** candidate CI dispatch after preflight. Installation and merge await separate device acceptance.
+**Status: In Progress.** This record accompanies the bookmark candidate under [issue #2](https://github.com/raskal-labs/blink-rsk/issues/2). The user's October 24 work order authorizes source work, a PR and **one** candidate CI dispatch after preflight. Installation requires separate data-safe approval; merge awaits device acceptance.
 
 ## Source review
 
