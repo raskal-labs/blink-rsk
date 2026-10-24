@@ -1,0 +1,85 @@
+{
+  "schema": 1,
+  "recorded_date": "2026-10-24",
+  "issue": "https://github.com/raskal-labs/blink-rsk/issues/2",
+  "status": "In Progress",
+  "branch": "fix/bookmarks-session-actions",
+  "harness_base": "02aad479dfadb710afc9e166d8cb107f93e808eb",
+  "upstream_commit": "a90b4423c8b7a86770c24a7eaa6c13b0a5904b18",
+  "upstream_version": "18.7.0",
+  "upstream_build": "1097",
+  "upstream_source_paths_changed": [
+    "Settings/Model/BookmarkedLocationsManager.swift",
+    "Settings/ViewControllers/BookmarkedLocations/BookmarkedLocationsView.swift"
+  ],
+  "changes": [
+    "Preserve saved names and bookmark bytes across temporary failures",
+    "Show unavailable entries with retry and folder reselection",
+    "Export only available shell paths and balance held security scopes",
+    "Preserve conflicting ordinary files and use explicit symlink rebinding",
+    "Test guarded patch application and manager failure/recovery paths"
+  ],
+  "verification": {
+    "patch_guards": {
+      "status": "Verified",
+      "checks_passed": 4
+    },
+    "manager_regressions": {
+      "status": "Verified",
+      "tests_passed": 24,
+      "platform": "Linux x86_64, temporary Swift 6.0.3 toolchain",
+      "scope": "Actual patched manager with synthetic bookmark/scope adapter and real temporary filesystem; Apple API grants and app integration are not tested"
+    },
+    "settings_swift_syntax": {
+      "status": "Verified",
+      "scope": "Parse only; SwiftUI type checking and interaction remain unverified"
+    },
+    "workflow_static_checks": {
+      "status": "Verified",
+      "scope": "YAML, shell blocks and embedded Python parse; manual trigger, pin, signing and build steps unchanged"
+    },
+    "macos_native_compile": {
+      "status": "Unknown"
+    },
+    "ios_app_build": {
+      "status": "Unknown",
+      "performed": false
+    },
+    "installation": {
+      "status": "Unknown",
+      "performed": false
+    },
+    "iphone_bookmark_persistence_recovery": {
+      "status": "Unknown"
+    },
+    "files_app_browse": {
+      "status": "Unknown"
+    },
+    "files_app_download": {
+      "status": "Unknown"
+    },
+    "files_app_upload": {
+      "status": "Unknown"
+    },
+    "files_app_reopen": {
+      "status": "Unknown"
+    },
+    "sidestore_refresh": {
+      "status": "Unknown",
+      "performed": false
+    }
+  },
+  "artifact": null,
+  "commit_performed": false,
+  "push_performed": false,
+  "merge_performed": false,
+  "identities_or_signing_changed": false,
+  "installed_app_or_user_data_changed": false,
+  "limitations": [
+    "Already-erased bookmarks require folder selection again",
+    "Apple security grants, SwiftUI and Files behavior require native/device verification",
+    "Installed IPA/source/SHA reconciliation remains Unknown",
+    "No synchronization with external processes editing the store or aliases"
+  ],
+  "next_gate": "One authorized candidate CI build after preflight, then separately approved phone installation and combined acceptance"
+}
