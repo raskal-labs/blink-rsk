@@ -1,6 +1,6 @@
 # Blink-RSK — Product roadmap
 
-**Updated:** 2026-10-23 (bookmark recovery, Files evidence and scrolling scope reconciled)
+**Updated:** 2026-10-24 (bookmark/session candidate in progress; device acceptance pending)
 **Status:** Proposed (product direction); individual capabilities have their own statuses below  
 **Primary repository:** [raskal-labs/blink-rsk](https://github.com/raskal-labs/blink-rsk)  
 **Audience:** Private/personal iOS installation; not currently intended for distribution.
@@ -36,7 +36,7 @@ Evolve Blink-RSK from a SideStore-compatible Blink Shell build into a **personal
 | --- | --- | --- |
 | macOS GitHub Actions builds from pinned upstream Blink 18.7.0 | Verified | CI and archived artifacts recorded in [Phase 01](docs/phase-01/PHASE-01.md) on its working branch; Xcode 26.6 was used. |
 | A SideStore-installed Blink-RSK build launches and SSH/SFTP/SCP can work on iPhone | Verified | User observed working connections and transferred `hd-receipts.zip` from a local `iPhone` bookmark to GameCube `/lab`. |
-| Local file operations and bookmark persistence | In Progress | Earlier local operations and an initial persistence check succeeded. Later reports show inaccessible folder links and an empty Bookmarks list. Proposed M0 outcome: bookmarks survive temporary access failures and can recover; implementation and device acceptance remain unverified. Details belong in issue #2. |
+| Local file operations and bookmark persistence | In Progress | Earlier local operations and an initial persistence check succeeded. Later reports show inaccessible folder links and an empty Bookmarks list. Bookmark preservation/reselection is implemented in the unmerged October 24 candidate with 24 local manager regressions; Apple build and device acceptance are tracked separately. Details belong in issue #2. |
 | iOS Files.app remote File Provider | Unknown | Earlier FP Test stayed at Loading; later listing and file operations were reported successful. Preserve that evidence: current reliability and persistence remain unverified. Reconcile the installed IPA and check browse/transfer/reopen separately from local bookmarks. Do not treat “Validate Connection” as proof. |
 | 2026-10-12 signing/FP candidate IPA | Verified | Structurally built/archived; *native installation and acceptance for this exact SHA remain Unknown* in [Codex runbook](docs/phase-01/CODEX-PHASE-01.md). |
 | Touch scrolling/selection/keyboard behavior | Proposed | Investigate reported scrolling behavior across local shell, SSH and Mosh, first outside Zellij/tmux. Whether Blink, Mosh or the remote application causes it remains Unknown; no scrolling code fix is assumed. Selection and keyboard improvements remain Proposed in [issue #3](https://github.com/raskal-labs/blink-rsk/issues/3). |
@@ -56,7 +56,7 @@ Milestones are **dependency ordered, not date estimates**. Ship one narrow incre
 
 - Reconcile the actual installed IPA/version/SHA with the latest candidate and archived rollback build.
 - Confirm iPhone launch/restart, SSH, Mosh where available, original keys and host profiles, SFTP/SCP, and iOS Files *listing and transfers*; preserve earlier successful test evidence.
-- Ensure saved folder bookmarks survive temporary access failures and can recover (**Proposed**; issue #2); verify across relaunch and refresh. Preserve earlier successful file-operation evidence and check current Files provider browse/transfer/reopen separately.
+- Ensure saved folder bookmarks survive temporary access failures and can recover (**In Progress**; issue #2); verify across relaunch and refresh. Preserve earlier successful file-operation evidence and check current Files provider browse/transfer/reopen separately.
 - Verify other storage persistence, SideStore refresh/signing, app configuration backup/migration feasibility.
 - Audit App Group, keychain group and extension identities *without* altering them unnecessarily; do not expose secrets.
 - Record known-good release/tag, source revision, manifest, SHA and tested iOS version.
@@ -134,7 +134,9 @@ Candidates: personalized dashboard/widgets and Control Centre extensions, lightw
 | **P4 — Integration** | Safe upstream session-link/Shortcuts audit; official HA widget/action/notification pilot; Atlas/Polaris and device actions | Reuse mature capabilities without sacrificing stability |
 | **P5 — Experiments** | Rich dashboards, visual controls, AI/native integrations, alternative input | Validate demand before complexity |
 
-**Proposed backlog:** Review the 18.7.1 callback restoration separately from the October 12 session-link/Shortcuts changes. Before implementing bookmark recovery, check existing work and source availability: public `raw` still points to April 14 pin `a90b4423`; October 12 commit `7a427f3` is retrievable by SHA but contains the identical bookmark manager. An exact shipping 18.7.1 source ref and the later documented bookmark fix remain unestablished. Prefer a compatible upstream repair if found; otherwise make the focused patch without automatically changing the baseline. Preservation will not recover already-erased bookmark data; folder reselection may be necessary. This is context and bounded preflight, not a new parity milestone. See issue #2 and [iOS integration research](docs/IOS-INTEGRATIONS.md).
+**Current bounded batch (In Progress):** The October 24 work order combines bookmark recovery with a contained foreground adaptation of the October 12 session-link/Shortcuts changes, one PR and one authorized candidate CI build. URLs navigate only; command/script actions confirm in Blink and retain SSH verification. Background execution/output capture is deferred. Exact 18.7.1 callback restoration remains unestablished. Merge and installation await device acceptance. See [candidate evidence](docs/phase-01/SESSION-ACTIONS-CANDIDATE.md).
+
+**Earlier source preflight:** Review the 18.7.1 callback restoration separately from the October 12 session-link/Shortcuts changes. Before implementing bookmark recovery, check existing work and source availability: public `raw` still points to April 14 pin `a90b4423`; October 12 commit `7a427f3` is retrievable by SHA but contains the identical bookmark manager. An exact shipping 18.7.1 source ref and the later documented bookmark fix remain unestablished. Prefer a compatible upstream repair if found; otherwise make the focused patch without automatically changing the baseline. Preservation will not recover already-erased bookmark data; folder reselection may be necessary. This is context and bounded preflight, not a new parity milestone. See issue #2 and [iOS integration research](docs/IOS-INTEGRATIONS.md).
 
 ## 5. Product architecture boundaries
 

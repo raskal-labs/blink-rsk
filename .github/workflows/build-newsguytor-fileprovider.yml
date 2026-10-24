@@ -49,19 +49,39 @@ jobs:
           cmp -s template_setup.xcconfig developer_setup.xcconfig
           # Resource preparation is an upstream build prerequisite and may
           # update tracked generated assets. Record that baseline so the next
-          # step can prove that its only additional source edit is the resolver.
+          # step can prove the exact additional resolver/bookmark source scope.
           git diff --name-only | sort > ../prepared-source-changes.txt
 
-      - name: Apply and test the single SideStore source repair
+      - name: Apply and test the scoped SideStore, bookmark and session repairs
         run: |
           set -euxo pipefail
           python3 scripts/patch-sidestore-app-groups.py "$GITHUB_WORKSPACE/blink"
           python3 scripts/test-sidestore-app-groups.py "$GITHUB_WORKSPACE/blink"
+          # Tests patch isolated copies before the real source is changed.
+          python3 scripts/test-bookmark-recovery.py "$GITHUB_WORKSPACE/blink" 2>&1 | tee bookmark-checks.log
+          python3 scripts/patch-bookmark-recovery.py "$GITHUB_WORKSPACE/blink"
+          python3 scripts/test-session-actions.py "$GITHUB_WORKSPACE/blink" 2>&1 | tee session-checks.log
+          python3 scripts/patch-session-actions.py "$GITHUB_WORKSPACE/blink"
+          # Include exactly the two new reviewed Swift sources in diff receipts.
+          git -C blink add --intent-to-add -- Blink/SessionLink.swift Blink/BlinkIntents.swift
           git -C blink diff --check
           git -C blink diff --name-only | sort > source-modified-files.txt
           comm -13 prepared-source-changes.txt source-modified-files.txt > sidestore-patch-files.txt
-          test "$(cat sidestore-patch-files.txt)" = "BlinkConfig/XCConfig.m"
-          git -C blink diff --no-ext-diff --binary -- BlinkConfig/XCConfig.m > source-patches.diff
+          python3 - <<'PY'
+          from pathlib import Path
+          expected = {
+            "BlinkConfig/XCConfig.m",
+            "Blink.xcodeproj/project.pbxproj",
+            "Blink/SceneDelegate.swift",
+            "Blink/SpaceController.swift",
+            "Blink/SessionLink.swift",
+            "Blink/BlinkIntents.swift",
+            "Settings/Model/BookmarkedLocationsManager.swift",
+            "Settings/ViewControllers/BookmarkedLocations/BookmarkedLocationsView.swift",
+          }
+          assert set(Path("sidestore-patch-files.txt").read_text().splitlines()) == expected
+          PY
+          git -C blink diff --no-ext-diff --binary -- BlinkConfig/XCConfig.m Settings/Model/BookmarkedLocationsManager.swift Settings/ViewControllers/BookmarkedLocations/BookmarkedLocationsView.swift Blink.xcodeproj/project.pbxproj Blink/SceneDelegate.swift Blink/SpaceController.swift Blink/SessionLink.swift Blink/BlinkIntents.swift > source-patches.diff
 
       - name: Resolve packages and build complete Release app
         working-directory: blink
@@ -172,15 +192,31 @@ jobs:
           unzip -t "$IPA"
           shasum -a 256 "$IPA" > artifact/SHA256SUMS
           cp blink-commit.txt source-patches.diff prepared-source-changes.txt source-modified-files.txt sidestore-patch-files.txt artifact/
+          git archive --format=tar.gz --output=artifact/harness-source.tar.gz HEAD
+          shasum -a 256 patches/bookmark-recovery.patch patches/session-actions.patch scripts/patch-sidestore-app-groups.py scripts/patch-bookmark-recovery.py scripts/patch-session-actions.py > artifact/patch-SHA256SUMS
+          (cd blink && shasum -a 256 BlinkConfig/XCConfig.m Settings/Model/BookmarkedLocationsManager.swift Settings/ViewControllers/BookmarkedLocations/BookmarkedLocationsView.swift Blink.xcodeproj/project.pbxproj Blink/SceneDelegate.swift Blink/SpaceController.swift Blink/SessionLink.swift Blink/BlinkIntents.swift) > artifact/patched-source-SHA256SUMS
           export VERSION BUILD
           python3 - <<'PY'
           import json, os
           json.dump({
-            "schema": 2,
-            "artifact": "Pinned upstream Blink with SideStore File Provider capability requests",
+            "schema": 3,
+            "artifact": "Blink bookmark recovery and foreground session-actions candidate",
+            "harness_commit": os.environ["GITHUB_SHA"],
+            "ci_run": os.environ["GITHUB_SERVER_URL"] + "/" + os.environ["GITHUB_REPOSITORY"] + "/actions/runs/" + os.environ["GITHUB_RUN_ID"],
+            "integration_source": "blinksh/blink@7a427f3db37ec25869b24226905d89103a8ad99d (selective adaptation; not a source upgrade)",
+            "patch_files": open("sidestore-patch-files.txt").read().splitlines(),
+            "native_validation": "macOS bookmark runtime suite, session validation/shell boundary suite and complete iOS Release compilation",
+            "device_acceptance": "Unknown; no installation performed",
             "upstream_commit": open("blink-commit.txt").read().strip(),
             "version": os.environ["VERSION"], "build": os.environ["BUILD"],
-            "source_changes": ["BlinkConfig/XCConfig.m: resolve the installed profile's one provisioned Blink App Group"],
+            "source_changes": [
+              "BlinkConfig/XCConfig.m: resolve the installed profile's one provisioned Blink App Group",
+              "Settings/Model/BookmarkedLocationsManager.swift: preserve unavailable bookmarks, retry/reselect, balance security scopes and filter shell paths",
+              "Settings/ViewControllers/BookmarkedLocations/BookmarkedLocationsView.swift: show unavailable entries with Retry and folder reselection",
+              "Blink/SessionLink.swift + Blink/BlinkIntents.swift: navigation-only links and three confirmed foreground Shortcuts actions",
+              "Blink/SceneDelegate.swift + Blink/SpaceController.swift: route and confirm sessions; avoid main-thread dispatch deadlock",
+              "Blink.xcodeproj/project.pbxproj: register only the two new main-app Swift sources"
+            ],
             "side_store_contract": {
               "pre_signing_requests": "Main + File Provider share keychain suffix sh.blink and request group.sh.blink; SideStore supplies profile values and rewrites the File Provider document group.",
               "final_signer": "SideStore",
@@ -204,5 +240,7 @@ jobs:
             packages.log
             xcodebuild.log
             submodules.txt
+            bookmark-checks.log
+            session-checks.log
           if-no-files-found: ignore
           retention-days: 14

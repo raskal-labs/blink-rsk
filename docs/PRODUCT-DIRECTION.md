@@ -95,3 +95,7 @@ Near-term milestone (provisional): "Identity & Usability" — initial visible Ra
 ## Maintenance instructions
 
 Update this document when purpose, naming, architectural boundaries or decisions change. Keep detailed iOS experiments in [IOS-INTEGRATIONS](IOS-INTEGRATIONS.md), upstream usability evidence in [UX-RESEARCH](UX-RESEARCH.md), milestones in the [root roadmap](../ROADMAP.md), and accepted work in issues/Phase 01 receipts. Use the project's six statuses; a proposal is not an accepted decision or a verified device capability. Preserve dated reasons when superseding decisions.
+
+## October 24 candidate boundary
+
+The authorized bookmark/session batch keeps the pinned source and existing app identities. Use navigation-only saved-host/focus URLs; offer command/script execution through explicit foreground Shortcuts confirmation and the existing SSH trust flow. No URL-carried execution key, Fleet import, unattended runner or new extension belongs to this batch. Source/build verification is distinct from iPhone acceptance; functional changes remain unmerged until the latter. Details: [candidate record](phase-01/SESSION-ACTIONS-CANDIDATE.md).
