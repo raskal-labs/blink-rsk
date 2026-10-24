@@ -27,7 +27,7 @@
     "manager_regressions": {
       "status": "Verified",
       "tests_passed": 24,
-      "platform": "Linux x86_64, temporary Swift 6.0.3 toolchain",
+      "platform": "Linux Swift 6.0.3 and macOS Xcode 26.6, Swift 5 language mode",
       "scope": "Actual patched manager with synthetic bookmark/scope adapter and real temporary filesystem; Apple API grants and app integration are not tested"
     },
     "settings_swift_syntax": {
@@ -39,11 +39,15 @@
       "scope": "YAML, shell blocks and embedded Python parse; manual trigger, pin, signing and build steps unchanged"
     },
     "macos_native_compile": {
-      "status": "Unknown"
+      "status": "Verified",
+      "scope": "Native App Group resolver checks, 24 bookmark regressions with real Foundation API signatures, and session link/action suites passed in CI"
     },
     "ios_app_build": {
-      "status": "Unknown",
-      "performed": false
+      "status": "Verified",
+      "performed": true,
+      "run": "https://github.com/raskal-labs/blink-rsk/actions/runs/40128366917",
+      "harness_commit": "38bd29221485c5306813c3916048bc77772d642b",
+      "scope": "Complete iOS Release compilation including SwiftUI/AppIntents, ad-hoc signature verification, two extensions, packaging"
     },
     "installation": {
       "status": "Unknown",
@@ -67,19 +71,44 @@
     "sidestore_refresh": {
       "status": "Unknown",
       "performed": false
+    },
+    "packaged_app_intents": {
+      "status": "Verified",
+      "actions": [
+        "OpenTerminalSessionIntent",
+        "RunCommandOnHostIntent",
+        "RunScriptOnHostIntent"
+      ],
+      "scope": "Present in packaged App Intents metadata; device discovery/execution remains Unknown"
+    },
+    "link_action_validation": {
+      "status": "Verified",
+      "scope": "Compiled pure Swift validation, guarded patch application, seven shell-boundary fixtures on Linux and macOS; actual ios_system behavior/confirmation UI need iPhone acceptance"
     }
   },
-  "artifact": null,
-  "commit_performed": false,
-  "push_performed": false,
+  "artifact": {
+    "ipa": "/lab/blink-rsk-release/bookmark-session-20261024-run-40128366917/artifact/Blink-SideStore-18.7.0-1097-native-fileprovider.ipa",
+    "sha256": "f28f1cc76f862bb4e3241c081b78dbd5cffa289b3a1bd96d6e89508209dbf151",
+    "archive": "/lab/blink-rsk-release/bookmark-session-20261024-run-40128366917",
+    "source_patch_manifest": "/lab/blink-rsk-release/bookmark-session-20261024-run-40128366917/artifact/build-manifest.json",
+    "archive_verification": "/lab/blink-rsk-release/bookmark-session-20261024-run-40128366917/archive-verification.json",
+    "ci_run": "https://github.com/raskal-labs/blink-rsk/actions/runs/40128366917",
+    "built_harness_commit": "38bd29221485c5306813c3916048bc77772d642b"
+  },
+  "commit_performed": true,
+  "push_performed": true,
   "merge_performed": false,
   "identities_or_signing_changed": false,
   "installed_app_or_user_data_changed": false,
   "limitations": [
     "Already-erased bookmarks require folder selection again",
-    "Apple security grants, SwiftUI and Files behavior require native/device verification",
+    "Apple security grants, SwiftUI interactions, Shortcuts discovery/execution and Files behavior require device verification",
     "Installed IPA/source/SHA reconciliation remains Unknown",
-    "No synchronization with external processes editing the store or aliases"
+    "No synchronization with external processes editing the store or aliases",
+    "Shortcuts actions are foreground terminal launches, with no returned output or remote success guarantee",
+    "Exact 18.7.1 callback restoration is not established; URLs navigate only and reject command/key payloads"
   ],
-  "next_gate": "One authorized candidate CI build after preflight, then separately approved phone installation and combined acceptance"
+  "next_gate": "On phone, reconcile installed artifact, migration/restore state and SideStore identities before approving any same-ID update; then run combined acceptance checklist. No installation authorized by this record.",
+  "ci_dispatches": 1,
+  "pull_request": "https://github.com/raskal-labs/blink-rsk/pull/7"
 }

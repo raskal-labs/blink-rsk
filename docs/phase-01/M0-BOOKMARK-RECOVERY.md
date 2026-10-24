@@ -13,13 +13,13 @@ Inspected on 2026-10-23 before editing:
 
 The patch keeps the existing `[ { "name", "bookmarkData" } ]` JSON format in `.blink/.locations.json`. Runtime availability and resolved URLs are not serialized. Resolution, scope denial, unreadability, failed stale refresh, and symlink conflicts preserve the saved records and original bookmark bytes. Reads do not create an empty store. Only successful stale refresh, explicit add/reselection, or explicit deletion writes the file, atomically.
 
-Settings retains unavailable entries and offers **Retry** and **Select Folder Again**. Reselection preserves the saved alias name and replaces its bookmark data only after access and persistence succeed. Failed selection leaves the old record; cancellation does not delete it. Already-erased records cannot be recreated from missing bookmark bytes: select the folder through **+** if its saved entry is gone.
+Settings retains unavailable entries and offers **Retry** and **Select Folder Again**. Reselection preserves the saved alias name and replaces its bookmark data only after access and persistence succeed. Failed selection leaves the old record; cancellation does not delete it. Already-erased records cannot be recreated from missing bookmark bytes: select the folder through **+** if its saved entry is gone. If an old symlink still occupies its name, choose an unused alias; do not remove a target folder to free the name.
 
 Shell URL/path exports include only available entries. The manager serializes its operations and holds one successful security-scope acquisition per available alias for shell use, releasing it on unavailability, deletion, replacement or manager destruction. Repeated reads do not acquire another scope. [Apple requires balancing successful acquisitions with releases](https://developer.apple.com/documentation/foundation/url/stopaccessingsecurityscopedresource()).
 
 Reads create missing aliases but preserve conflicting files, directories and differently targeted symlinks, including dangling links. A mismatched alias is unavailable until the user explicitly reselects. Reselection can rebind a symlink at the saved alias; deletion can unlink it, including when its bookmark cannot resolve. Neither operation follows that symlink to remove folder contents. Regular files/directories at the alias are preserved. Failed add/reselection writes roll back the new link and attempt to restore the old symlink.
 
-The existing manual candidate workflow is prepared to test/apply this patch after the unchanged App Group resolver. Its exact source-file allowlist and patch receipt now cover the resolver, bookmark manager and bookmark settings view. The source pin, signing requests, IDs, App Groups, keychain and migration behavior are unchanged. No workflow has been dispatched. Previously archived IPAs contain none of this bookmark patch.
+The existing manual candidate workflow is prepared to test/apply this patch after the unchanged App Group resolver. Its exact source-file allowlist and patch receipt now cover the resolver, bookmark manager and bookmark settings view. The source pin, signing requests, IDs, App Groups, keychain and migration behavior are unchanged. At the October 23 preparation point no workflow had been dispatched. Earlier archived IPAs contain none of this bookmark patch.
 
 ## Focused checks
 
@@ -65,8 +65,19 @@ For each row record timestamp, build identity, provider/connection category, exp
 - Locking covers the singleton's operations within one process, not concurrent external edits to `.locations.json` or its aliases. Avoid manual alias/store edits during recovery. If rollback cannot recreate a symlink because the filesystem is unavailable, the saved record remains, and Retry/reselection can repair the alias later.
 - Native SwiftUI compilation, picker cancellation/reselection, actual Apple grants and post-refresh persistence require their own evidence. No release/tag or known-good installed baseline is advanced by these changes.
 
-**Next gate:** review the scoped diff and run the macOS native compile/tests before authorizing any candidate build. Independently reconcile the currently installed artifact and record the three Files.app results: browse, both transfer directions, reopen. M0 and issue #2 remain open until device evidence supports acceptance.
+**October 23 next gate (superseded by the authorized October 24 build below):** review the scoped diff and run the macOS native compile/tests before authorizing any candidate build. Independently reconcile the currently installed artifact and record the three Files.app results: browse, both transfer directions, reopen. M0 and issue #2 remain open until device evidence supports acceptance.
 
 ## October 24 combined candidate
 
 Reused and reviewed this pending patch under the new work order. Added reload-after-reselection/deletion and unreadable-store deletion coverage (24 runtime cases total). See [session actions candidate](SESSION-ACTIONS-CANDIDATE.md) for the separate upstream review, foreground adaptation, combined device checklist and build gate. Earlier no-build statements above describe the October 23 session; the new work order authorizes one CI candidate build, never installation or merge. The source pin, App Group resolver, both File Provider extensions and signing identity remain unchanged.
+
+## October 24 build result — source/build Verified; device Unknown
+
+The single authorized [run 40128366917](https://github.com/raskal-labs/blink-rsk/actions/runs/40128366917) passed with Xcode 26.6 at harness commit `38bd29221485c5306813c3916048bc77772d642b`: native resolver checks, all 24 bookmark cases, session validation/shell-boundary tests, complete iOS Release compilation (including SwiftUI/AppIntents), signature verification and packaging. [Draft PR #7](https://github.com/raskal-labs/blink-rsk/pull/7) remains unmerged.
+
+IPA: `/lab/blink-rsk-release/bookmark-session-20261024-run-40128366917/artifact/Blink-SideStore-18.7.0-1097-native-fileprovider.ipa`
+SHA-256: `f28f1cc76f862bb4e3241c081b78dbd5cffa289b3a1bd96d6e89508209dbf151`
+
+The archive includes source/patch manifests and checksums, exact harness source, native test/build/signing receipts, run metadata, archive verification and rollback hashes. Local archive verification passed ZIP CRC, SHA, both extension IDs, App Group/keychain requests and all three packaged Intent types. Existing October 8/12 rollback IPAs are preserved and their hashes still match. This proves build/structure, not installed entitlements or runtime persistence.
+
+**Current next gate:** reconcile the actual installed artifact and privately verified migration/restore state, then approve a data-safe update route using the existing SideStore IDs before installing anything. Run the [combined iPhone checklist](SESSION-ACTIONS-CANDIDATE.md) after that separate decision. No install, refresh, phone-data operation or merge occurred. M0 and issue #2 remain In Progress.
