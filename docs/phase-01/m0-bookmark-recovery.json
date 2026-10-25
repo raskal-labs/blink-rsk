@@ -32,7 +32,7 @@
     },
     "settings_swift_syntax": {
       "status": "Verified",
-      "scope": "Parse only; SwiftUI type checking and interaction remain unverified"
+      "scope": "Swift syntax and complete iOS Release SwiftUI compilation passed in run 40128366917; actual picker, retry and reselection interaction remain unverified on iPhone"
     },
     "workflow_static_checks": {
       "status": "Verified",
@@ -51,10 +51,22 @@
     },
     "installation": {
       "status": "Unknown",
-      "performed": false
+      "performed": true,
+      "reported_by": "user",
+      "reported_date": "2026-10-24",
+      "reported_ipa_filename": "Blink-SideStore-18.7.0-1097-native-fileprovider.ipa",
+      "scope": "User reports installing an IPA with this filename. Both October 12 and October 24 candidates use it; download source or SHA is still needed to identify the installed candidate. No agent installation was performed."
     },
     "iphone_bookmark_persistence_recovery": {
-      "status": "Unknown"
+      "status": "In Progress",
+      "reported_date": "2026-10-25",
+      "scope": "User reports bookmarks persisting well; temporary-provider failure/recovery, refresh and exact installed candidate identity remain unverified."
+    },
+    "iphone_shortcuts_discovery": {
+      "status": "Blocked",
+      "reported_date": "2026-10-25",
+      "scope": "User reports no actions after opening Blink and restarting iPhone. Candidate metadata contains three discoverable actions. Missing registration refresh is a hypothesis; cause remains Unknown.",
+      "tasks": "SESSION-ACTIONS-CANDIDATE.md#october-25-device-feedback-and-follow-up"
     },
     "files_app_browse": {
       "status": "Unknown"
@@ -99,7 +111,8 @@
   "push_performed": true,
   "merge_performed": false,
   "identities_or_signing_changed": false,
-  "installed_app_or_user_data_changed": false,
+  "installed_app_or_user_data_changed": true,
+  "installed_app_or_user_data_change_actor": "User-reported IPA installation; no agent phone operation or verified data migration",
   "limitations": [
     "Already-erased bookmarks require folder selection again",
     "Apple security grants, SwiftUI interactions, Shortcuts discovery/execution and Files behavior require device verification",
@@ -108,7 +121,7 @@
     "Shortcuts actions are foreground terminal launches, with no returned output or remote success guarantee",
     "Exact 18.7.1 callback restoration is not established; URLs navigate only and reject command/key payloads"
   ],
-  "next_gate": "On phone, reconcile installed artifact, migration/restore state and SideStore identities before approving any same-ID update; then run combined acceptance checklist. No installation authorized by this record.",
+  "next_gate": "Confirm the download source or SHA of the user-installed IPA, then record launch/saved SSH, bookmark visibility and independent Files.app browse/transfer/reopen results against that identified artifact. Any further app update or refresh requires its separate data-safe decision.",
   "ci_dispatches": 1,
   "pull_request": "https://github.com/raskal-labs/blink-rsk/pull/7"
 }
