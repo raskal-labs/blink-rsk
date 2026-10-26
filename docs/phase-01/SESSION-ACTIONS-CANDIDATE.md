@@ -2,6 +2,8 @@
 
 **Status: In Progress.** This record accompanies the bookmark candidate under [issue #2](https://github.com/raskal-labs/blink-rsk/issues/2). The user's October 24 work order authorizes source work, a PR and **one** candidate CI dispatch after preflight. Installation requires separate data-safe approval; merge awaits device acceptance.
 
+**October 26 source follow-up:** the user authorized implementing the contained File Provider repair found during online research. The branch now also backports upstream `7e28d172` to disable startup temporary-file cleanup. [Implementation, local checks and remaining gates](FILES-PROVIDER-UPSTREAM-RESEARCH.md#october-26-implementation-follow-up). This additional source change is absent from the October 24 IPA and has not received a new macOS build or device acceptance; the original build allowance is spent. Historical receipts below still describe that earlier artifact.
+
 ## Source review
 
 Rechecked current PRs, remote heads, upstream branches/tags and relevant source history before editing. `origin/main` remains `02aad479`; PRs #1/#4/#5/#6 are merged and no implementation PR intervened. Reused the pending bookmark patch/tests; left unrelated `docs/UX-RESEARCH.md` changes outside this batch.
