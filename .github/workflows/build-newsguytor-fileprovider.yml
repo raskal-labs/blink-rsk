@@ -49,10 +49,10 @@ jobs:
           cmp -s template_setup.xcconfig developer_setup.xcconfig
           # Resource preparation is an upstream build prerequisite and may
           # update tracked generated assets. Record that baseline so the next
-          # step can prove the exact additional resolver/bookmark source scope.
+          # step can prove the exact additional repair source scope.
           git diff --name-only | sort > ../prepared-source-changes.txt
 
-      - name: Apply and test the scoped SideStore, bookmark and session repairs
+      - name: Apply and test the scoped SideStore, bookmark, session and provider repairs
         run: |
           set -euxo pipefail
           python3 scripts/patch-sidestore-app-groups.py "$GITHUB_WORKSPACE/blink"
@@ -62,6 +62,8 @@ jobs:
           python3 scripts/patch-bookmark-recovery.py "$GITHUB_WORKSPACE/blink"
           python3 scripts/test-session-actions.py "$GITHUB_WORKSPACE/blink" 2>&1 | tee session-checks.log
           python3 scripts/patch-session-actions.py "$GITHUB_WORKSPACE/blink"
+          python3 scripts/test-fileprovider-startup-cleanup.py "$GITHUB_WORKSPACE/blink" 2>&1 | tee fileprovider-checks.log
+          python3 scripts/patch-fileprovider-startup-cleanup.py "$GITHUB_WORKSPACE/blink"
           # Include exactly the two new reviewed Swift sources in diff receipts.
           git -C blink add --intent-to-add -- Blink/SessionLink.swift Blink/BlinkIntents.swift
           git -C blink diff --check
@@ -71,6 +73,7 @@ jobs:
           from pathlib import Path
           expected = {
             "BlinkConfig/XCConfig.m",
+            "BlinkFileProvider/FileProviderReplicatedExtension.swift",
             "Blink.xcodeproj/project.pbxproj",
             "Blink/SceneDelegate.swift",
             "Blink/SpaceController.swift",
@@ -81,7 +84,7 @@ jobs:
           }
           assert set(Path("sidestore-patch-files.txt").read_text().splitlines()) == expected
           PY
-          git -C blink diff --no-ext-diff --binary -- BlinkConfig/XCConfig.m Settings/Model/BookmarkedLocationsManager.swift Settings/ViewControllers/BookmarkedLocations/BookmarkedLocationsView.swift Blink.xcodeproj/project.pbxproj Blink/SceneDelegate.swift Blink/SpaceController.swift Blink/SessionLink.swift Blink/BlinkIntents.swift > source-patches.diff
+          git -C blink diff --no-ext-diff --binary -- BlinkConfig/XCConfig.m BlinkFileProvider/FileProviderReplicatedExtension.swift Settings/Model/BookmarkedLocationsManager.swift Settings/ViewControllers/BookmarkedLocations/BookmarkedLocationsView.swift Blink.xcodeproj/project.pbxproj Blink/SceneDelegate.swift Blink/SpaceController.swift Blink/SessionLink.swift Blink/BlinkIntents.swift > source-patches.diff
 
       - name: Resolve packages and build complete Release app
         working-directory: blink
@@ -193,24 +196,26 @@ jobs:
           shasum -a 256 "$IPA" > artifact/SHA256SUMS
           cp blink-commit.txt source-patches.diff prepared-source-changes.txt source-modified-files.txt sidestore-patch-files.txt artifact/
           git archive --format=tar.gz --output=artifact/harness-source.tar.gz HEAD
-          shasum -a 256 patches/bookmark-recovery.patch patches/session-actions.patch scripts/patch-sidestore-app-groups.py scripts/patch-bookmark-recovery.py scripts/patch-session-actions.py > artifact/patch-SHA256SUMS
-          (cd blink && shasum -a 256 BlinkConfig/XCConfig.m Settings/Model/BookmarkedLocationsManager.swift Settings/ViewControllers/BookmarkedLocations/BookmarkedLocationsView.swift Blink.xcodeproj/project.pbxproj Blink/SceneDelegate.swift Blink/SpaceController.swift Blink/SessionLink.swift Blink/BlinkIntents.swift) > artifact/patched-source-SHA256SUMS
+          shasum -a 256 patches/bookmark-recovery.patch patches/session-actions.patch patches/fileprovider-startup-cleanup.patch scripts/patch-sidestore-app-groups.py scripts/patch-bookmark-recovery.py scripts/patch-session-actions.py scripts/patch-fileprovider-startup-cleanup.py > artifact/patch-SHA256SUMS
+          (cd blink && shasum -a 256 BlinkConfig/XCConfig.m BlinkFileProvider/FileProviderReplicatedExtension.swift Settings/Model/BookmarkedLocationsManager.swift Settings/ViewControllers/BookmarkedLocations/BookmarkedLocationsView.swift Blink.xcodeproj/project.pbxproj Blink/SceneDelegate.swift Blink/SpaceController.swift Blink/SessionLink.swift Blink/BlinkIntents.swift) > artifact/patched-source-SHA256SUMS
           export VERSION BUILD
           python3 - <<'PY'
           import json, os
           json.dump({
-            "schema": 3,
-            "artifact": "Blink bookmark recovery and foreground session-actions candidate",
+            "schema": 4,
+            "artifact": "Blink bookmark recovery, foreground session-actions and provider-startup candidate",
             "harness_commit": os.environ["GITHUB_SHA"],
             "ci_run": os.environ["GITHUB_SERVER_URL"] + "/" + os.environ["GITHUB_REPOSITORY"] + "/actions/runs/" + os.environ["GITHUB_RUN_ID"],
             "integration_source": "blinksh/blink@7a427f3db37ec25869b24226905d89103a8ad99d (selective adaptation; not a source upgrade)",
+            "fileprovider_repair_source": "blinksh/blink@7e28d1721ecb6614951040477036ef31d5a0964e (exact one-line backport; no domain reset)",
             "patch_files": open("sidestore-patch-files.txt").read().splitlines(),
-            "native_validation": "macOS bookmark runtime suite, session validation/shell boundary suite and complete iOS Release compilation",
+            "native_validation": "macOS bookmark runtime suite, session validation/shell boundary suite, provider patch parity/syntax checks and complete iOS Release compilation",
             "device_acceptance": "Unknown; no installation performed",
             "upstream_commit": open("blink-commit.txt").read().strip(),
             "version": os.environ["VERSION"], "build": os.environ["BUILD"],
             "source_changes": [
               "BlinkConfig/XCConfig.m: resolve the installed profile's one provisioned Blink App Group",
+              "BlinkFileProvider/FileProviderReplicatedExtension.swift: disable automatic startup temporary-file cleanup, retaining normal change polling",
               "Settings/Model/BookmarkedLocationsManager.swift: preserve unavailable bookmarks, retry/reselect, balance security scopes and filter shell paths",
               "Settings/ViewControllers/BookmarkedLocations/BookmarkedLocationsView.swift: show unavailable entries with Retry and folder reselection",
               "Blink/SessionLink.swift + Blink/BlinkIntents.swift: navigation-only links and three confirmed foreground Shortcuts actions",
@@ -242,5 +247,6 @@ jobs:
             submodules.txt
             bookmark-checks.log
             session-checks.log
+            fileprovider-checks.log
           if-no-files-found: ignore
           retention-days: 14
