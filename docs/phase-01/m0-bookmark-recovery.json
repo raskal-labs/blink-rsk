@@ -70,7 +70,9 @@
       "tasks": "SESSION-ACTIONS-CANDIDATE.md#october-26-links-and-shortcuts-success"
     },
     "files_app_browse": {
-      "status": "Unknown"
+      "status": "In Progress",
+      "reported_date": "2026-10-26",
+      "scope": "Screenshot displays a 28-item Blink directory listing. Current remote enumeration versus cached listing, child browsing and reopen behavior are not established."
     },
     "files_app_download": {
       "status": "Unknown"
@@ -111,6 +113,13 @@
       "reported_date": "2026-10-26",
       "reported_by": "user",
       "scope": "Basic execution of all three actions confirmed by user; detailed cancellation, invalid inputs, quoting/interpreter matrix, host-key behavior and refresh not individually established."
+    },
+    "files_app_sync": {
+      "status": "Blocked",
+      "reported_date": "2026-10-26",
+      "scope": "Screenshot shows Syncing 1 item to Blink; user reports no initiated transfer and confirms persistently stuck for a long time. Item/operation and cause Unknown.",
+      "source_review": "Two incomplete-progress/empty-completion risks observed in pinned create/upload helper paths; no device correlation or reproduction yet. Not a demonstrated cause.",
+      "next_evidence": "Bounded existing provider-log excerpt from local Blink shell; preserve pending state and data."
     }
   },
   "artifact": {
@@ -136,7 +145,7 @@
     "Shortcuts actions are foreground terminal launches, with no returned output or remote success guarantee",
     "Exact 18.7.1 callback restoration is not established; URLs navigate only and reject command/key payloads"
   ],
-  "next_gate": "Retain user-confirmed links and all-three-Shortcuts success. Complete bookmark outage/recovery/reselection/deletion, original connection regressions, Files.app browse/download/upload/reopen, detailed safety checks and separately approved refresh; reconcile installed SHA before release acceptance. No merge yet.",
+  "next_gate": "Diagnose persistent Files pending-item stall from current provider logs without resetting its state. Preserve links/Shortcuts success and positive bookmark evidence. Remaining Files transfers/reopen, bookmark recovery, safety checks, installed SHA and separately approved refresh acceptance remain outstanding; no merge or additional CI build.",
   "ci_dispatches": 1,
   "pull_request": "https://github.com/raskal-labs/blink-rsk/pull/7"
 }
