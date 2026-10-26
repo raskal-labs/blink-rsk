@@ -53,4 +53,6 @@ Local preflight passed: the four repairs compose on isolated exact-pin inputs, c
 
 **Build: Unknown for this revision. Device recovery: Unknown; Files acceptance remains Blocked.** No new CI dispatch or IPA was produced. The previous one-build allowance is spent; [AGENTS.md](../../AGENTS.md) requires explicit authorization for an additional build. PR #7 remains draft/unmerged. The prior archive and its machine-readable receipts continue to describe the October 24 artifact; they must not be relabelled as containing this change.
 
+**User decision, October 26:** defer the build until the next iteration because this backport is small. Keep the implemented change queued on the draft branch for that iteration's native validation and candidate build. No standalone build, phone update or domain reset is requested now; the next iteration still needs its own bounded build authorization.
+
 After a separately authorized build and same-identity update, first reopen the existing Files location without deleting it. Check whether the pending banner clears, read one existing disposable file, then copy one small disposable file into the location and confirm it from the terminal. Reopen Files and check that changes remain visible. Stop on a persistent item or error; do not delete the domain or unidentified pending data as part of that test.
