@@ -88,6 +88,8 @@ The next useful evidence is a bounded current `~/.blink/fp-*.log` excerpt from t
 
 The confirmed host/session-link and three-Shortcuts results remain valid for the user's current installation. M0/#2 stay open and PR #7 stays unmerged.
 
+The subsequent [upstream/fork source audit](FILES-PROVIDER-UPSTREAM-RESEARCH.md) found missing upstream cleanup-disable commit `7e28d172`, also present in multiple forks. This is a verified source lead, not a demonstrated fix for the device stall; no implementation/build/reset was performed.
+
 ## Final candidate receipt
 
 **Build/structure: Verified; iPhone links/basic Shortcuts: Verified (October 26 user report); remaining device acceptance: In Progress.** The one authorized [CI run 40128366917](https://github.com/raskal-labs/blink-rsk/actions/runs/40128366917) passed Xcode 26.6 native tests and complete iOS Release compilation at `38bd29221485c5306813c3916048bc77772d642b`. All three actions are present in packaged App Intents metadata. No diagnostics were emitted against the new Intents/model or bookmark files. Signing and packaging checks passed with the original IDs and both extensions. [Draft PR #7](https://github.com/raskal-labs/blink-rsk/pull/7) remains unmerged; later receipt-only documentation commits do not change the built source.

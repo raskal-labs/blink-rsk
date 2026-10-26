@@ -1,0 +1,1492 @@
+{
+  "schema": 1,
+  "observed_date": "2026-10-26",
+  "scope": "Compare the public BlinkFileProvider directory entries/blob SHAs, including the SSH subtree SHA. Not a whole-app/signing audit or device test.",
+  "baseline_commit": "a90b4423c8b7a86770c24a7eaa6c13b0a5904b18",
+  "baseline_directory": {
+    "BlinkFileProvider.h": "0ef5175ed1465775b9657e64f9d484289899a7e6",
+    "FileProviderItem.swift": "ae1cb79e1fd39e1fdf8211684f017e5eb507b57e",
+    "FileProviderReplicatedEnumerator.swift": "be2d0988a0087da85a9db58bd97d3846679d84c5",
+    "FileProviderReplicatedExtension+Helpers.swift": "76965930b18d4912385bd47d88c73b91a5ecff68",
+    "FileProviderReplicatedExtension.swift": "5a2e68107f52bd95f6c64c3b852ba6bed667c7bc",
+    "FilesTranslatorConnection.swift": "244fc229592193243ff26f34a9feeb30178cb8d9",
+    "NSFileProviderError.swift": "90d3535d64121dc751afff08ab52182c0633d6a7",
+    "SSH": "c1e37d42bfb9083333de604212a596f11bdfd373",
+    "WorkingSetDatabase.swift": "c90519f07441a648b3e5208f4f61864900a90cc4"
+  },
+  "sample": {
+    "current_newest_fork_default_refs": 100,
+    "previously_sampled_custom_commit_tips_from_october_23": 76,
+    "older_active_branch_refs": 8,
+    "total_snapshots": 184,
+    "unique_repositories": 105
+  },
+  "results_summary": {
+    "identical": 161,
+    "different": 19,
+    "unavailable": 4,
+    "startup_cleanup_disabled": 14,
+    "empty_file_permission_change": 1,
+    "older_provider_variants": 4
+  },
+  "verified_missing_upstream_change": {
+    "commit": "7e28d1721ecb6614951040477036ef31d5a0964e",
+    "date": "2026-04-23",
+    "url": "https://github.com/blinksh/blink/commit/7e28d1721ecb6614951040477036ef31d5a0964e",
+    "file": "BlinkFileProvider/FileProviderReplicatedExtension.swift",
+    "baseline_blob": "5a2e68107f52bd95f6c64c3b852ba6bed667c7bc",
+    "fixed_blob": "9381403608eb952db0c399b65a4e0e02004514c2",
+    "change": "Disable cleanUpOldTmpFiles invocation during provider startup",
+    "device_stall_causality": "Unknown"
+  },
+  "examined_fork_tips": {
+    "b-relay/blink@brendon/main": "862b32d34fc7c2a86968f2a8c48cb3c7eb39f12d",
+    "madjinn/blink@personal-testflight": "a31aa977e297c9c4a2c3a54e6a3d9b191cf17a85"
+  },
+  "limitations": [
+    "Current default refs are mutable; directory blob snapshots are retained below. Custom-tip sample reuses the October 23 selection rather than every present-day custom branch.",
+    "Not exhaustive across all forks, source paths, signing/build scripts or private work.",
+    "Four unavailable paths are not proof the repositories have no provider implementation; HermesLink restructures its source.",
+    "No exact one-item-stall resolution or end-to-end SideStore/iOS27 fork acceptance was established."
+  ],
+  "implementation_performed": false,
+  "ci_dispatched": false,
+  "phone_operation_performed": false,
+  "snapshots": [
+    {
+      "repo": "smithTea/blink",
+      "ref": "raw",
+      "sample": "100 newest fork default branches",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "jcjs/blink",
+      "ref": "raw",
+      "sample": "100 newest fork default branches",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "soubell/blink",
+      "ref": "raw",
+      "sample": "100 newest fork default branches",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "alexzulq/blink",
+      "ref": "raw",
+      "sample": "100 newest fork default branches",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "auritra/blink",
+      "ref": "raw",
+      "sample": "100 newest fork default branches",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "iRemark/blink",
+      "ref": "raw",
+      "sample": "100 newest fork default branches",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "fairul68/blink",
+      "ref": "raw",
+      "sample": "100 newest fork default branches",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "wg-dev-env/blink",
+      "ref": "raw",
+      "sample": "100 newest fork default branches",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "m88pybdb79-png/blink",
+      "ref": "raw",
+      "sample": "100 newest fork default branches",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "elcn233/blink",
+      "ref": "raw",
+      "sample": "100 newest fork default branches",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "justyura/blink",
+      "ref": "raw",
+      "sample": "100 newest fork default branches",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "stasgold/blink",
+      "ref": "raw",
+      "sample": "100 newest fork default branches",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "8vsmgwttft-del/blink",
+      "ref": "raw",
+      "sample": "100 newest fork default branches",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "limaoru/blink",
+      "ref": "raw",
+      "sample": "100 newest fork default branches",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "wayneguo/blink",
+      "ref": "raw",
+      "sample": "100 newest fork default branches",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "Jac0b-Shi/Peregrinus-Term",
+      "ref": "raw",
+      "sample": "100 newest fork default branches",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "soberanoadmin-blip707/OMNEXIS-Server",
+      "ref": "raw",
+      "sample": "100 newest fork default branches",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "pilppilo/wink",
+      "ref": "raw",
+      "sample": "100 newest fork default branches",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "Panda020420/blink-shell-ipa",
+      "ref": "raw",
+      "sample": "100 newest fork default branches",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "gadhadar/blink",
+      "ref": "raw",
+      "sample": "100 newest fork default branches",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "liujiyoung/blink",
+      "ref": "raw",
+      "sample": "100 newest fork default branches",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "Tipbs/blink",
+      "ref": "raw",
+      "sample": "100 newest fork default branches",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "cyanmint/hermesLink",
+      "ref": "default",
+      "sample": "100 newest fork default branches",
+      "error": {
+        "_error": "gh: Not Found (HTTP 404)"
+      }
+    },
+    {
+      "repo": "hanhyur/blink",
+      "ref": "raw",
+      "sample": "100 newest fork default branches",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "ShogunPanda/blink",
+      "ref": "raw",
+      "sample": "100 newest fork default branches",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "MrImmortal09/blink",
+      "ref": "raw",
+      "sample": "100 newest fork default branches",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "aman-xurrent/blink",
+      "ref": "raw",
+      "sample": "100 newest fork default branches",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "smalltownjeremy/blink",
+      "ref": "raw",
+      "sample": "100 newest fork default branches",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "leeloveki/blink",
+      "ref": "raw",
+      "sample": "100 newest fork default branches",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "fobos111/blink",
+      "ref": "raw",
+      "sample": "100 newest fork default branches",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "thodinh/blink",
+      "ref": "raw",
+      "sample": "100 newest fork default branches",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "mwiget/blink",
+      "ref": "raw",
+      "sample": "100 newest fork default branches",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "mhm62wjnw5-blip/blink",
+      "ref": "raw",
+      "sample": "100 newest fork default branches",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "nyxusmakes/blink",
+      "ref": "raw",
+      "sample": "100 newest fork default branches",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "zgfh/blink",
+      "ref": "raw",
+      "sample": "100 newest fork default branches",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "joon-aca/blink",
+      "ref": "joon-aca/v18.6.0",
+      "sample": "100 newest fork default branches",
+      "identical": false,
+      "changes": {
+        "FileProviderReplicatedExtension.swift": {
+          "base": "5a2e68107f52bd95f6c64c3b852ba6bed667c7bc",
+          "fork": "9381403608eb952db0c399b65a4e0e02004514c2"
+        }
+      }
+    },
+    {
+      "repo": "fingerart/blink",
+      "ref": "raw",
+      "sample": "100 newest fork default branches",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "dillonco/blink",
+      "ref": "raw",
+      "sample": "100 newest fork default branches",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "ma-syu/blink",
+      "ref": "raw",
+      "sample": "100 newest fork default branches",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "mitchmalone/blink",
+      "ref": "raw",
+      "sample": "100 newest fork default branches",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "Mega-Studios/blink",
+      "ref": "raw",
+      "sample": "100 newest fork default branches",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "bin-julayyil/blink",
+      "ref": "raw",
+      "sample": "100 newest fork default branches",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "MiRinChan/blink",
+      "ref": "raw",
+      "sample": "100 newest fork default branches",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "kyleliu-code/blink",
+      "ref": "raw",
+      "sample": "100 newest fork default branches",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "1fanwang/blink",
+      "ref": "raw",
+      "sample": "100 newest fork default branches",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "madjinn/blink",
+      "ref": "personal-testflight",
+      "sample": "100 newest fork default branches",
+      "identical": false,
+      "changes": {
+        "FileProviderReplicatedExtension.swift": {
+          "base": "5a2e68107f52bd95f6c64c3b852ba6bed667c7bc",
+          "fork": "9381403608eb952db0c399b65a4e0e02004514c2"
+        }
+      }
+    },
+    {
+      "repo": "chunky247/blink",
+      "ref": "raw",
+      "sample": "100 newest fork default branches",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "dkilzer7-prog/blink",
+      "ref": "raw",
+      "sample": "100 newest fork default branches",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "haroin57/blink",
+      "ref": "raw",
+      "sample": "100 newest fork default branches",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "TemmaTech/CodeOn",
+      "ref": "raw",
+      "sample": "100 newest fork default branches",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "emslGit/blink",
+      "ref": "raw",
+      "sample": "100 newest fork default branches",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "ahmedalsudani/blink",
+      "ref": "raw",
+      "sample": "100 newest fork default branches",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "Offshore21/blink",
+      "ref": "raw",
+      "sample": "100 newest fork default branches",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "ATphobia22/blink",
+      "ref": "raw",
+      "sample": "100 newest fork default branches",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "nkkarthik/blink",
+      "ref": "raw",
+      "sample": "100 newest fork default branches",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "cad0p/blink",
+      "ref": "raw",
+      "sample": "100 newest fork default branches",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "colinguozizhong/blink",
+      "ref": "raw",
+      "sample": "100 newest fork default branches",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "poku-e/SSHCandy",
+      "ref": "raw",
+      "sample": "100 newest fork default branches",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "phinze/blink",
+      "ref": "raw",
+      "sample": "100 newest fork default branches",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "erudenko/blink",
+      "ref": "raw",
+      "sample": "100 newest fork default branches",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "iotashan/blink",
+      "ref": "raw",
+      "sample": "100 newest fork default branches",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "alvarofeshki/movie",
+      "ref": "raw",
+      "sample": "100 newest fork default branches",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "u20024804/blink",
+      "ref": "raw",
+      "sample": "100 newest fork default branches",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "BoXu1225/blink",
+      "ref": "raw",
+      "sample": "100 newest fork default branches",
+      "error": {
+        "_error": "gh: Not Found (HTTP 404)"
+      }
+    },
+    {
+      "repo": "pereydabernaldino1-png/blink",
+      "ref": "raw",
+      "sample": "100 newest fork default branches",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "mxtk0771/blink",
+      "ref": "raw",
+      "sample": "100 newest fork default branches",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "davidpovarsky/blink",
+      "ref": "raw",
+      "sample": "100 newest fork default branches",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "ITJesse/blink",
+      "ref": "raw",
+      "sample": "100 newest fork default branches",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "ajsteiger/blink",
+      "ref": "raw",
+      "sample": "100 newest fork default branches",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "izenloading/blink",
+      "ref": "raw",
+      "sample": "100 newest fork default branches",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "jiojiotong/blink",
+      "ref": "raw",
+      "sample": "100 newest fork default branches",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "wu736139669/blink",
+      "ref": "raw",
+      "sample": "100 newest fork default branches",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "devops2626/blink",
+      "ref": "raw",
+      "sample": "100 newest fork default branches",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "BunsDev/blink-shell",
+      "ref": "raw",
+      "sample": "100 newest fork default branches",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "ttvdblock716-bot/blink",
+      "ref": "raw",
+      "sample": "100 newest fork default branches",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "tanu-pom/tanublink",
+      "ref": "raw",
+      "sample": "100 newest fork default branches",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "Flickdm/blink",
+      "ref": "raw",
+      "sample": "100 newest fork default branches",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "diasbaskara/blink",
+      "ref": "raw",
+      "sample": "100 newest fork default branches",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "abdullahsamir06/blink",
+      "ref": "raw",
+      "sample": "100 newest fork default branches",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "nianjiao6/blink_shell",
+      "ref": "raw",
+      "sample": "100 newest fork default branches",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "manoelbsneto/blink",
+      "ref": "raw",
+      "sample": "100 newest fork default branches",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "alexjalonso7777/blink",
+      "ref": "raw",
+      "sample": "100 newest fork default branches",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "TheBearodactyl/blink",
+      "ref": "raw",
+      "sample": "100 newest fork default branches",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "nateober/blink",
+      "ref": "raw",
+      "sample": "100 newest fork default branches",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "Salix0v0/blink",
+      "ref": "raw",
+      "sample": "100 newest fork default branches",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "shinshow/blink",
+      "ref": "raw",
+      "sample": "100 newest fork default branches",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "D3V1LsH3LL/blink",
+      "ref": "raw",
+      "sample": "100 newest fork default branches",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "j4hangir/siblink",
+      "ref": "raw",
+      "sample": "100 newest fork default branches",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "expensiverest/blink",
+      "ref": "raw",
+      "sample": "100 newest fork default branches",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "warmenhoven/blink",
+      "ref": "raw",
+      "sample": "100 newest fork default branches",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "tingkai-c/blink",
+      "ref": "raw",
+      "sample": "100 newest fork default branches",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "ElevateConsultingDev/blink",
+      "ref": "raw",
+      "sample": "100 newest fork default branches",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "elevateconsultingdave/blink",
+      "ref": "raw",
+      "sample": "100 newest fork default branches",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "ctmeeks22/blink",
+      "ref": "raw",
+      "sample": "100 newest fork default branches",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "yhbyhb/blink",
+      "ref": "raw",
+      "sample": "100 newest fork default branches",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "ramiroamorim/blink",
+      "ref": "raw",
+      "sample": "100 newest fork default branches",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "Diachrony/blink",
+      "ref": "raw",
+      "sample": "100 newest fork default branches",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "matiskov/blink",
+      "ref": "raw",
+      "sample": "100 newest fork default branches",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "wuwenrui/blink",
+      "ref": "raw",
+      "sample": "100 newest fork default branches",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "hsung-yang/blink",
+      "ref": "raw",
+      "sample": "100 newest fork default branches",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "soubell/blink",
+      "ref": "4903168c9e76970321c52fe79ec47c7fb8049ec3",
+      "sample": "October 23 sampled custom tip",
+      "identical": false,
+      "changes": {
+        "FileProviderReplicatedExtension.swift": {
+          "base": "5a2e68107f52bd95f6c64c3b852ba6bed667c7bc",
+          "fork": "9381403608eb952db0c399b65a4e0e02004514c2"
+        }
+      }
+    },
+    {
+      "repo": "wg-dev-env/blink",
+      "ref": "72d31112d42a4ea3c5cfa83eb432d70fd0d3b025",
+      "sample": "October 23 sampled custom tip",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "wg-dev-env/blink",
+      "ref": "a86b038c4ef9278c84dc7dc0cad87a6292fc880d",
+      "sample": "October 23 sampled custom tip",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "wg-dev-env/blink",
+      "ref": "53945fb8add80c7cdbbbe094b13f0162ca0f6dfe",
+      "sample": "October 23 sampled custom tip",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "wg-dev-env/blink",
+      "ref": "a50485f51259ecc303f751499833946abad94f78",
+      "sample": "October 23 sampled custom tip",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "wg-dev-env/blink",
+      "ref": "f4ef09d05c7c2aa7377e22d42a36c06ca6f0f694",
+      "sample": "October 23 sampled custom tip",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "wg-dev-env/blink",
+      "ref": "20b5219f292d0b5efe44cd3f56da3f498c265812",
+      "sample": "October 23 sampled custom tip",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "wg-dev-env/blink",
+      "ref": "defad193246844ad07ddab6ee9a194ac5ee4d30d",
+      "sample": "October 23 sampled custom tip",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "wg-dev-env/blink",
+      "ref": "af72f298da6a75262365cf1980b011d2d7e2b9fe",
+      "sample": "October 23 sampled custom tip",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "wg-dev-env/blink",
+      "ref": "1b25b5b00cf9b3cb9239158ce3863c8b620887d6",
+      "sample": "October 23 sampled custom tip",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "wg-dev-env/blink",
+      "ref": "6de42fc7f42e18d687d12ce261de537a98cb9155",
+      "sample": "October 23 sampled custom tip",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "wg-dev-env/blink",
+      "ref": "4dc8cbb771f440259a2394bdaa785aca465dcaba",
+      "sample": "October 23 sampled custom tip",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "wg-dev-env/blink",
+      "ref": "8a327a147edf9171d6a8985d9dd2b7a1a161f5db",
+      "sample": "October 23 sampled custom tip",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "wg-dev-env/blink",
+      "ref": "22e2f02bb7f26bc739697da7cdb4fcd7f404ab7a",
+      "sample": "October 23 sampled custom tip",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "wg-dev-env/blink",
+      "ref": "f3dafb8a84cc43e0c064889756089f4b055daca6",
+      "sample": "October 23 sampled custom tip",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "wg-dev-env/blink",
+      "ref": "038f0ef1a3b18bb50209cc7df749a307709c0e63",
+      "sample": "October 23 sampled custom tip",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "wg-dev-env/blink",
+      "ref": "0f3f4cbe8b2190bf2af484c9b90c27e1464af4f3",
+      "sample": "October 23 sampled custom tip",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "wg-dev-env/blink",
+      "ref": "4db381cdd11f749e2ae391d21655b057cf8686ee",
+      "sample": "October 23 sampled custom tip",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "wg-dev-env/blink",
+      "ref": "020a00558284f9fff3cfe6ee0e25da4a936abd3b",
+      "sample": "October 23 sampled custom tip",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "wg-dev-env/blink",
+      "ref": "5ebf0e4794cc0e7d00cc7bf870d75270849a27fb",
+      "sample": "October 23 sampled custom tip",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "wg-dev-env/blink",
+      "ref": "2dfa3d5806319f6b0ca505f8fb659905224e9560",
+      "sample": "October 23 sampled custom tip",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "wg-dev-env/blink",
+      "ref": "ab265f582bdbd9e959383486247727c7011acadc",
+      "sample": "October 23 sampled custom tip",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "wg-dev-env/blink",
+      "ref": "7af5698287357741bec18d4edbfa819ef34af49a",
+      "sample": "October 23 sampled custom tip",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "wg-dev-env/blink",
+      "ref": "cbc6b5d6477c73554db6911fd8da7ad08917edd4",
+      "sample": "October 23 sampled custom tip",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "wg-dev-env/blink",
+      "ref": "a71d97ae542edae25914cc4932b255db7b78d349",
+      "sample": "October 23 sampled custom tip",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "wg-dev-env/blink",
+      "ref": "71c6670f2d6d14d502cf44c1de8687d57cb25e45",
+      "sample": "October 23 sampled custom tip",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "wg-dev-env/blink",
+      "ref": "c3e41122e245ab5064944a658502210fe5e5a7cc",
+      "sample": "October 23 sampled custom tip",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "wg-dev-env/blink",
+      "ref": "2ba4f562aa52ebefa5e52616c0dd9064c2679bbe",
+      "sample": "October 23 sampled custom tip",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "wg-dev-env/blink",
+      "ref": "c5bc33e0a0e7e1e73ca0c6947a4c7a79a8b11a96",
+      "sample": "October 23 sampled custom tip",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "wg-dev-env/blink",
+      "ref": "7bdb2bc9166582086005216c62e57ded36593561",
+      "sample": "October 23 sampled custom tip",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "wg-dev-env/blink",
+      "ref": "08c677c6366f49b5ae2fb8e49fcbe25c1900c1b2",
+      "sample": "October 23 sampled custom tip",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "wg-dev-env/blink",
+      "ref": "c8df05948cd2301bcaf73e38c376981bff95b1e0",
+      "sample": "October 23 sampled custom tip",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "wg-dev-env/blink",
+      "ref": "f93730d258f32ac36939a8efe48aac55bb1eec59",
+      "sample": "October 23 sampled custom tip",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "wg-dev-env/blink",
+      "ref": "933990609efd28551ef2402cd8bd7314a26a8e99",
+      "sample": "October 23 sampled custom tip",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "wg-dev-env/blink",
+      "ref": "e1c4ecfebd09f241d5e018974f5f22583ecc5f9c",
+      "sample": "October 23 sampled custom tip",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "wg-dev-env/blink",
+      "ref": "091eb675c47b03e0897b90e432db1f0b29b6697c",
+      "sample": "October 23 sampled custom tip",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "wg-dev-env/blink",
+      "ref": "f5eef82aa6498abd580012260d2e29086ee97bc1",
+      "sample": "October 23 sampled custom tip",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "wg-dev-env/blink",
+      "ref": "1a8bc25abee9735c63e138e62a01c3ffdede173e",
+      "sample": "October 23 sampled custom tip",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "wg-dev-env/blink",
+      "ref": "27d3fe19ed95d44475172e165b14e687434dbc16",
+      "sample": "October 23 sampled custom tip",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "wg-dev-env/blink",
+      "ref": "6577b608de8641076c92bc6f204f8bd500ff32eb",
+      "sample": "October 23 sampled custom tip",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "wg-dev-env/blink",
+      "ref": "54975c72712f2e2ce32fa7ca257dada120b27d88",
+      "sample": "October 23 sampled custom tip",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "wg-dev-env/blink",
+      "ref": "7e0d92e2d1f020189fd17150214e6e25f3431ae9",
+      "sample": "October 23 sampled custom tip",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "stasgold/blink",
+      "ref": "22bd15a8743ba236b09c3c865a105d406a95ec63",
+      "sample": "October 23 sampled custom tip",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "liujiyoung/blink",
+      "ref": "169c5307992d1a600b38a07203373531e013e3c6",
+      "sample": "October 23 sampled custom tip",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "cyanmint/hermesLink",
+      "ref": "b1cd123752edc42775f6b724fb6a1f4a46bf8eb3",
+      "sample": "October 23 sampled custom tip",
+      "error": {
+        "_error": "gh: Not Found (HTTP 404)"
+      }
+    },
+    {
+      "repo": "cyanmint/hermesLink",
+      "ref": "150fc3f5747ea10c355abb5f33e0ac1a37fe6c74",
+      "sample": "October 23 sampled custom tip",
+      "error": {
+        "_error": "gh: Not Found (HTTP 404)"
+      }
+    },
+    {
+      "repo": "ShogunPanda/blink",
+      "ref": "c1bff72949b8f2a19fa6a4ac352a55f666ab15dc",
+      "sample": "October 23 sampled custom tip",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "MrImmortal09/blink",
+      "ref": "359ed52f1ad758e4f47887c8d21ae330a1d62895",
+      "sample": "October 23 sampled custom tip",
+      "identical": false,
+      "changes": {
+        "FileProviderReplicatedExtension.swift": {
+          "base": "5a2e68107f52bd95f6c64c3b852ba6bed667c7bc",
+          "fork": "9381403608eb952db0c399b65a4e0e02004514c2"
+        }
+      }
+    },
+    {
+      "repo": "aman-xurrent/blink",
+      "ref": "a3243936465ac40c62e9adac81162345ff3c22f2",
+      "sample": "October 23 sampled custom tip",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "mwiget/blink",
+      "ref": "d3d3ad1acec46068614dd27a9c3f662b5f936f7e",
+      "sample": "October 23 sampled custom tip",
+      "identical": false,
+      "changes": {
+        "FileProviderReplicatedExtension.swift": {
+          "base": "5a2e68107f52bd95f6c64c3b852ba6bed667c7bc",
+          "fork": "9381403608eb952db0c399b65a4e0e02004514c2"
+        }
+      }
+    },
+    {
+      "repo": "mwiget/blink",
+      "ref": "c1769ef18193314e5bad057b539867a26c5b8531",
+      "sample": "October 23 sampled custom tip",
+      "identical": false,
+      "changes": {
+        "FileProviderReplicatedExtension.swift": {
+          "base": "5a2e68107f52bd95f6c64c3b852ba6bed667c7bc",
+          "fork": "9381403608eb952db0c399b65a4e0e02004514c2"
+        }
+      }
+    },
+    {
+      "repo": "mwiget/blink",
+      "ref": "a3507566c5ac299108cb585d745b8a666272eebe",
+      "sample": "October 23 sampled custom tip",
+      "identical": false,
+      "changes": {
+        "FileProviderReplicatedExtension.swift": {
+          "base": "5a2e68107f52bd95f6c64c3b852ba6bed667c7bc",
+          "fork": "9381403608eb952db0c399b65a4e0e02004514c2"
+        }
+      }
+    },
+    {
+      "repo": "zgfh/blink",
+      "ref": "113f30b17f61fe4f678d2a1a4bb39941ee4c220c",
+      "sample": "October 23 sampled custom tip",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "fingerart/blink",
+      "ref": "66991332a18c7f513ac9184b4a828d0f1698883f",
+      "sample": "October 23 sampled custom tip",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "dillonco/blink",
+      "ref": "4f3d54950aa5e452e0405a8397719f83da91a570",
+      "sample": "October 23 sampled custom tip",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "mitchmalone/blink",
+      "ref": "10c3b1c56ee0bc1decad5fff6f464551d45c6f51",
+      "sample": "October 23 sampled custom tip",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "mitchmalone/blink",
+      "ref": "c679cb6a3d0451a34b010774bca1e5d101145e6c",
+      "sample": "October 23 sampled custom tip",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "mitchmalone/blink",
+      "ref": "82427433e94afb0b06a3c5adb87ee621936de5af",
+      "sample": "October 23 sampled custom tip",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "mitchmalone/blink",
+      "ref": "c28f85b3ebd00fb6f7e843764d3df7aafb1719b5",
+      "sample": "October 23 sampled custom tip",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "mitchmalone/blink",
+      "ref": "c54f46a85bfb43a15ce8b8240506a940ee814fb5",
+      "sample": "October 23 sampled custom tip",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "mitchmalone/blink",
+      "ref": "767bf16c66a333ad7314525862cd20df9b4a6dc0",
+      "sample": "October 23 sampled custom tip",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "mitchmalone/blink",
+      "ref": "9f487abfcace5bc9d144094d065e07ecc2afe894",
+      "sample": "October 23 sampled custom tip",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "MiRinChan/blink",
+      "ref": "7b0c93b0d14c8ba3d8e7066d0bdfecce8dc656aa",
+      "sample": "October 23 sampled custom tip",
+      "identical": false,
+      "changes": {
+        "FileProviderReplicatedExtension.swift": {
+          "base": "5a2e68107f52bd95f6c64c3b852ba6bed667c7bc",
+          "fork": "9381403608eb952db0c399b65a4e0e02004514c2"
+        }
+      }
+    },
+    {
+      "repo": "MiRinChan/blink",
+      "ref": "69dd50339ea2410e78e0ffda800c0ded7e6069f9",
+      "sample": "October 23 sampled custom tip",
+      "identical": false,
+      "changes": {
+        "FileProviderReplicatedExtension.swift": {
+          "base": "5a2e68107f52bd95f6c64c3b852ba6bed667c7bc",
+          "fork": "9381403608eb952db0c399b65a4e0e02004514c2"
+        }
+      }
+    },
+    {
+      "repo": "MiRinChan/blink",
+      "ref": "d781d4522b346e6492b7ad083fe68923dfef338d",
+      "sample": "October 23 sampled custom tip",
+      "identical": false,
+      "changes": {
+        "FileProviderReplicatedExtension.swift": {
+          "base": "5a2e68107f52bd95f6c64c3b852ba6bed667c7bc",
+          "fork": "9381403608eb952db0c399b65a4e0e02004514c2"
+        }
+      }
+    },
+    {
+      "repo": "kyleliu-code/blink",
+      "ref": "5bd4e49c625785c0c9311e8f1727a15fdea81ee4",
+      "sample": "October 23 sampled custom tip",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "TemmaTech/CodeOn",
+      "ref": "ee0d477af2647f01649448668b51c3465c849770",
+      "sample": "October 23 sampled custom tip",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "ahmedalsudani/blink",
+      "ref": "1cd2fe479bda85caa1c10139cffe56b1a7053ab9",
+      "sample": "October 23 sampled custom tip",
+      "identical": false,
+      "changes": {
+        "FileProviderReplicatedExtension+Helpers.swift": {
+          "base": "76965930b18d4912385bd47d88c73b91a5ecff68",
+          "fork": "0edbce7fe6914d8c9d70e65e9dee648be5ca0a2b"
+        }
+      }
+    },
+    {
+      "repo": "ttvdblock716-bot/blink",
+      "ref": "691600835a57c747d96b37a33d84ffe339b24e99",
+      "sample": "October 23 sampled custom tip",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "ttvdblock716-bot/blink",
+      "ref": "6debbee8d1cd0e556d182a649efd742e33ab3f49",
+      "sample": "October 23 sampled custom tip",
+      "identical": false,
+      "changes": {
+        "FileProviderReplicatedExtension.swift": {
+          "base": "5a2e68107f52bd95f6c64c3b852ba6bed667c7bc",
+          "fork": "9381403608eb952db0c399b65a4e0e02004514c2"
+        }
+      }
+    },
+    {
+      "repo": "nateober/blink",
+      "ref": "7fff28602e8c3e299f7235d4b6d1f046b66aff67",
+      "sample": "October 23 sampled custom tip",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "nateober/blink",
+      "ref": "f9d7fae8f9092db4cb73b8c74f2f820761048bc2",
+      "sample": "October 23 sampled custom tip",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "nateober/blink",
+      "ref": "412eb9bf30dda56da8219f13d885c177156ce9f5",
+      "sample": "October 23 sampled custom tip",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "nateober/blink",
+      "ref": "5b13f4f6702461c78a5f051cbc1b53b2692650f1",
+      "sample": "October 23 sampled custom tip",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "nateober/blink",
+      "ref": "6debbee8d1cd0e556d182a649efd742e33ab3f49",
+      "sample": "October 23 sampled custom tip",
+      "identical": false,
+      "changes": {
+        "FileProviderReplicatedExtension.swift": {
+          "base": "5a2e68107f52bd95f6c64c3b852ba6bed667c7bc",
+          "fork": "9381403608eb952db0c399b65a4e0e02004514c2"
+        }
+      }
+    },
+    {
+      "repo": "nateober/blink",
+      "ref": "a2d825afedd75381b49ed59cc65431111408b042",
+      "sample": "October 23 sampled custom tip",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "mikeydotio/blink",
+      "ref": "raw",
+      "sample": "older active fork branch",
+      "identical": true,
+      "changes": {}
+    },
+    {
+      "repo": "chrisl8/blink",
+      "ref": "raw",
+      "sample": "older active fork branch",
+      "identical": false,
+      "changes": {
+        "FileProviderReplicatedExtension.swift": {
+          "base": "5a2e68107f52bd95f6c64c3b852ba6bed667c7bc",
+          "fork": "9381403608eb952db0c399b65a4e0e02004514c2"
+        }
+      }
+    },
+    {
+      "repo": "b-relay/blink",
+      "ref": "brendon/main",
+      "sample": "older active fork branch",
+      "identical": false,
+      "changes": {
+        "FileProviderReplicatedExtension.swift": {
+          "base": "5a2e68107f52bd95f6c64c3b852ba6bed667c7bc",
+          "fork": "9381403608eb952db0c399b65a4e0e02004514c2"
+        }
+      }
+    },
+    {
+      "repo": "b-relay/blink",
+      "ref": "raw",
+      "sample": "older active fork branch",
+      "identical": false,
+      "changes": {
+        "SSH": {
+          "base": "c1e37d42bfb9083333de604212a596f11bdfd373",
+          "fork": "ef9d3ae3926510fa644fa9ac69b0e3bb67ece875"
+        },
+        "FileProviderReplicatedExtension.swift": {
+          "base": "5a2e68107f52bd95f6c64c3b852ba6bed667c7bc",
+          "fork": "f59ef9407fc35b403f2801078eda41ffc1f00679"
+        },
+        "FilesTranslatorConnection.swift": {
+          "base": "244fc229592193243ff26f34a9feeb30178cb8d9",
+          "fork": "fd86654085dcdd7bee394d08b76fb1c846c09ab9"
+        },
+        "FileProviderReplicatedEnumerator.swift": {
+          "base": "be2d0988a0087da85a9db58bd97d3846679d84c5",
+          "fork": "d9867f366aba840b47763cd26a69060c935fb5d9"
+        }
+      }
+    },
+    {
+      "repo": "CoultonF/blink",
+      "ref": "raw",
+      "sample": "older active fork branch",
+      "identical": false,
+      "changes": {
+        "SSH": {
+          "base": "c1e37d42bfb9083333de604212a596f11bdfd373",
+          "fork": "ef9d3ae3926510fa644fa9ac69b0e3bb67ece875"
+        },
+        "FileProviderReplicatedExtension.swift": {
+          "base": "5a2e68107f52bd95f6c64c3b852ba6bed667c7bc",
+          "fork": "f59ef9407fc35b403f2801078eda41ffc1f00679"
+        },
+        "FilesTranslatorConnection.swift": {
+          "base": "244fc229592193243ff26f34a9feeb30178cb8d9",
+          "fork": "fd86654085dcdd7bee394d08b76fb1c846c09ab9"
+        },
+        "FileProviderReplicatedEnumerator.swift": {
+          "base": "be2d0988a0087da85a9db58bd97d3846679d84c5",
+          "fork": "d9867f366aba840b47763cd26a69060c935fb5d9"
+        }
+      }
+    },
+    {
+      "repo": "CoultonF/blink",
+      "ref": "signing-data-protection-2026-10-10",
+      "sample": "older active fork branch",
+      "identical": false,
+      "changes": {
+        "SSH": {
+          "base": "c1e37d42bfb9083333de604212a596f11bdfd373",
+          "fork": "ef9d3ae3926510fa644fa9ac69b0e3bb67ece875"
+        },
+        "FileProviderReplicatedExtension.swift": {
+          "base": "5a2e68107f52bd95f6c64c3b852ba6bed667c7bc",
+          "fork": "f59ef9407fc35b403f2801078eda41ffc1f00679"
+        },
+        "FilesTranslatorConnection.swift": {
+          "base": "244fc229592193243ff26f34a9feeb30178cb8d9",
+          "fork": "fd86654085dcdd7bee394d08b76fb1c846c09ab9"
+        },
+        "FileProviderReplicatedEnumerator.swift": {
+          "base": "be2d0988a0087da85a9db58bd97d3846679d84c5",
+          "fork": "d9867f366aba840b47763cd26a69060c935fb5d9"
+        }
+      }
+    },
+    {
+      "repo": "CoultonF/blink",
+      "ref": "signing-renewal-2026-10-10",
+      "sample": "older active fork branch",
+      "identical": false,
+      "changes": {
+        "SSH": {
+          "base": "c1e37d42bfb9083333de604212a596f11bdfd373",
+          "fork": "ef9d3ae3926510fa644fa9ac69b0e3bb67ece875"
+        },
+        "FileProviderReplicatedExtension.swift": {
+          "base": "5a2e68107f52bd95f6c64c3b852ba6bed667c7bc",
+          "fork": "f59ef9407fc35b403f2801078eda41ffc1f00679"
+        },
+        "FilesTranslatorConnection.swift": {
+          "base": "244fc229592193243ff26f34a9feeb30178cb8d9",
+          "fork": "fd86654085dcdd7bee394d08b76fb1c846c09ab9"
+        },
+        "FileProviderReplicatedEnumerator.swift": {
+          "base": "be2d0988a0087da85a9db58bd97d3846679d84c5",
+          "fork": "d9867f366aba840b47763cd26a69060c935fb5d9"
+        }
+      }
+    },
+    {
+      "repo": "jp-hoehmann/blink",
+      "ref": "raw",
+      "sample": "older active fork branch",
+      "identical": true,
+      "changes": {}
+    }
+  ]
+}
