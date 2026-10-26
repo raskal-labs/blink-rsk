@@ -66,8 +66,11 @@ Milestones are **dependency ordered, not date estimates**. Ship one narrow incre
 **Exit gate:** One known restorable IPA, explicit test matrix and remaining limitations. Stop on unaccepted data-loss or provisioning risk.
 
 ### M1 — Daily terminal usability
-**Status:** Proposed; issue #3 is already open  
+**Status:** Proposed; former issue #3 returns HTTP 410 (deleted), observed October 26
+
 **Goal:** Remove high-frequency frustrations with minimal terminal regressions.
+
+**October 26 source review:** [upstream issues/discussions and personal-branch findings](docs/TERMINAL-UX-UPSTREAM-REVIEW.md) identify two tiny source corrections, a contained optional D-pad and existing controls worth exposing. Long-selection copying and scroll freezes still lack a demonstrated repair. This is research, not implementation authorization; the queued Files fix remains deferred to the next iteration's build.
 
 **Priority A:** Investigate scrolling behavior across local Blink shell, SSH and Mosh, first outside Zellij/tmux; distinguish client defects from transport/application behavior before proposing a code fix. Other proposed improvements: independent Input versus Select/Scroll interaction; dependable Hide/Show Keyboard; accessible Select All (define scope); reliable selection and copying across scrollback; normal arrow-key option. Test landscape/portrait and software/hardware keyboard.
 
@@ -165,7 +168,7 @@ Use narrowly scoped adapters to existing commands/APIs. Avoid designing a genera
 ## 7. Immediate next sequence
 
 1. **M0 reliability and acceptance (issue #2):** bookmark repair is implemented and built; October 25 user reports persistence improving. Reconcile installed-build identity, retain that positive evidence and finish failure/recovery and refresh checks. Shortcuts discovery is Blocked after launch/restart: investigate registration and SideStore handling before proposing another build. Verify Files.app browse/transfer/reopen independently; preserve rollback and earlier successful tests.
-2. **M1 usability (issue #3):** compare scrolling in local shell, SSH and Mosh and audit existing controls. Establish whether a defect exists before choosing a scrolling fix; keep selection/keyboard improvements scoped.
+2. **M1 usability:** use the [October 26 source review](docs/TERMINAL-UX-UPSTREAM-REVIEW.md) to choose a bounded follow-up. Compare scrolling in local shell, SSH and Mosh, expose existing controls where sufficient, and keep selection/keyboard defects separate. The previously linked issue #3 is deleted; this review does not recreate it.
 3. **Independent read-only research:** inventory existing Blink/iOS actions, test one official HA → approved GameCube action → actionable notification workflow without a new IPA, and review the upstream session-link/App Intents source for security and compatibility. Capture evidence in [iOS integrations](docs/IOS-INTEGRATIONS.md) and [UX research](docs/UX-RESEARCH.md); no build or new app identity is authorized.
 
 ## 8. Sources and linked tasks
