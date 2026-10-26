@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "recorded_date": "2026-10-24",
+  "recorded_date": "2026-10-26",
   "issue": "https://github.com/raskal-labs/blink-rsk/issues/2",
   "status": "In Progress",
   "branch": "fix/bookmarks-session-actions",
@@ -55,7 +55,7 @@
       "reported_by": "user",
       "reported_date": "2026-10-24",
       "reported_ipa_filename": "Blink-SideStore-18.7.0-1097-native-fileprovider.ipa",
-      "scope": "User reports installing an IPA with this filename. Both October 12 and October 24 candidates use it; download source or SHA is still needed to identify the installed candidate. No agent installation was performed."
+      "scope": "User initially reported installing the shared IPA filename, later suspected an older version, then reported links and all three Shortcuts working after receiving the October 24 candidate download link. Exact installed source/SHA still not independently verified. No agent installation was performed."
     },
     "iphone_bookmark_persistence_recovery": {
       "status": "In Progress",
@@ -63,10 +63,11 @@
       "scope": "User reports bookmarks persisting well; temporary-provider failure/recovery, refresh and exact installed candidate identity remain unverified."
     },
     "iphone_shortcuts_discovery": {
-      "status": "Blocked",
-      "reported_date": "2026-10-25",
-      "scope": "User reports no actions after opening Blink and restarting iPhone. Candidate metadata contains three discoverable actions. Missing registration refresh is a hypothesis; cause remains Unknown.",
-      "tasks": "SESSION-ACTIONS-CANDIDATE.md#october-25-device-feedback-and-follow-up"
+      "status": "Verified",
+      "reported_date": "2026-10-26",
+      "reported_by": "user",
+      "scope": "User explicitly confirms all three Blink actions appear and run on their current installation; supersedes October 25 discovery blocker. Exact installed IPA SHA not independently verified.",
+      "tasks": "SESSION-ACTIONS-CANDIDATE.md#october-26-links-and-shortcuts-success"
     },
     "files_app_browse": {
       "status": "Unknown"
@@ -91,11 +92,25 @@
         "RunCommandOnHostIntent",
         "RunScriptOnHostIntent"
       ],
-      "scope": "Present in packaged App Intents metadata; device discovery/execution remains Unknown"
+      "scope": "All three types are present in packaged metadata; October 26 user separately confirms device discovery and basic execution."
     },
     "link_action_validation": {
       "status": "Verified",
       "scope": "Compiled pure Swift validation, guarded patch application, seven shell-boundary fixtures on Linux and macOS; actual ios_system behavior/confirmation UI need iPhone acceptance"
+    },
+    "iphone_session_links": {
+      "status": "Verified",
+      "reported_date": "2026-10-26",
+      "reported_by": "user",
+      "scope": "User reports host/session links work on the current installation after being directed to the October 24 candidate. Supersedes the earlier unsuccessful attempt on an unestablished build; detailed negative/cancellation and cold/warm launch tests remain unestablished.",
+      "earlier_failure_cause": "Unknown; user suspected an older version. No code repair demonstrated or applied.",
+      "session_id_semantics": "In-memory focus mapping only; does not rename the visible tab."
+    },
+    "iphone_shortcuts_execution": {
+      "status": "Verified",
+      "reported_date": "2026-10-26",
+      "reported_by": "user",
+      "scope": "Basic execution of all three actions confirmed by user; detailed cancellation, invalid inputs, quoting/interpreter matrix, host-key behavior and refresh not individually established."
     }
   },
   "artifact": {
@@ -115,13 +130,13 @@
   "installed_app_or_user_data_change_actor": "User-reported IPA installation; no agent phone operation or verified data migration",
   "limitations": [
     "Already-erased bookmarks require folder selection again",
-    "Apple security grants, SwiftUI interactions, Shortcuts discovery/execution and Files behavior require device verification",
+    "Apple security grants, picker/recovery interactions, detailed cancellation/invalid-input and host-key checks, Files behavior and refresh still require individual device evidence.",
     "Installed IPA/source/SHA reconciliation remains Unknown",
     "No synchronization with external processes editing the store or aliases",
     "Shortcuts actions are foreground terminal launches, with no returned output or remote success guarantee",
     "Exact 18.7.1 callback restoration is not established; URLs navigate only and reject command/key payloads"
   ],
-  "next_gate": "Confirm the download source or SHA of the user-installed IPA, then record launch/saved SSH, bookmark visibility and independent Files.app browse/transfer/reopen results against that identified artifact. Any further app update or refresh requires its separate data-safe decision.",
+  "next_gate": "Retain user-confirmed links and all-three-Shortcuts success. Complete bookmark outage/recovery/reselection/deletion, original connection regressions, Files.app browse/download/upload/reopen, detailed safety checks and separately approved refresh; reconcile installed SHA before release acceptance. No merge yet.",
   "ci_dispatches": 1,
   "pull_request": "https://github.com/raskal-labs/blink-rsk/pull/7"
 }

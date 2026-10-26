@@ -43,27 +43,43 @@ Combined iPhone checklist, after a separately approved data-safe install route u
 5. Find all three actions in Shortcuts. Open/focus a session; cancel a command and script, then run harmless `printf` fixtures on a known host. Check quotes, literal `$()`/semicolons and multiline script behavior. Output must appear only on the intended remote host's terminal. Verify unknown/changed SSH keys still prompt; never accept a mismatch as part of this test.
 6. Original SSH/Mosh, SFTP/SCP and iOS Files **browse, download, upload, reopen** remain separate checks. Record refresh/persistence later in a separately approved refresh session. Do not merge or advance the baseline until device acceptance.
 
-## October 25 device feedback and follow-up
+## October 25 device feedback and follow-up (historical blocker)
 
 User reports bookmarks are persisting well. Status: **In Progress**, with positive device evidence; temporary-provider failure/recovery and refresh have not been established. Exact installed candidate identity remains **Unknown** because the older and newer IPAs share a filename/version.
 
-Shortcuts discovery: **Blocked**. The user reports no actions after opening Blink and restarting the iPhone. Packaged metadata has all three actions with `isDiscoverable: true` and the AppShortcutsProvider. Source inspection found no `BlinkSessionShortcuts.updateAppShortcutParameters()` call. This is a repair hypothesis, not a demonstrated root cause; SideStore rewriting/signing and installed-build identity also need checking. Apple's [WWDC23 guidance](https://developer.apple.com/videos/play/wwdc2023/10102/) demonstrates parameter refresh; it does not establish that omitting it explains this device failure. SideStore issue #1199 supplies no verified matching repair.
+Shortcuts discovery at this checkpoint: **Blocked** (superseded by October 26 success below). The user reports no actions after opening Blink and restarting the iPhone. Packaged metadata has all three actions with `isDiscoverable: true` and the AppShortcutsProvider. Source inspection found no `BlinkSessionShortcuts.updateAppShortcutParameters()` call. This is a repair hypothesis, not a demonstrated root cause; SideStore rewriting/signing and installed-build identity also need checking. Apple's [WWDC23 guidance](https://developer.apple.com/videos/play/wwdc2023/10102/) demonstrates parameter refresh; it does not establish that omitting it explains this device failure. SideStore issue #1199 supplies no verified matching repair.
 
 Associated tasks under [issue #2](https://github.com/raskal-labs/blink-rsk/issues/2):
 
 - [x] **Verified:** inspect the candidate IPA for all three discoverable action declarations and provider metadata.
 - [x] **Verified:** capture user report that launch/restart did not restore discovery.
 - [ ] **Unknown:** reconcile the installed IPA with the October 24 download/artifact.
-- [ ] **In Progress:** diagnose registration versus SideStore metadata/signing behavior.
-- [ ] **Proposed:** evaluate a lifecycle registration refresh and make the smallest justified source fix; do not assume the missing call is sufficient.
-- [ ] **Blocked:** find all three actions on iPhone, then test foreground launch, cancellation and harmless execution.
+- [x] **Verified (user report, October 26):** the discovery blocker cleared; no registration/signing repair was demonstrated or applied.
+- **Proposed repair deferred:** no lifecycle registration change is justified by the current successful result; revisit only if a failure recurs on an identified build.
+- [x] **Verified (user report, October 26):** all three actions appear and run. Cancellation, negative inputs and SSH trust checks still need their own observations.
 - [ ] **In Progress:** retain positive bookmark feedback and finish failure/recovery and refresh acceptance.
 - [ ] **Unknown:** independently establish current Files.app browse/download/upload/reopen behavior.
 
 This documentation update does not dispatch another build, change app identity or install anything. PR #7 remains unmerged.
 
+## October 26 host-link feedback (initial unsuccessful attempt)
+
+**Host/session link acceptance at this earlier attempt: Blocked; cause: Unknown.** The user reports that the suggested host link opened Blink to the existing activity without connecting or establishing the requested session. After initially selecting an error-message answer, the user clarified that **no error message appeared**; retain the later clarification. The user is not sure whether the installed IPA came from October 24 run `40128366917`. Do not attribute this result to the built candidate as an established fact.
+
+The October 24 source handles both cold-launch URL contexts and running-app URL contexts. A handled host link should either request connection confirmation or show a generic error. A saved alias must match the GUI Hosts entry exactly (case-sensitive `BKHosts.withHost` lookup); a working SSH-config alias alone does not establish that entry. These are source observations, not a device diagnosis. The `id` parameter is an in-memory return-to-session mapping, **not a visible session/tab rename**; earlier chat wording was imprecise.
+
+Proposed diagnostic at that checkpoint (no longer needed after the later success report): with Blink already showing the terminal and no modal dialog open, use Shortcuts **Open URLs** with `blinkshell://focus?id=rsk-probe-20261026`. No session with that probe ID has been requested. If the candidate handler receives it, it should show **Could not open session…**, without starting SSH or creating a session. Record the observed result before proposing a code fix. Silent app resumption would leave installed-build/app routing or URL delivery/presentation unresolved; it would not establish a particular cause. No additional build, app installation, identity change or phone-data operation is authorized or performed by this investigation.
+
+## October 26 links and Shortcuts success
+
+**Verified (user report):** host/session links and basic discovery/execution of all three Blink Shortcuts actions on the user's current iPhone installation. After saying they might have been using an older version and receiving the October 24 candidate download link, the user reported “they work.” When explicitly asked whether all three Shortcuts actions also appear and run, rather than only the links, the user confirmed “yep!”
+
+This supersedes the earlier link/discovery blocker for current use. It does not establish that a registration/lifecycle defect caused the earlier symptoms; installed-build confusion remains a possible explanation, not a proven cause. No source fix, second build or agent installation was performed. The exact installed IPA SHA has not been independently checked, and the success report alone is not an install/signing receipt.
+
+Remaining acceptance: detailed cancellation/invalid-link and SSH trust behavior; bookmark temporary-unavailability/reselection/deletion and post-refresh recovery; original connection regressions and independent Files.app browse/download/upload/reopen. Preserve the positive bookmark-persistence report. M0 and issue #2 stay In Progress, and PR #7 stays unmerged pending the remaining acceptance. The `id` remains an internal focus mapping, not a visible tab rename.
+
 ## Final candidate receipt
 
-**Build/structure: Verified; iPhone behavior: Unknown.** The one authorized [CI run 40128366917](https://github.com/raskal-labs/blink-rsk/actions/runs/40128366917) passed Xcode 26.6 native tests and complete iOS Release compilation at `38bd29221485c5306813c3916048bc77772d642b`. All three actions are present in packaged App Intents metadata. No diagnostics were emitted against the new Intents/model or bookmark files. Signing and packaging checks passed with the original IDs and both extensions. [Draft PR #7](https://github.com/raskal-labs/blink-rsk/pull/7) remains unmerged; later receipt-only documentation commits do not change the built source.
+**Build/structure: Verified; iPhone links/basic Shortcuts: Verified (October 26 user report); remaining device acceptance: In Progress.** The one authorized [CI run 40128366917](https://github.com/raskal-labs/blink-rsk/actions/runs/40128366917) passed Xcode 26.6 native tests and complete iOS Release compilation at `38bd29221485c5306813c3916048bc77772d642b`. All three actions are present in packaged App Intents metadata. No diagnostics were emitted against the new Intents/model or bookmark files. Signing and packaging checks passed with the original IDs and both extensions. [Draft PR #7](https://github.com/raskal-labs/blink-rsk/pull/7) remains unmerged; later receipt-only documentation commits do not change the built source.
 
 The IPA, SHA-256, harness source, source/patch manifests, logs and build/run receipts are archived under `/lab/blink-rsk-release/bookmark-session-20261024-run-40128366917/`. IPA SHA-256: `f28f1cc76f862bb4e3241c081b78dbd5cffa289b3a1bd96d6e89508209dbf151`. See [the machine-readable receipt](m0-bookmark-recovery.json) for its exact path and verification scope. Both rollback IPAs remain intact. No phone install/replacement, refresh, backup, data migration, identity change or merge was performed.
