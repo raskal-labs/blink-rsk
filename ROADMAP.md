@@ -76,6 +76,8 @@ Milestones are **dependency ordered, not date estimates**. Ship one narrow incre
 
 **Priority B:** Session overview/switcher and recovery; compact contextual action dock; jump to latest output; history search; clear connection status; clipboard Copy / Copy Raw / Share / Save Output; safer large/sensitive paste handling; quick help for gestures and shortcuts.
 
+**October 27 clarification:** include an explicit Select All/Copy All control in the proposed clipboard scope. Local retained-buffer export and remote tmux/Zellij history over Mosh are different operations; neither may promise to recover output the client never received. [Source review and scope](docs/TERMINAL-UX-UPSTREAM-REVIEW.md#october-27-follow-up-other-complaints-copy-all-and-mosh-history).
+
 **Preferred method:** Start with upstream gesture/keyboard/context-bar behavior. Investigate defects separately from UX preferences; do not rewrite terminal rendering or gesture handling prematurely.
 
 **Exit gate:** Scrolling and input pass real-device regression tests and users can switch, select, copy and resume sessions without surprises.

@@ -53,3 +53,37 @@ Read-only API/source inspection and isolated `git apply --check` passed for the 
 **Suggested next scope, still Proposed:** start with the two tiny corrections and exposing existing keyboard/clipboard controls; consider the optional D-pad and a local Jump to Bottom action. Treat keyboard lock as a separately specified state change, and long-copy/paste/rendering defects as separate behaviors with measured acceptance. Do not turn every fork enhancement into an implementation task or import a new session system just to expose a switcher.
 
 Tracking note: the repository's linked UX issue #3 now returns **HTTP 410, deleted**, through both the connector and direct GitHub API. This review does not recreate it or infer why it was deleted. Root roadmap M1 remains the planning reference until the user chooses an implementation scope/tracker.
+
+## October 27 follow-up: other complaints, Copy All and Mosh history
+
+The user asked about other recurring complaints/personal-build changes and explicitly raised Select All/Copy All and Mosh scrollback. These remain research/proposals; no new source patch or build is authorized by this follow-up. The examples below establish repeated themes, not a measured prevalence ranking.
+
+- **Readable emoji/Unicode and stable cursor alignment:** both mikeydotio's grapheme/width work and mitchmalone's emoji row-fit branch address this. Consider only for a reproduced glyph/width failure; these are rendering changes, not a general scrolling fix.
+- **Visible session/host identity, tabs and reconnection:** [#1037](https://github.com/blinksh/blink/issues/1037), [#1885](https://github.com/blinksh/blink/issues/1885), Iroha's tabs/list and chrisl8's host HUD show the same friction. Keep names/connection state separate from automatic reconnection or remote session destruction. Some personal fixes clear sessions on upgrade or close temporarily disconnected Mosh sessions; those should not be imported as reliability improvements for this app.
+- **Customizable touch controls:** chrisl8's toolbar profiles and ShogunPanda's D-pad are concrete source examples. They are useful alternatives to repeatedly changing Blink's fixed key layout, but a whole toolbar editor is larger than exposing a few existing actions.
+- **Personal-build startup/configuration failures:** madjinn bootstraps missing SSH config and changes home/migration behavior; chrisl8 disables the Xcode debug dylib so local command lookup works. These target particular self-build failures, not a reason to change our working storage/signing/Release configuration.
+- **Battery use:** [#2242](https://github.com/blinksh/blink/issues/2242) has a real report, but the maintainer narrows it to SSH via xargs and points to ios_system. This is not evidence that normal Blink/Mosh use needs a generic power patch.
+
+### Select All and Copy All
+
+The pin has no dedicated terminal Select All/Copy All action in its native shortcut model. Its bundled hterm does contain `ScrollPort.selectAll`, `Terminal.getRowsText` and `getRowCount`. The most useful small addition is **Copy All retained terminal text**, read from the row model rather than DOM drag selection. That could bypass the specific `selection.toString()` path used by existing Copy/Copy Raw; it is not a validated fix for interactive selection and has not been implemented or tested on iPhone.
+
+Select All should be separate: it highlights retained text so the selection can be adjusted. The bundled hterm helper also needs review before wiring a button. In its already-visible-last-row branch it assigns `bottomFold_.previousSibling.rowIndex` to the variable later treated as a DOM node. Running the exact extracted function with minimal selection/row stubs succeeds when the last row must be fetched and throws on `t.childNodes.length` when the last row is already visible. This is an isolated JavaScript argument/branch reproduction, **not a WebKit/device reproduction or proof of the existing long-copy cause**. Do not advertise a working Select All simply because the helper exists.
+
+Suggested scope labels must be honest:
+
+| Action | What it can contain |
+| --- | --- |
+| Select All / Copy All retained text | The current terminal buffer's retained rendered text, subject to its history limit and alternate-screen state. Not shell command history or a complete original output transcript. |
+| Copy Screen | The currently represented screen; useful even when there is no local scrollback. |
+| Copy Remote Pane History | The chosen tmux/Zellij pane's retained server-side history, retrieved explicitly from that multiplexer. Requires reliable host/session/pane targeting; not a local selection operation. |
+
+### Mosh scrollback
+
+The current [Mosh FAQ](https://mosh.org/#faq) still states that it synchronizes visible terminal state; [scrollback issue #122](https://github.com/mobile-shell/mosh/issues/122) remains open. A phone-side buffer can retain only states it received and cannot reconstruct skipped output. A larger local buffer or Copy All button does not remove this protocol limitation.
+
+The contained route is to use the remote multiplexer as the history authority. [tmux's manual](https://github.com/tmux/tmux/blob/master/tmux.1) documents `capture-pane` with `-p` and `-S -` for retained history, and separate handling for alternate-screen content. [Zellij's current CLI](https://zellij.dev/documentation/cli-actions#dump-screen) documents `dump-screen --full`, pane targeting and `edit-scrollback`; compatibility with the actually installed server version is still Unknown. A future phone button could retrieve a deliberately selected pane's text into a local viewer/clipboard, retaining SSH host verification and using a bounded, read-only operation. Existing terminal-launch Shortcuts do not return stdout and cannot be assumed to implement this capture channel. No server configuration or remote export was run here.
+
+**Additional concrete lead:** Mosh [PR #1407](https://github.com/mobile-shell/mosh/pull/1407), open/unmerged at `9b47d3fc6af7b5d229a1bf2fbcee8c0f4cb0e432`, adds opt-in `MOSH_GRAB_MOUSE` to stop alternate-screen wheel gestures becoming arrow keystrokes and yield mouse control to applications that request it. It does **not** add scrollback, and grabbing mouse reporting changes terminal text-selection behavior. Our pin consumes the prebuilt `blinksh/mosh-apple` `v1.4.0+blink-18.4.5` framework; setting an environment variable alone cannot supply this new client code. Adapting it would be a separate dependency build/compatibility decision, not a one-line Blink UI patch.
+
+**Priority refinement, Proposed:** include explicit Copy All/Select All alongside the keyboard-controls review. Keep local buffer export and remote multiplexer history distinct. The small Copy All bridge is a stronger contained starting point than promising native complete Mosh scrollback.
