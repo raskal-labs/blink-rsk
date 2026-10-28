@@ -1,6 +1,6 @@
 # Combined Shortcuts candidate — October 27, 2026
 
-**In Progress.** Supersedes the October 26 build deferral: the user authorizes one additional candidate CI dispatch after implementation/preflight. No install, replacement, provider reset, signing change or merge is authorized. PR #7 stays draft. The October 24 artifact/receipts remain historical, unchanged and available for rollback.
+**Source implemented; candidate delivery Blocked by failed native compilation.** Supersedes the October 26 build deferral: the user authorizes one additional candidate CI dispatch after implementation/preflight. No install, replacement, provider reset, signing change or merge is authorized. PR #7 stays draft. The October 24 artifact/receipts remain historical, unchanged and available for rollback.
 
 Current device evidence: existing host/session links and all three original Shortcuts actions work by user report. Bookmark persistence has positive feedback; broader failure/recovery and refresh acceptance remains In Progress. The user withdrew the October 26 Files sync failure as mistaken. That report is superseded, is not an active blocker, and supplies no successful transfer test.
 
@@ -36,7 +36,9 @@ Provider backport disables only automatic startup temporary-file cleanup; pollin
 
 Local preflight: all six patches compose on pristine pinned inputs with exactly 13 reviewed source paths; all 24 bookmark manager regressions, existing link/action and seven SSH shell-boundary fixtures, exact provider parity/guards/syntax, terminal correction parity/guards/attachment/dismiss contracts, expansion atomic guards, eight real exit/stdio fixtures, Mosh shell boundary, path/name validation and 80 continuation races pass. Workflow YAML, shell blocks, embedded Python, harness Python and applied-source whitespace pass. Linux checks do not type-check Apple frameworks or establish real transfers/authentication/UI behavior.
 
-Native resolver checks, macOS Swift regressions, full iOS Release compilation, App Intents metadata and packaging are pending the single authorized CI dispatch. Machine-readable checkpoint: [shortcuts-expansion.json](shortcuts-expansion.json). Do not relabel old receipts as this build.
+[Run 40621641772](https://github.com/raskal-labs/blink-rsk/actions/runs/40621641772) used the one authorized dispatch at harness `1c036b543fa1a993beec3f5e986f7a7d23088042`. Native resolver checks and all macOS Swift/patch preflight suites passed. Complete iOS Release compilation **failed** with the reported error at `Blink/BlinkIntents.swift:253`: the `supportedContentTypes` IntentFile parameter initializer requires iOS 18 while the action declares iOS 16 availability. App Intents metadata extraction, signing/packaging and IPA checks were not reached. **No new IPA or IPA SHA exists**, and no device test was performed.
+
+Compatibility correction `5d69100` removes that optional parameter filter and retains all runtime file validation. All local combined preflight checks pass again; this corrected source has **no successful native build**. No second dispatch was made or is authorized by this work order. Source/patch/build diagnostics and all rollback hashes are archived at `/lab/blink-rsk-release/shortcuts-expansion-20261027-run-40621641772/`; [download diagnostics](https://github.com/raskal-labs/blink-rsk/actions/runs/40621641772/artifacts/12787867007). The archive distinguishes dispatched-source receipts from `corrected-source/` receipts. Machine-readable checkpoint: [shortcuts-expansion.json](shortcuts-expansion.json). Do not relabel old receipts as this build.
 
 ## One combined device checklist
 

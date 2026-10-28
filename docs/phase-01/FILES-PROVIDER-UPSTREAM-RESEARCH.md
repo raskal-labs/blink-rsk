@@ -1,6 +1,6 @@
 # Files.app source and community research — October 26, 2026
 
-**October 27 superseding checkpoint:** the user withdrew the October 26 sync-failure report as mistaken. It is not an active blocker; no successful transfer test is inferred. The prepared startup-cleanup backport remains included in the [combined batch](SHORTCUTS-EXPANSION-CANDIDATE.md) native validation, with one additional authorized CI candidate. October 26 deferral is superseded. Historical observations and checks below describe their dated checkpoints.
+**October 27 superseding checkpoint:** the user withdrew the October 26 sync-failure report as mistaken. It is not an active blocker; no successful transfer test is inferred. The prepared startup-cleanup backport remains included in the [combined batch](SHORTCUTS-EXPANSION-CANDIDATE.md) native validation, with the one additional authorized CI dispatch now used in run 40621641772. macOS checks passed, but full iOS compilation failed on the Shortcuts parameter availability error before packaging; no candidate IPA exists. The corrected source remains native-unbuilt. October 26 deferral is superseded. Historical observations and checks below describe their dated checkpoints.
 
 **Scope:** research under issue #2 in response to the persistent Files pending-item stall. This is supporting evidence, not another roadmap or authorization to patch, build, reset a domain or replace the app. Existing source, installation and device results remain separate.
 

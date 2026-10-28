@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "date": "2026-10-27",
-  "status": "In Progress",
+  "status": "Blocked",
   "branch": "fix/bookmarks-session-actions",
   "upstream_commit": "a90b4423c8b7a86770c24a7eaa6c13b0a5904b18",
   "patch_order": [
@@ -15,12 +15,22 @@
   "source_paths_changed": 13,
   "local_preflight": "passed; Linux Swift 6.0.3 in Swift 5 mode; Apple framework type checking excluded",
   "native_build": {
-    "status": "Unknown",
+    "status": "Blocked",
+    "conclusion": "failure",
     "dispatches_authorized": 1,
-    "dispatches_used": 0
+    "dispatches_used": 1,
+    "run": "https://github.com/raskal-labs/blink-rsk/actions/runs/40621641772",
+    "harness_commit": "1c036b543fa1a993beec3f5e986f7a7d23088042",
+    "macos_preflight": "passed, including resolver and all six patch regression suites",
+    "failure": "Blink/BlinkIntents.swift:253: supportedContentTypes IntentFile parameter initializer requires iOS 18; action declares iOS 16 availability",
+    "source_correction_commit": "5d691006d973454ac12e282d4160e5140cf6e727",
+    "source_correction": "Remove optional iOS 18-only parameter filter; retain regular-file/size/path/scope checks",
+    "corrected_source_native_validation": "Unknown; no further dispatch authorized"
   },
   "metadata_packaging": {
-    "status": "Unknown"
+    "status": "Unknown",
+    "performed": false,
+    "reason": "Native Release compilation failed; metadata extraction/signing/package checks were not reached"
   },
   "new_candidate_device_acceptance": "Unknown",
   "existing_device_evidence": {
@@ -57,5 +67,12 @@
     "large-paste changes",
     "renderer/backpressure",
     "Mosh mouse/scrollback experiments"
-  ]
+  ],
+  "ipa": {
+    "produced": false,
+    "sha256": null
+  },
+  "archive": "/lab/blink-rsk-release/shortcuts-expansion-20261027-run-40621641772",
+  "diagnostics_artifact": "https://github.com/raskal-labs/blink-rsk/actions/runs/40621641772/artifacts/12787867007",
+  "postfailure_local_preflight": "passed after compatibility correction; no Apple type checking locally"
 }
