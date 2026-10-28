@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "date": "2026-10-27",
-  "status": "Blocked",
+  "status": "In Progress",
   "branch": "fix/bookmarks-session-actions",
   "upstream_commit": "a90b4423c8b7a86770c24a7eaa6c13b0a5904b18",
   "patch_order": [
@@ -15,22 +15,26 @@
   "source_paths_changed": 13,
   "local_preflight": "passed; Linux Swift 6.0.3 in Swift 5 mode; Apple framework type checking excluded",
   "native_build": {
-    "status": "Blocked",
-    "conclusion": "failure",
-    "dispatches_authorized": 1,
-    "dispatches_used": 1,
-    "run": "https://github.com/raskal-labs/blink-rsk/actions/runs/40621641772",
-    "harness_commit": "1c036b543fa1a993beec3f5e986f7a7d23088042",
-    "macos_preflight": "passed, including resolver and all six patch regression suites",
-    "failure": "Blink/BlinkIntents.swift:253: supportedContentTypes IntentFile parameter initializer requires iOS 18; action declares iOS 16 availability",
-    "source_correction_commit": "5d691006d973454ac12e282d4160e5140cf6e727",
-    "source_correction": "Remove optional iOS 18-only parameter filter; retain regular-file/size/path/scope checks",
-    "corrected_source_native_validation": "Unknown; no further dispatch authorized"
+    "status": "Verified",
+    "run": "https://github.com/raskal-labs/blink-rsk/actions/runs/40627574155",
+    "harness_commit": "6864ce8092f6eeaa14f16cc2c2ae3f12cd0cede3",
+    "dispatches_authorized_across_work_orders": 2,
+    "dispatches_used_across_work_orders": 2,
+    "dispatches_this_followup": 1,
+    "ci_conclusion": "failure",
+    "native_release_compilation": "passed",
+    "native_resolver_and_macos_preflight": "passed",
+    "native_signing_and_identity_checks": "passed",
+    "ci_final_checker": "failed on wrong schema field; corrected and independently passed with unchanged IPA",
+    "further_dispatch_authorized": false
   },
   "metadata_packaging": {
-    "status": "Unknown",
-    "performed": false,
-    "reason": "Native Release compilation failed; metadata extraction/signing/package checks were not reached"
+    "status": "Verified",
+    "performed": true,
+    "ci_package": "IPA generated and ZIP checked before final checker failed",
+    "independent_checks": "eight discoverable foreground actions; seven text results + one IntentFile; parameter contract, bundle IDs, exactly two provider extensions, CRC and SHA256 passed",
+    "validator_correction_commit": "c3ac0483227d50017ded160a1bcd87defda2da43",
+    "binary_rebuilt_or_modified": false
   },
   "new_candidate_device_acceptance": "Unknown",
   "existing_device_evidence": {
@@ -69,10 +73,46 @@
     "Mosh mouse/scrollback experiments"
   ],
   "ipa": {
-    "produced": false,
-    "sha256": null
+    "produced": true,
+    "sha256": "e540b1edd0f01eda5f68e43a50eced9c6af0424af2644eb11d1cd64c2f4c9bdb",
+    "path": "/lab/blink-rsk-release/shortcuts-expansion-retry-20261027-run-40627574155/artifact/Blink-SideStore-18.7.0-1097-native-fileprovider.ipa",
+    "artifact_link": "https://github.com/raskal-labs/blink-rsk/actions/runs/40627574155/artifacts/12790282321"
   },
-  "archive": "/lab/blink-rsk-release/shortcuts-expansion-20261027-run-40621641772",
-  "diagnostics_artifact": "https://github.com/raskal-labs/blink-rsk/actions/runs/40621641772/artifacts/12787867007",
-  "postfailure_local_preflight": "passed after compatibility correction; no Apple type checking locally"
+  "archive": "/lab/blink-rsk-release/shortcuts-expansion-retry-20261027-run-40627574155",
+  "diagnostics_artifact": "https://github.com/raskal-labs/blink-rsk/actions/runs/40627574155/artifacts/12790282321",
+  "postfailure_local_preflight": "Full combined checks passed before retry; corrected metadata checker then passed against actual unchanged native IPA",
+  "build_attempts": [
+    {
+      "status": "Blocked",
+      "conclusion": "failure",
+      "dispatches_authorized": 1,
+      "dispatches_used": 1,
+      "run": "https://github.com/raskal-labs/blink-rsk/actions/runs/40621641772",
+      "harness_commit": "1c036b543fa1a993beec3f5e986f7a7d23088042",
+      "macos_preflight": "passed, including resolver and all six patch regression suites",
+      "failure": "Blink/BlinkIntents.swift:253: supportedContentTypes IntentFile parameter initializer requires iOS 18; action declares iOS 16 availability",
+      "source_correction_commit": "5d691006d973454ac12e282d4160e5140cf6e727",
+      "source_correction": "Remove optional iOS 18-only parameter filter; retain regular-file/size/path/scope checks",
+      "corrected_source_native_validation": "Unknown; no further dispatch authorized"
+    },
+    {
+      "run": "https://github.com/raskal-labs/blink-rsk/actions/runs/40627574155",
+      "harness_commit": "6864ce8092f6eeaa14f16cc2c2ae3f12cd0cede3",
+      "authorization": "User follow-up: Ok try it; one additional corrected-source retry",
+      "ci_conclusion": "failure",
+      "native_compilation": "passed",
+      "signing": "passed",
+      "ci_failure": "Metadata checker expected resultValueType instead of actual outputType",
+      "independent_validation": "Corrected checker c3ac048 passed against unchanged CI IPA"
+    }
+  ],
+  "prior_failed_archive": "/lab/blink-rsk-release/shortcuts-expansion-20261027-run-40621641772",
+  "receipt_origins": {
+    "ipa_and_entitlements_codesign_receipt": "Emitted by CI, copied unchanged from immutable artifact 12790282321",
+    "build_manifest": "Recovered locally from exact dispatched workflow template after its CI step failed before writing this file",
+    "source_diff_and_source_hashes": "Reconstructed before dispatch from the exact pinned source and six guarded patches; same immutable harness and passed CI input/output allowlist guards; not hashes uploaded from native runner",
+    "patch_hashes_and_harness_source": "Exact dispatched git archive; every listed patch/script/test hash verified against it",
+    "app_intents_package_checks": "Corrected outputType checker run locally against unchanged CI IPA",
+    "prepared_source_changes": "Not uploaded because final checker failed before receipt-copy step; not fabricated"
+  }
 }
