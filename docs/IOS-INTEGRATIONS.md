@@ -142,3 +142,7 @@ Useful examples to revisit, **external URLs not independently validated as imple
 This document contains **research, source receipts and workstream decisions**, not a second global roadmap. The main [ROADMAP.md](../ROADMAP.md) links here under M4 and M5; issues #2 (signing/Files) and #3 (terminal UX) are unchanged. Do **not** create one issue per speculative widget feature. Promote an integration to a task only when its scope, reason, safety gates and acceptance criteria are concrete.
 
 **Immediate best experiment:** I0, one existing Home Assistant workflow with no new IPA, followed by the read-only I1 source evaluation. Preserve the current Blink release and SideStore App ID budget.
+
+## October 27 superseding implementation checkpoint
+
+The previous section describes the original October 24 candidate. The new [combined batch](phase-01/SHORTCUTS-EXPANSION-CANDIDATE.md) now selectively adapts the reviewed upstream runner for foreground returned results, with strict known-host verification, existing authentication, bounds, cancellation and deadlines. It adds upload/download/listing, Mosh/start commands, explicit focus and saved-folder terminal opening. Standalone Files bookmark navigation has no supported source route and is not promised. No unattended execution, new target or signing change. The mistaken October 26 Files sync report is withdrawn; transfer acceptance remains unestablished. One additional candidate build is authorized after preflight; the earlier deferral is superseded.

@@ -1,5 +1,7 @@
 # Session links and Shortcuts candidate — 2026-10-24
 
+**Historical October 24 candidate; current batch: [October 27 combined expansion](SHORTCUTS-EXPANSION-CANDIDATE.md).** The October 26 sync-failure report below is withdrawn as mistaken and superseded; no successful transfer test is inferred. October 26 build deferral is superseded by one additional authorized combined candidate. Earlier source/build receipts below remain unchanged.
+
 **Status: In Progress.** This record accompanies the bookmark candidate under [issue #2](https://github.com/raskal-labs/blink-rsk/issues/2). The user's October 24 work order authorizes source work, a PR and **one** candidate CI dispatch after preflight. Installation requires separate data-safe approval; merge awaits device acceptance.
 
 **October 26 source follow-up:** the user authorized implementing the contained File Provider repair found during online research. The branch now also backports upstream `7e28d172` to disable startup temporary-file cleanup. [Implementation, local checks and remaining gates](FILES-PROVIDER-UPSTREAM-RESEARCH.md#october-26-implementation-follow-up). This additional source change is absent from the October 24 IPA and has not received a new macOS build or device acceptance; the original build allowance is spent. Historical receipts below still describe that earlier artifact.
@@ -82,7 +84,7 @@ This supersedes the earlier link/discovery blocker for current use. It does not 
 
 Remaining acceptance: detailed cancellation/invalid-link and SSH trust behavior; bookmark temporary-unavailability/reselection/deletion and post-refresh recovery; original connection regressions and independent Files.app browse/download/upload/reopen. Preserve the positive bookmark-persistence report. M0 and issue #2 stay In Progress, and PR #7 stays unmerged pending the remaining acceptance. The `id` remains an internal focus mapping, not a visible tab rename.
 
-## October 26 persistent Files sync stall
+## October 26 persistent Files sync stall (withdrawn; superseded October 27)
 
 **Files sync: Blocked (user report and screenshot); cause: Unknown.** Files.app displays a 28-item Blink directory listing and **Syncing 1 item to Blink**. The user reports no file/folder copy or move and emphasizes that the state has persisted for a long time. Treat this as a genuine persistent failure, not a normal short delay. Do not infer that the user initiated an upload or identify a pending file from the screenshot. The image shows listing visibility; it does not establish fresh child enumeration, completed download/upload or reopening. Keep the screenshot/private item names out of public issue content.
 

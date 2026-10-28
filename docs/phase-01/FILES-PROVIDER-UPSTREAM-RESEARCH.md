@@ -1,5 +1,7 @@
 # Files.app source and community research — October 26, 2026
 
+**October 27 superseding checkpoint:** the user withdrew the October 26 sync-failure report as mistaken. It is not an active blocker; no successful transfer test is inferred. The prepared startup-cleanup backport remains included in the [combined batch](SHORTCUTS-EXPANSION-CANDIDATE.md) native validation, with one additional authorized CI candidate. October 26 deferral is superseded. Historical observations and checks below describe their dated checkpoints.
+
 **Scope:** research under issue #2 in response to the persistent Files pending-item stall. This is supporting evidence, not another roadmap or authorization to patch, build, reset a domain or replace the app. Existing source, installation and device results remain separate.
 
 **Finding:** a compatible, one-line upstream File Provider change missing from our pin was found. It is a concrete backport candidate for review, not a demonstrated cure for the user's stalled item. No fully verified replacement fork for this exact SideStore/iOS setup was established.
@@ -39,7 +41,7 @@ Compared **184 repository/ref directory snapshots across 105 forks**: the 100 ne
 
 ## Result and boundary
 
-The strongest contained source lead is **upstream `7e28d172`**. Its compatibility and absence are established; its causal link to this phone's failure is not. Current acceptance remains **Blocked** for Files sync. Before implementation, any new work order should explicitly define the source patch, native validation, one additional candidate build if authorized, and device acceptance without discarding pending local data by default. Do not promote this research into a wholesale source upgrade, a new File Provider, or a fork switch.
+The strongest contained source lead is **upstream `7e28d172`**. Its compatibility and absence are established; its causal link to this phone's failure is not. At that historical checkpoint acceptance was reported **Blocked**; the report is withdrawn/superseded October 27. Before implementation, any new work order should explicitly define the source patch, native validation, one additional candidate build if authorized, and device acceptance without discarding pending local data by default. Do not promote this research into a wholesale source upgrade, a new File Provider, or a fork switch.
 
 No functional source was edited, no build dispatched, no signing identity changed and no phone/server operation performed. Unrelated local research remains preserved.
 
@@ -51,8 +53,8 @@ This disables the automatic remote `.blink.tmp.*` sweep, so abandoned temporary 
 
 Local preflight passed: the four repairs compose on isolated exact-pin inputs, changing exactly nine intended source paths; all 24 bookmark regressions, link/action validation and seven shell-boundary fixtures pass with the cached Linux Swift compiler; the new provider parity/guard/syntax checks pass. Python, workflow YAML, shell steps and embedded Python syntax also pass. Linux cannot type-check Apple's FileProvider framework. The October 24 macOS build validates the earlier eight-file candidate only and does **not** validate this backport.
 
-**Build: Unknown for this revision. Device recovery: Unknown; Files acceptance remains Blocked.** No new CI dispatch or IPA was produced. The previous one-build allowance is spent; [AGENTS.md](../../AGENTS.md) requires explicit authorization for an additional build. PR #7 remains draft/unmerged. The prior archive and its machine-readable receipts continue to describe the October 24 artifact; they must not be relabelled as containing this change.
+**Build: Unknown for this revision. Device recovery: Unknown at this historical checkpoint; the sync report is now withdrawn/superseded.** No new CI dispatch or IPA was produced. The previous one-build allowance is spent; [AGENTS.md](../../AGENTS.md) requires explicit authorization for an additional build. PR #7 remains draft/unmerged. The prior archive and its machine-readable receipts continue to describe the October 24 artifact; they must not be relabelled as containing this change.
 
 **User decision, October 26:** defer the build until the next iteration because this backport is small. Keep the implemented change queued on the draft branch for that iteration's native validation and candidate build. No standalone build, phone update or domain reset is requested now; the next iteration still needs its own bounded build authorization.
 
-After a separately authorized build and same-identity update, first reopen the existing Files location without deleting it. Check whether the pending banner clears, read one existing disposable file, then copy one small disposable file into the location and confirm it from the terminal. Reopen Files and check that changes remain visible. Stop on a persistent item or error; do not delete the domain or unidentified pending data as part of that test.
+After a separately authorized build and same-identity update, first reopen the existing Files location without deleting it. The banner report is withdrawn: do not require reproducing or clearing it. Read one existing disposable file, then copy one small disposable file into the location and confirm it from the terminal. Reopen Files and check that changes remain visible. Stop on a persistent item or error; do not delete the domain or unidentified pending data as part of that test.

@@ -99,3 +99,9 @@ Update this document when purpose, naming, architectural boundaries or decisions
 ## October 24 candidate boundary
 
 The authorized bookmark/session batch keeps the pinned source and existing app identities. Use navigation-only saved-host/focus URLs; offer command/script execution through explicit foreground Shortcuts confirmation and the existing SSH trust flow. No URL-carried execution key, Fleet import, unattended runner or new extension belongs to this batch. Source/build verification is distinct from iPhone acceptance; functional changes remain unmerged until the latter. Details: [candidate record](phase-01/SESSION-ACTIONS-CANDIDATE.md).
+
+## October 27 combined batch and next milestone
+
+The current authorized batch expands foreground Shortcuts with returned SSH results, SFTP files/listing, Mosh/start commands, focus and saved-folder terminal opening. It includes the queued provider backport and only the two narrow Snips/gesture source corrections. One additional candidate CI build follows preflight; October 26 deferral is superseded. Links/all three original actions work and bookmarks have positive persistence feedback; broader acceptance remains separate. The mistaken Files sync report is withdrawn without inventing a transfer result. [Actual scope and device checklist](phase-01/SHORTCUTS-EXPANSION-CANDIDATE.md).
+
+The next agreed milestone combines touch controls, terminal usability, workspace UI and appearance. Preserve M1/M2 research; do not implement it in this build. Select All/Copy All, optional D-pad, keyboard lock, large-paste, renderer/backpressure and Mosh mouse/scrollback experiments are excluded. Local retained-buffer copying is distinct from remote multiplexer history. Keep all app/provider identities, keys, migration and polling intact; no installation, replacement, provider reset or merge is authorized.

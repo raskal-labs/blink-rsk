@@ -1,0 +1,61 @@
+{
+  "schema": 1,
+  "date": "2026-10-27",
+  "status": "In Progress",
+  "branch": "fix/bookmarks-session-actions",
+  "upstream_commit": "a90b4423c8b7a86770c24a7eaa6c13b0a5904b18",
+  "patch_order": [
+    "sidestore-app-groups",
+    "bookmark-recovery",
+    "session-actions",
+    "fileprovider-startup-cleanup",
+    "terminal-input-gestures",
+    "shortcuts-expansion"
+  ],
+  "source_paths_changed": 13,
+  "local_preflight": "passed; Linux Swift 6.0.3 in Swift 5 mode; Apple framework type checking excluded",
+  "native_build": {
+    "status": "Unknown",
+    "dispatches_authorized": 1,
+    "dispatches_used": 0
+  },
+  "metadata_packaging": {
+    "status": "Unknown"
+  },
+  "new_candidate_device_acceptance": "Unknown",
+  "existing_device_evidence": {
+    "links_and_original_three_actions": "Verified by user report",
+    "bookmarks": "positive persistence feedback; broader acceptance In Progress",
+    "files_sync_report": "withdrawn by user as mistaken; superseded; no successful transfer inferred",
+    "installed_sha": "Unknown"
+  },
+  "forbidden_actions": [
+    "installation",
+    "app replacement",
+    "provider reset",
+    "signing-identity change",
+    "merge"
+  ],
+  "platform_limitations": [
+    "saved-folder opening in a fresh local terminal only; standalone Files navigation unsupported by inspected source",
+    "foreground execution only",
+    "synchronous libssh cleanup can lag cancellation; remote work/partial upload may remain"
+  ],
+  "rollback": {
+    "october24_archive": "/lab/blink-rsk-release/bookmark-session-20261024-run-40128366917",
+    "october24_ipa_sha256": "f28f1cc76f862bb4e3241c081b78dbd5cffa289b3a1bd96d6e89508209dbf151",
+    "older_archives": [
+      "/lab/blink-rsk-release/phase-01-20261012",
+      "/lab/blink-rsk-release/fp-test-20261008"
+    ]
+  },
+  "next_milestone": "combined customization: touch controls, terminal usability, workspace UI and appearance",
+  "excluded": [
+    "Select All/Copy All",
+    "optional D-pad",
+    "keyboard lock",
+    "large-paste changes",
+    "renderer/backpressure",
+    "Mosh mouse/scrollback experiments"
+  ]
+}
