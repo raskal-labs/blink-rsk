@@ -1,0 +1,13 @@
+diff --git a/BlinkFileProvider/FileProviderReplicatedExtension.swift b/BlinkFileProvider/FileProviderReplicatedExtension.swift
+index 5a2e681..9381403 100644
+--- a/BlinkFileProvider/FileProviderReplicatedExtension.swift
++++ b/BlinkFileProvider/FileProviderReplicatedExtension.swift
+@@ -95,7 +95,7 @@ public class FileProviderReplicatedExtension: NSObject, NSFileProviderReplicated
+       guard let self = self else { return }
+       self.workingSet.resumeChangesTimerEvery(seconds: 5)
+       // Background clean-up
+-      self.cancellables.insert(self.cleanUpOldTmpFiles())
++      // self.cancellables.insert(self.cleanUpOldTmpFiles())
+     }
+   }
+ 

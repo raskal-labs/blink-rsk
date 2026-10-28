@@ -1,0 +1,151 @@
+{
+  "schema": 1,
+  "recorded_date": "2026-10-26",
+  "issue": "https://github.com/raskal-labs/blink-rsk/issues/2",
+  "status": "In Progress",
+  "branch": "fix/bookmarks-session-actions",
+  "harness_base": "02aad479dfadb710afc9e166d8cb107f93e808eb",
+  "upstream_commit": "a90b4423c8b7a86770c24a7eaa6c13b0a5904b18",
+  "upstream_version": "18.7.0",
+  "upstream_build": "1097",
+  "upstream_source_paths_changed": [
+    "Settings/Model/BookmarkedLocationsManager.swift",
+    "Settings/ViewControllers/BookmarkedLocations/BookmarkedLocationsView.swift"
+  ],
+  "changes": [
+    "Preserve saved names and bookmark bytes across temporary failures",
+    "Show unavailable entries with retry and folder reselection",
+    "Export only available shell paths and balance held security scopes",
+    "Preserve conflicting ordinary files and use explicit symlink rebinding",
+    "Test guarded patch application and manager failure/recovery paths"
+  ],
+  "verification": {
+    "patch_guards": {
+      "status": "Verified",
+      "checks_passed": 4
+    },
+    "manager_regressions": {
+      "status": "Verified",
+      "tests_passed": 24,
+      "platform": "Linux Swift 6.0.3 and macOS Xcode 26.6, Swift 5 language mode",
+      "scope": "Actual patched manager with synthetic bookmark/scope adapter and real temporary filesystem; Apple API grants and app integration are not tested"
+    },
+    "settings_swift_syntax": {
+      "status": "Verified",
+      "scope": "Swift syntax and complete iOS Release SwiftUI compilation passed in run 40128366917; actual picker, retry and reselection interaction remain unverified on iPhone"
+    },
+    "workflow_static_checks": {
+      "status": "Verified",
+      "scope": "YAML, shell blocks and embedded Python parse; manual trigger, pin, signing and build steps unchanged"
+    },
+    "macos_native_compile": {
+      "status": "Verified",
+      "scope": "Native App Group resolver checks, 24 bookmark regressions with real Foundation API signatures, and session link/action suites passed in CI"
+    },
+    "ios_app_build": {
+      "status": "Verified",
+      "performed": true,
+      "run": "https://github.com/raskal-labs/blink-rsk/actions/runs/40128366917",
+      "harness_commit": "38bd29221485c5306813c3916048bc77772d642b",
+      "scope": "Complete iOS Release compilation including SwiftUI/AppIntents, ad-hoc signature verification, two extensions, packaging"
+    },
+    "installation": {
+      "status": "Unknown",
+      "performed": true,
+      "reported_by": "user",
+      "reported_date": "2026-10-24",
+      "reported_ipa_filename": "Blink-SideStore-18.7.0-1097-native-fileprovider.ipa",
+      "scope": "User initially reported installing the shared IPA filename, later suspected an older version, then reported links and all three Shortcuts working after receiving the October 24 candidate download link. Exact installed source/SHA still not independently verified. No agent installation was performed."
+    },
+    "iphone_bookmark_persistence_recovery": {
+      "status": "In Progress",
+      "reported_date": "2026-10-25",
+      "scope": "User reports bookmarks persisting well; temporary-provider failure/recovery, refresh and exact installed candidate identity remain unverified."
+    },
+    "iphone_shortcuts_discovery": {
+      "status": "Verified",
+      "reported_date": "2026-10-26",
+      "reported_by": "user",
+      "scope": "User explicitly confirms all three Blink actions appear and run on their current installation; supersedes October 25 discovery blocker. Exact installed IPA SHA not independently verified.",
+      "tasks": "SESSION-ACTIONS-CANDIDATE.md#october-26-links-and-shortcuts-success"
+    },
+    "files_app_browse": {
+      "status": "In Progress",
+      "reported_date": "2026-10-26",
+      "scope": "Screenshot displays a 28-item Blink directory listing. Current remote enumeration versus cached listing, child browsing and reopen behavior are not established."
+    },
+    "files_app_download": {
+      "status": "Unknown"
+    },
+    "files_app_upload": {
+      "status": "Unknown"
+    },
+    "files_app_reopen": {
+      "status": "Unknown"
+    },
+    "sidestore_refresh": {
+      "status": "Unknown",
+      "performed": false
+    },
+    "packaged_app_intents": {
+      "status": "Verified",
+      "actions": [
+        "OpenTerminalSessionIntent",
+        "RunCommandOnHostIntent",
+        "RunScriptOnHostIntent"
+      ],
+      "scope": "All three types are present in packaged metadata; October 26 user separately confirms device discovery and basic execution."
+    },
+    "link_action_validation": {
+      "status": "Verified",
+      "scope": "Compiled pure Swift validation, guarded patch application, seven shell-boundary fixtures on Linux and macOS; actual ios_system behavior/confirmation UI need iPhone acceptance"
+    },
+    "iphone_session_links": {
+      "status": "Verified",
+      "reported_date": "2026-10-26",
+      "reported_by": "user",
+      "scope": "User reports host/session links work on the current installation after being directed to the October 24 candidate. Supersedes the earlier unsuccessful attempt on an unestablished build; detailed negative/cancellation and cold/warm launch tests remain unestablished.",
+      "earlier_failure_cause": "Unknown; user suspected an older version. No code repair demonstrated or applied.",
+      "session_id_semantics": "In-memory focus mapping only; does not rename the visible tab."
+    },
+    "iphone_shortcuts_execution": {
+      "status": "Verified",
+      "reported_date": "2026-10-26",
+      "reported_by": "user",
+      "scope": "Basic execution of all three actions confirmed by user; detailed cancellation, invalid inputs, quoting/interpreter matrix, host-key behavior and refresh not individually established."
+    },
+    "files_app_sync": {
+      "status": "Blocked",
+      "reported_date": "2026-10-26",
+      "scope": "Screenshot shows Syncing 1 item to Blink; user reports no initiated transfer and confirms persistently stuck for a long time. Item/operation and cause Unknown.",
+      "source_review": "Two incomplete-progress/empty-completion risks observed in pinned create/upload helper paths; no device correlation or reproduction yet. Not a demonstrated cause.",
+      "next_evidence": "Bounded existing provider-log excerpt from local Blink shell; preserve pending state and data."
+    }
+  },
+  "artifact": {
+    "ipa": "/lab/blink-rsk-release/bookmark-session-20261024-run-40128366917/artifact/Blink-SideStore-18.7.0-1097-native-fileprovider.ipa",
+    "sha256": "f28f1cc76f862bb4e3241c081b78dbd5cffa289b3a1bd96d6e89508209dbf151",
+    "archive": "/lab/blink-rsk-release/bookmark-session-20261024-run-40128366917",
+    "source_patch_manifest": "/lab/blink-rsk-release/bookmark-session-20261024-run-40128366917/artifact/build-manifest.json",
+    "archive_verification": "/lab/blink-rsk-release/bookmark-session-20261024-run-40128366917/archive-verification.json",
+    "ci_run": "https://github.com/raskal-labs/blink-rsk/actions/runs/40128366917",
+    "built_harness_commit": "38bd29221485c5306813c3916048bc77772d642b"
+  },
+  "commit_performed": true,
+  "push_performed": true,
+  "merge_performed": false,
+  "identities_or_signing_changed": false,
+  "installed_app_or_user_data_changed": true,
+  "installed_app_or_user_data_change_actor": "User-reported IPA installation; no agent phone operation or verified data migration",
+  "limitations": [
+    "Already-erased bookmarks require folder selection again",
+    "Apple security grants, picker/recovery interactions, detailed cancellation/invalid-input and host-key checks, Files behavior and refresh still require individual device evidence.",
+    "Installed IPA/source/SHA reconciliation remains Unknown",
+    "No synchronization with external processes editing the store or aliases",
+    "Shortcuts actions are foreground terminal launches, with no returned output or remote success guarantee",
+    "Exact 18.7.1 callback restoration is not established; URLs navigate only and reject command/key payloads"
+  ],
+  "next_gate": "Diagnose persistent Files pending-item stall from current provider logs without resetting its state. Preserve links/Shortcuts success and positive bookmark evidence. Remaining Files transfers/reopen, bookmark recovery, safety checks, installed SHA and separately approved refresh acceptance remain outstanding; no merge or additional CI build.",
+  "ci_dispatches": 1,
+  "pull_request": "https://github.com/raskal-labs/blink-rsk/pull/7"
+}

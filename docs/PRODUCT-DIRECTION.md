@@ -95,3 +95,17 @@ Near-term milestone (provisional): "Identity & Usability" — initial visible Ra
 ## Maintenance instructions
 
 Update this document when purpose, naming, architectural boundaries or decisions change. Keep detailed iOS experiments in [IOS-INTEGRATIONS](IOS-INTEGRATIONS.md), upstream usability evidence in [UX-RESEARCH](UX-RESEARCH.md), milestones in the [root roadmap](../ROADMAP.md), and accepted work in issues/Phase 01 receipts. Use the project's six statuses; a proposal is not an accepted decision or a verified device capability. Preserve dated reasons when superseding decisions.
+
+## October 24 candidate boundary
+
+The authorized bookmark/session batch keeps the pinned source and existing app identities. Use navigation-only saved-host/focus URLs; offer command/script execution through explicit foreground Shortcuts confirmation and the existing SSH trust flow. No URL-carried execution key, Fleet import, unattended runner or new extension belongs to this batch. Source/build verification is distinct from iPhone acceptance; functional changes remain unmerged until the latter. Details: [candidate record](phase-01/SESSION-ACTIONS-CANDIDATE.md).
+
+## October 27 combined batch and next milestone
+
+The current authorized batch expands foreground Shortcuts with returned SSH results, SFTP files/listing, Mosh/start commands, focus and saved-folder terminal opening. It includes the queued provider backport and only the two narrow Snips/gesture source corrections. One additional candidate CI build follows preflight; October 26 deferral is superseded. Links/all three original actions work and bookmarks have positive persistence feedback; broader acceptance remains separate. The mistaken Files sync report is withdrawn without inventing a transfer result. [Actual scope and device checklist](phase-01/SHORTCUTS-EXPANSION-CANDIDATE.md).
+
+The next agreed milestone combines touch controls, terminal usability, workspace UI and appearance. Preserve M1/M2 research; do not implement it in this build. Select All/Copy All, optional D-pad, keyboard lock, large-paste, renderer/backpressure and Mosh mouse/scrollback experiments are excluded. Local retained-buffer copying is distinct from remote multiplexer history. Keep all app/provider identities, keys, migration and polling intact; no installation, replacement, provider reset or merge is authorized.
+
+**Final October 27 build checkpoint:** the single authorized [run 40621641772](https://github.com/raskal-labs/blink-rsk/actions/runs/40621641772) passed native preflight but failed full iOS compilation on an iOS 18-only IntentFile parameter initializer. Correction `5d69100` passes local preflight and remains native-unbuilt. No candidate IPA, metadata/package acceptance or new device result exists; no second dispatch was made. [Exact results and checklist](phase-01/SHORTCUTS-EXPANSION-CANDIDATE.md).
+
+**Superseding retry checkpoint:** user-authorized [run 40627574155](https://github.com/raskal-labs/blink-rsk/actions/runs/40627574155) compiled and signed the combined candidate. Its final checker failed on `resultValueType` versus Xcode's `outputType`; correction `c3ac048` passed against the same unchanged IPA. CI remains red, but a candidate is available with independently verified metadata/identity/CRC/SHA and explicitly labeled recovered receipts. Device acceptance remains Unknown; no installation/reset/identity change/merge or further build. [Candidate and checklist](phase-01/SHORTCUTS-EXPANSION-CANDIDATE.md#current-retry-result).

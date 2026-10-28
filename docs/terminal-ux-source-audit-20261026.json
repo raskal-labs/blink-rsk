@@ -1,0 +1,558 @@
+{
+  "schema": 1,
+  "observed_date": "2026-10-26",
+  "scope": "Read-only terminal UX research; no implementation/build/device authorization",
+  "pin": "a90b4423c8b7a86770c24a7eaa6c13b0a5904b18",
+  "branch_comparisons": 26,
+  "blink_repositories": 9,
+  "snapshots": [
+    {
+      "repo": "blinksh/blink",
+      "ref": "raw",
+      "sha": "a90b4423c8b7a86770c24a7eaa6c13b0a5904b18",
+      "status": "identical",
+      "ahead_by": 0,
+      "behind_by": 0,
+      "total_commits": 0,
+      "changed_paths": 0
+    },
+    {
+      "repo": "blinksh/blink",
+      "ref": "app-store",
+      "sha": "4fb02c0ef717c59209bde7157bd5837599fca8bd",
+      "status": "diverged",
+      "ahead_by": 10,
+      "behind_by": 941,
+      "total_commits": 10,
+      "changed_paths": 9
+    },
+    {
+      "repo": "blinksh/blink",
+      "ref": "next",
+      "sha": "4bc39238a3dc176327c845449e36f3730d4115fb",
+      "status": "diverged",
+      "ahead_by": 1,
+      "behind_by": 2982,
+      "total_commits": 1,
+      "changed_paths": 1
+    },
+    {
+      "repo": "blinksh/blink",
+      "ref": "development",
+      "sha": "13ffde0e70cd65b6c4f16103a52211c7bdaa2362",
+      "status": "behind",
+      "ahead_by": 0,
+      "behind_by": 1293,
+      "total_commits": 0,
+      "changed_paths": 0
+    },
+    {
+      "repo": "madjinn/blink",
+      "ref": "personal-testflight",
+      "sha": "a31aa977e297c9c4a2c3a54e6a3d9b191cf17a85",
+      "status": "diverged",
+      "ahead_by": 37,
+      "behind_by": 11,
+      "total_commits": 37,
+      "changed_paths": 40
+    },
+    {
+      "repo": "b-relay/blink",
+      "ref": "brendon/main",
+      "sha": "862b32d34fc7c2a86968f2a8c48cb3c7eb39f12d",
+      "status": "diverged",
+      "ahead_by": 25,
+      "behind_by": 11,
+      "total_commits": 25,
+      "changed_paths": 15
+    },
+    {
+      "repo": "wg-dev-env/blink",
+      "ref": "moshterm",
+      "sha": "48f2f9e2fbb4ac9f1fc50212dcf5dace73e03d76",
+      "status": "ahead",
+      "ahead_by": 116,
+      "behind_by": 0,
+      "total_commits": 116,
+      "changed_paths": 117
+    },
+    {
+      "repo": "wg-dev-env/blink",
+      "ref": "feature/input-mode-ui",
+      "sha": "4dc8cbb771f440259a2394bdaa785aca465dcaba",
+      "status": "ahead",
+      "ahead_by": 10,
+      "behind_by": 0,
+      "total_commits": 10,
+      "changed_paths": 61
+    },
+    {
+      "repo": "wg-dev-env/blink",
+      "ref": "feature/copy-paste-ui",
+      "sha": "20b5219f292d0b5efe44cd3f56da3f498c265812",
+      "status": "ahead",
+      "ahead_by": 11,
+      "behind_by": 0,
+      "total_commits": 11,
+      "changed_paths": 61
+    },
+    {
+      "repo": "wg-dev-env/blink",
+      "ref": "feature/session-tabs",
+      "sha": "ab265f582bdbd9e959383486247727c7011acadc",
+      "status": "ahead",
+      "ahead_by": 8,
+      "behind_by": 0,
+      "total_commits": 8,
+      "changed_paths": 56
+    },
+    {
+      "repo": "wg-dev-env/blink",
+      "ref": "feature/session-list",
+      "sha": "2dfa3d5806319f6b0ca505f8fb659905224e9560",
+      "status": "ahead",
+      "ahead_by": 12,
+      "behind_by": 0,
+      "total_commits": 12,
+      "changed_paths": 62
+    },
+    {
+      "repo": "wg-dev-env/blink",
+      "ref": "feature/keyboard-shortcuts",
+      "sha": "038f0ef1a3b18bb50209cc7df749a307709c0e63",
+      "status": "ahead",
+      "ahead_by": 63,
+      "behind_by": 0,
+      "total_commits": 63,
+      "changed_paths": 107
+    },
+    {
+      "repo": "wg-dev-env/blink",
+      "ref": "fix/large-paste-truncation",
+      "sha": "091eb675c47b03e0897b90e432db1f0b29b6697c",
+      "status": "ahead",
+      "ahead_by": 46,
+      "behind_by": 0,
+      "total_commits": 46,
+      "changed_paths": 106
+    },
+    {
+      "repo": "wg-dev-env/blink",
+      "ref": "fix/refocus-after-sheet",
+      "sha": "1a8bc25abee9735c63e138e62a01c3ffdede173e",
+      "status": "ahead",
+      "ahead_by": 48,
+      "behind_by": 0,
+      "total_commits": 48,
+      "changed_paths": 107
+    },
+    {
+      "repo": "wg-dev-env/blink",
+      "ref": "fix/tab-switch-crash",
+      "sha": "6577b608de8641076c92bc6f204f8bd500ff32eb",
+      "status": "ahead",
+      "ahead_by": 45,
+      "behind_by": 0,
+      "total_commits": 45,
+      "changed_paths": 105
+    },
+    {
+      "repo": "wg-dev-env/blink",
+      "ref": "feature/stabilize-core",
+      "sha": "c3e41122e245ab5064944a658502210fe5e5a7cc",
+      "status": "ahead",
+      "ahead_by": 37,
+      "behind_by": 0,
+      "total_commits": 37,
+      "changed_paths": 99
+    },
+    {
+      "repo": "mitchmalone/blink",
+      "ref": "fix/emoji-row-fit",
+      "sha": "c679cb6a3d0451a34b010774bca1e5d101145e6c",
+      "status": "ahead",
+      "ahead_by": 4,
+      "behind_by": 0,
+      "total_commits": 4,
+      "changed_paths": 2
+    },
+    {
+      "repo": "mitchmalone/blink",
+      "ref": "fix/padding-colour",
+      "sha": "82427433e94afb0b06a3c5adb87ee621936de5af",
+      "status": "ahead",
+      "ahead_by": 1,
+      "behind_by": 0,
+      "total_commits": 1,
+      "changed_paths": 3
+    },
+    {
+      "repo": "mitchmalone/blink",
+      "ref": "fix/xcode27-hostview",
+      "sha": "c54f46a85bfb43a15ce8b8240506a940ee814fb5",
+      "status": "ahead",
+      "ahead_by": 1,
+      "behind_by": 0,
+      "total_commits": 1,
+      "changed_paths": 1
+    },
+    {
+      "repo": "mitchmalone/blink",
+      "ref": "tmux-launcher",
+      "sha": "9f487abfcace5bc9d144094d065e07ecc2afe894",
+      "status": "ahead",
+      "ahead_by": 5,
+      "behind_by": 0,
+      "total_commits": 5,
+      "changed_paths": 16
+    },
+    {
+      "repo": "mitchmalone/blink",
+      "ref": "fork-build",
+      "sha": "767bf16c66a333ad7314525862cd20df9b4a6dc0",
+      "status": "ahead",
+      "ahead_by": 27,
+      "behind_by": 0,
+      "total_commits": 27,
+      "changed_paths": 56
+    },
+    {
+      "repo": "ShogunPanda/blink",
+      "ref": "dpad",
+      "sha": "c1bff72949b8f2a19fa6a4ac352a55f666ab15dc",
+      "status": "ahead",
+      "ahead_by": 1,
+      "behind_by": 0,
+      "total_commits": 1,
+      "changed_paths": 12
+    },
+    {
+      "repo": "mikeydotio/blink",
+      "ref": "raw",
+      "sha": "213b71cce98262277fd6119bdd77dbeec1781ce9",
+      "status": "diverged",
+      "ahead_by": 6,
+      "behind_by": 22,
+      "total_commits": 6,
+      "changed_paths": 10
+    },
+    {
+      "repo": "chrisl8/blink",
+      "ref": "raw",
+      "sha": "1c8dd355b725c8f12262d949a69f76be865d221e",
+      "status": "ahead",
+      "ahead_by": 27,
+      "behind_by": 0,
+      "total_commits": 27,
+      "changed_paths": 44
+    },
+    {
+      "repo": "CoultonF/blink",
+      "ref": "signing-data-protection-2026-10-10",
+      "sha": "d9d202cbb3d5deaf4292666e1c5e12227c8657a8",
+      "status": "diverged",
+      "ahead_by": 22,
+      "behind_by": 95,
+      "total_commits": 22,
+      "changed_paths": 25
+    },
+    {
+      "repo": "CoultonF/blink",
+      "ref": "signing-renewal-2026-10-10",
+      "sha": "0637d4ddf067d0e430270d34919b347da9f6363d",
+      "status": "diverged",
+      "ahead_by": 20,
+      "behind_by": 95,
+      "total_commits": 20,
+      "changed_paths": 25
+    }
+  ],
+  "upstream_prs": [
+    {
+      "number": 2255,
+      "url": "https://github.com/blinksh/blink/pull/2255",
+      "state": "open",
+      "merged": false,
+      "draft": false,
+      "base_sha": "a90b4423c8b7a86770c24a7eaa6c13b0a5904b18",
+      "head_repo": "ElevateConsultingDev/blink",
+      "head_sha": "be21778a7b0c020ff3c2cf862ec71278bf7f5a88"
+    },
+    {
+      "number": 2287,
+      "url": "https://github.com/blinksh/blink/pull/2287",
+      "state": "open",
+      "merged": false,
+      "draft": false,
+      "base_sha": "a90b4423c8b7a86770c24a7eaa6c13b0a5904b18",
+      "head_repo": "mitchmalone/blink",
+      "head_sha": "c28f85b3ebd00fb6f7e843764d3df7aafb1719b5"
+    },
+    {
+      "number": 2291,
+      "url": "https://github.com/blinksh/blink/pull/2291",
+      "state": "open",
+      "merged": false,
+      "draft": false,
+      "base_sha": "a90b4423c8b7a86770c24a7eaa6c13b0a5904b18",
+      "head_repo": "ShogunPanda/blink",
+      "head_sha": "c1bff72949b8f2a19fa6a4ac352a55f666ab15dc"
+    },
+    {
+      "number": 2297,
+      "url": "https://github.com/blinksh/blink/pull/2297",
+      "state": "open",
+      "merged": false,
+      "draft": true,
+      "base_sha": "a90b4423c8b7a86770c24a7eaa6c13b0a5904b18",
+      "head_repo": "nateober/blink",
+      "head_sha": "a2d825afedd75381b49ed59cc65431111408b042"
+    }
+  ],
+  "isolated_context_checks": [
+    {
+      "candidate": "madjinn-gesture-teardown",
+      "exact_pin_context_applies": true,
+      "paths": [
+        "Blink/WebKit/WKWebView.swift"
+      ],
+      "diagnostic": "",
+      "scope": "Hunk context only; not compilation, runtime correctness or device acceptance"
+    },
+    {
+      "candidate": "upstream-overlay-focus",
+      "exact_pin_context_applies": true,
+      "paths": [
+        "Blink/SpaceController.swift"
+      ],
+      "diagnostic": "",
+      "scope": "Hunk context only; not compilation, runtime correctness or device acceptance"
+    },
+    {
+      "candidate": "iroha-large-paste",
+      "exact_pin_context_applies": true,
+      "paths": [
+        "Blink/Terminal/TermDevice.m"
+      ],
+      "diagnostic": "",
+      "scope": "Hunk context only; not compilation, runtime correctness or device acceptance"
+    },
+    {
+      "candidate": "madjinn-render-queue",
+      "exact_pin_context_applies": false,
+      "paths": [
+        "Blink/TermView.m",
+        "Blink/WebKit/WKWebView.swift"
+      ],
+      "diagnostic": "error: patch failed: Blink/Terminal/TermView.m:88\nerror: Blink/Terminal/TermView.m: patch does not apply",
+      "scope": "Hunk context only; not compilation, runtime correctness or device acceptance"
+    },
+    {
+      "candidate": "optional-dpad",
+      "exact_pin_context_applies": true,
+      "paths": [
+        "Blink.xcodeproj/project.pbxproj",
+        "Blink/SmarterKeys/KBDPadView.swift",
+        "Blink/SmarterKeys/KBKey.swift",
+        "Blink/SmarterKeys/KBKeyValue.swift",
+        "Blink/SmarterKeys/KBView.swift",
+        "Blink/SmarterKeys/KeyViews/KBKeyViewSymbol.swift",
+        "Blink/SpaceController.swift",
+        "README.md",
+        "Settings/Base.lproj/Settings.storyboard",
+        "Settings/ViewControllers/UserConfiguration/BKSmartKeysConfigViewController.m",
+        "Settings/ViewControllers/UserConfiguration/BKUserConfigurationManager.h",
+        "Settings/ViewControllers/UserConfiguration/BKUserConfigurationManager.m"
+      ],
+      "diagnostic": "",
+      "scope": "Hunk context only; not compilation, runtime correctness or device acceptance"
+    }
+  ],
+  "source_commits": [
+    {
+      "sha": "9e8767b75df35571012140ffe509fb8259cb908e",
+      "message": "SC needs to actively resign on each overlay\n\n- The path to focus is already done.\n- This fixes issues with the Snips locking the modifier keys.",
+      "repository_full_name": "blinksh/blink",
+      "html_url": "https://github.com/blinksh/blink/commit/9e8767b75df35571012140ffe509fb8259cb908e",
+      "paths": [
+        "Blink/SpaceController.swift"
+      ]
+    },
+    {
+      "sha": "091eb675c47b03e0897b90e432db1f0b29b6697c",
+      "message": "fix: 大量テキストのペーストが途中で切れる問題を修正\n\npty 入力 pipe への writeInDirectly: が write() の返り値を見ずに\n1 回だけ書いていたため、部分書き込み/EINTR で残りが捨てられていた。\n全バイトを書き切るまでループし、EINTR/EAGAIN を処理する。\n\nCo-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>",
+      "repository_full_name": "wg-dev-env/blink",
+      "html_url": "https://github.com/wg-dev-env/blink/commit/091eb675c47b03e0897b90e432db1f0b29b6697c",
+      "paths": [
+        "Blink/Terminal/TermDevice.m"
+      ]
+    },
+    {
+      "sha": "a31aa977e297c9c4a2c3a54e6a3d9b191cf17a85",
+      "message": "fix: bound terminal rendering and scroll backpressure",
+      "repository_full_name": "madjinn/blink",
+      "html_url": "https://github.com/madjinn/blink/commit/a31aa977e297c9c4a2c3a54e6a3d9b191cf17a85",
+      "paths": [
+        "Blink/TermView.m",
+        "Blink/WebKit/WKWebView.swift",
+        "RemoteShellUITests/RemoteShellUITests.swift"
+      ]
+    }
+  ],
+  "hermes_patch_inventory": {
+    "repo": "cyanmint/hermesLink",
+    "ref": "default",
+    "tree_sha": "13ca5b18ff8d423e5c744aa3e37dd079e0972e43",
+    "patches": [
+      {
+        "path": "blink/patches/_patch_utils.py",
+        "sha": "416c6ef08fe29f678a81f248a4feb5bb7ee6314a"
+      },
+      {
+        "path": "blink/patches/patch-blink-appdelegate-m.py",
+        "sha": "db1bda9341b005a8e2f88918d7c282bb5a33f386"
+      },
+      {
+        "path": "blink/patches/patch-blink-blink-bridge-h.py",
+        "sha": "5ab9490c434b0684a2474adc3d9872519e5e65ee"
+      },
+      {
+        "path": "blink/patches/patch-blink-commands-help-m.py",
+        "sha": "e2169f6c0fc85dde9ca1b5f9d311dbc51225703d"
+      },
+      {
+        "path": "blink/patches/patch-blink-complete-swift.py",
+        "sha": "8d8bc12dd0651fc3baf954ae70f582f1bfb8f3c8"
+      },
+      {
+        "path": "blink/patches/patch-blink-info-plist.py",
+        "sha": "5a40935009c32a5a1ccf854ca2b9d0fa9dc84643"
+      },
+      {
+        "path": "blink/patches/patch-blink-migrator-1860migration-swift.py",
+        "sha": "e10f8a24dab2352bfa09baaded09dc505ee9b6f2"
+      },
+      {
+        "path": "blink/patches/patch-blink-migrator-migrator-swift.py",
+        "sha": "559f3c60a2cdc06808db3822dc1d92c1eac50155"
+      },
+      {
+        "path": "blink/patches/patch-blink-scenedelegate-swift.py",
+        "sha": "61bfbd6cffd4230a4761887f59971794aab2c088"
+      },
+      {
+        "path": "blink/patches/patch-blink-smarterkeys-smarterterminput-swift.py",
+        "sha": "11719fa7dab5ecad7d3cecf952672a947ef14063"
+      },
+      {
+        "path": "blink/patches/patch-blink-spacecontroller-swift.py",
+        "sha": "49fca7fff3a75d17f9d8b2f4c533e0fab421e026"
+      },
+      {
+        "path": "blink/patches/patch-blink-terminal-termcontroller-swift.py",
+        "sha": "51b7570941098ba761b35bd76bbc7f3a80b3dccc"
+      },
+      {
+        "path": "blink/patches/patch-blink-terminal-termview-h.py",
+        "sha": "5e1a846900d3ad24a3d66bc883168927ff5de3e0"
+      },
+      {
+        "path": "blink/patches/patch-blink-terminal-termview-m.py",
+        "sha": "1f092848740854ed64cfd39535751a735b85b295"
+      },
+      {
+        "path": "blink/patches/patch-blink-whatsnew-whatsnewinfo-swift.py",
+        "sha": "510ecc985b5ecbea3d81f91c26f619af2f2eb3cb"
+      },
+      {
+        "path": "blink/patches/patch-blink-xcodeproj-project-pbxproj-01.py",
+        "sha": "1f53da82daa52277acf9e777595dfcb68ca818bf"
+      },
+      {
+        "path": "blink/patches/patch-blink-xcodeproj-project-pbxproj-02.py",
+        "sha": "22c658d6843f1ffbb79a4d05e163c522b1805b8c"
+      },
+      {
+        "path": "blink/patches/patch-blink-xcodeproj-project-pbxproj-03.py",
+        "sha": "9de741ccb380c6c349923cfb786bb4f9f45ee48e"
+      },
+      {
+        "path": "blink/patches/patch-blink-xcodeproj-project-pbxproj-04.py",
+        "sha": "498767b60a2618f82cedec050687d927fa51a661"
+      },
+      {
+        "path": "blink/patches/patch-blink-xcodeproj-project-pbxproj-05.py",
+        "sha": "1864f26b0aea31b019c360c64d142cfb7deef663"
+      },
+      {
+        "path": "blink/patches/patch-blink-xcodeproj-project-pbxproj-06.py",
+        "sha": "5046535bcb48aa2c5827c18f608884f2b3fec65e"
+      },
+      {
+        "path": "blink/patches/patch-blink-xcodeproj-project-pbxproj-07.py",
+        "sha": "e8af622adbd232140867a9e07f18a783495bc3db"
+      },
+      {
+        "path": "blink/patches/patch-blink-xcodeproj-project-pbxproj-08.py",
+        "sha": "589ecdea3514f48e828ebb28842cbf04ed118d53"
+      },
+      {
+        "path": "blink/patches/patch-blink-xcodeproj-project-pbxproj-09.py",
+        "sha": "6ff3b5fbad235955119bbe50afd006426afa118e"
+      },
+      {
+        "path": "blink/patches/patch-blink-xcodeproj-project-pbxproj-10.py",
+        "sha": "03661ad224706322aa896002ef93aa0c0f9cd07d"
+      },
+      {
+        "path": "blink/patches/patch-blinkconfig-blinkpaths-h.py",
+        "sha": "8d89bd752c89b341793d7fbcd54dc3f06c80080a"
+      },
+      {
+        "path": "blink/patches/patch-blinkconfig-blinkpaths-m.py",
+        "sha": "fc50cc67bb8a0965d5e2ec10e7e44a24b5f6b268"
+      },
+      {
+        "path": "blink/patches/patch-sessions-mcpsession-m.py",
+        "sha": "12a5bb9958a8d7549adef7aada60926038405812"
+      },
+      {
+        "path": "blink/patches/patch-sessions-sessionparams-swift.py",
+        "sha": "59481d3dc9277e715c8dc299de92fd2ffb8f84b7"
+      },
+      {
+        "path": "blink/patches/patch-settings-model-terminalstyle-swift.py",
+        "sha": "d5de8d388f889644e6738b57a066c79d698b7e03"
+      },
+      {
+        "path": "blink/patches/patch-settings-settingsview-swift.py",
+        "sha": "3673657ddeeaad099b69cd4e96dd576d4ebdc828"
+      },
+      {
+        "path": "blink/patches/patch-settings-viewcontrollers-about-about-html.py",
+        "sha": "bb69c791765ba19f9d1485c5680f244172afd30a"
+      },
+      {
+        "path": "blink/patches/patch-settings-viewcontrollers-appearance-stylecustomizationview-swift.py",
+        "sha": "fca80656389d84299690493d7780e86b05a0a3a9"
+      }
+    ]
+  },
+  "local_context_check_script_sha256": "e8d88d7b250e7da0f2f30fbd17ec09a7374d54b64540e1b1eece822361ea0bde",
+  "local_tracker": {
+    "repository": "raskal-labs/blink-rsk",
+    "issue": 3,
+    "http_status": 410,
+    "message": "This issue was deleted",
+    "recreated": false
+  },
+  "limitations": [
+    "Targeted named branches, not every fork or all refs; official branch-name inventory covered 28 names but comparisons covered four selected refs.",
+    "Branch refs are mutable; exact observed heads are retained.",
+    "GitHub compare commit lists and file limits are not evidence of complete historical/device audits.",
+    "Context checks use isolated exact-pin files. They do not establish compatibility with all combined future patches, Apple compilation, input/rendering correctness or device recovery.",
+    "Madjinn full production rendering patch checked after relocating its old Blink/TermView.m path; it still fails source context.",
+    "No raw issue comments, email signatures, unsubscribe URLs, phone files or signing material are retained here.",
+    "No UX source imported, build dispatched, phone data changed or remote host configured."
+  ]
+}

@@ -1,0 +1,33 @@
+diff --git a/Blink/SpaceController.swift b/Blink/SpaceController.swift
+--- a/Blink/SpaceController.swift
++++ b/Blink/SpaceController.swift
+@@ -982,6 +982,8 @@
+     if let _ = _snippetsVC {
+       return
+     }
++    self.currentTerm()?.resignInput()
++
+     self.presentSnippetsController()
+     if let _ = self._interactiveSpaceController()._blinkMenu {
+       self.toggleQuickActionsAction()
+@@ -992,6 +994,8 @@
+     if let _ = _snippetsVC {
+       return
+     }
++    self.currentTerm()?.resignInput()
++
+     self.presentSnippetsControllerWithScratch()
+     // if let _ = self._interactiveSpaceController()._blinkMenu {
+     //   self.toggleQuickActionsAction()
+diff --git a/Blink/WebKit/WKWebView.swift b/Blink/WebKit/WKWebView.swift
+--- a/Blink/WebKit/WKWebView.swift
++++ b/Blink/WebKit/WKWebView.swift
+@@ -172,7 +172,7 @@
+       _wkWebView?.configuration.userContentController.removeScriptMessageHandler(forName: _handlerName)
+ 
+       for r in allRecognizers {
+-        _wkWebView?.addGestureRecognizer(r)
++        _wkWebView?.removeGestureRecognizer(r)
+       }
+ 
+       if let interaction = _pointerInteraction as? UIPointerInteraction {

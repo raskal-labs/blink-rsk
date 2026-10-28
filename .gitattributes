@@ -1,0 +1,3 @@
+# Unified patch context contains upstream tabs/blank lines. CI checks whitespace
+# on the applied source; do not treat context prefixes as source indentation.
+patches/*.patch -whitespace

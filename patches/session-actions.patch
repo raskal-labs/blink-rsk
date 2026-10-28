@@ -1,0 +1,414 @@
+--- a/Blink.xcodeproj/project.pbxproj
++++ b/Blink.xcodeproj/project.pbxproj
+@@ -7,6 +7,8 @@
+ 	objects = {
+ 
+ /* Begin PBXBuildFile section */
++		52534B000000000000000004 /* BlinkIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52534B000000000000000003 /* BlinkIntents.swift */; };
++		52534B000000000000000002 /* SessionLink.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52534B000000000000000001 /* SessionLink.swift */; };
+ 		0716B5721CFFAB9300268B5B /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 0716B52A1CFFAB9300268B5B /* AppDelegate.m */; };
+ 		0716B5741CFFAB9300268B5B /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 0716B52C1CFFAB9300268B5B /* LaunchScreen.storyboard */; };
+ 		0732F04D1D062B9A00AB5438 /* locales.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 0732F04A1D062B9A00AB5438 /* locales.bundle */; };
+@@ -757,6 +759,8 @@
+ /* End PBXCopyFilesBuildPhase section */
+ 
+ /* Begin PBXFileReference section */
++		52534B000000000000000003 /* BlinkIntents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlinkIntents.swift; sourceTree = "<group>"; };
++		52534B000000000000000001 /* SessionLink.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionLink.swift; sourceTree = "<group>"; };
+ 		0716B5291CFFAB9300268B5B /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
+ 		0716B52A1CFFAB9300268B5B /* AppDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
+ 		0716B52D1CFFAB9300268B5B /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
+@@ -1493,6 +1497,8 @@
+ 				D2AD9ADD22DB80DE00861F66 /* SessionRegistry.swift */,
+ 				D2887A5522DC676F00701BD5 /* SpaceController.swift */,
+ 				D2887A5D22DCA6D500701BD5 /* SceneDelegate.swift */,
++				52534B000000000000000003 /* BlinkIntents.swift */,
++				52534B000000000000000001 /* SessionLink.swift */,
+ 				D248E67522DDDF130057FE67 /* UIStateRestorable.swift */,
+ 				D2BC514C2355C3AE0034FDD4 /* History.swift */,
+ 				D25D580F2358897B00D1BCAE /* Complete.swift */,
+@@ -3641,6 +3647,8 @@
+ 				D2D3B04828FD7A790086F633 /* EmptyStateView.swift in Sources */,
+ 				D2CB353B23339D5C00088765 /* UIView+Touches.swift in Sources */,
+ 				D2887A5E22DCA6D500701BD5 /* SceneDelegate.swift in Sources */,
++				52534B000000000000000004 /* BlinkIntents.swift in Sources */,
++				52534B000000000000000002 /* SessionLink.swift in Sources */,
+ 				D231F5072A54478800ED82B0 /* BlinkMenu.m in Sources */,
+ 				BD028AF32A8EC509002F5F54 /* TrialSupportView.swift in Sources */,
+ 				D2C2441F238E44AB0082C69C /* Row.swift in Sources */,
+--- a/Blink/SceneDelegate.swift
++++ b/Blink/SceneDelegate.swift
+@@ -159,7 +159,16 @@
+    */
+   func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
+ 
+-    if let sshUrlScheme = URLContexts.first(where: { $0.url.scheme == "ssh" })?.url {
++    if let sessionURL = URLContexts.first(where: { $0.url.scheme?.lowercased() == "blinkshell" })?.url {
++      Task { @MainActor in
++        do { try await self._spCtrl.openSessionLink(SessionLink.parse(sessionURL)) }
++        catch SessionActionError.cancelled { }
++        catch {
++          // Never reflect the URL or command parameters into errors/logs.
++          self._spCtrl.showAlert(msg: "Could not open session. Use a saved host link or an open session name; commands and keys are not accepted in links.")
++        }
++      }
++    } else if let sshUrlScheme = URLContexts.first(where: { $0.url.scheme == "ssh" })?.url {
+       _handleSshUrlScheme(with: sshUrlScheme)
+     } else if let codeUrlScheme = URLContexts.first(where: { $0.url.scheme == "vscode" })?.url {
+       _handleCodeUrlScheme(with: codeUrlScheme)
+--- a/Blink/SpaceController.swift
++++ b/Blink/SpaceController.swift
+@@ -36,6 +36,7 @@
+ 
+ import MBProgressHUD
+ import SwiftUI
++import BlinkConfig
+ 
+ 
+ // MARK: UIViewController
+@@ -58,6 +59,7 @@
+   
+   private var _viewportsKeys = [UUID]()
+   private var _currentKey: UUID? = nil
++  private var linkedSessions: [String: UUID] = [:]
+   
+   private var _hud: MBProgressHUD? = nil
+   
+@@ -1268,9 +1270,44 @@
+ 
+ // MARK: SceneIntent handlers
+ extension SpaceController {
++  // Foreground entry point shared by URL navigation and App Intents. Never logs
++  // request contents or copies them into a URL, defaults or an analytics event.
++  @MainActor
++  func openSessionLink(_ link: SessionLink) async throws {
++    linkedSessions = linkedSessions.filter { _viewportsKeys.contains($0.value) }
++    if let id = link.id, let key = linkedSessions[id], link.canReuseSession(true) {
++      _moveToShell(key: key)
++      return
++    }
++    if link.kind == .focus {
++      throw SessionActionError.sessionNotFound
++    }
++    if let host = link.host {
++      guard BKHosts.withHost(host) != nil else { throw SessionActionError.unknownHost }
++      guard presentedViewController == nil else { throw SessionActionError.busy }
++      let accepted: Bool = await withCheckedContinuation { continuation in
++        let alert = UIAlertController(
++          title: link.remoteCommand == nil ? "Connect to saved host?" : "Run on saved host?",
++          message: host + (link.preview.map { "\n\n" + $0 } ?? ""), preferredStyle: .alert)
++        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel) { _ in continuation.resume(returning: false) })
++        alert.addAction(UIAlertAction(title: link.remoteCommand == nil ? "Connect" : "Run", style: .default) { _ in
++          continuation.resume(returning: true)
++        })
++        present(alert, animated: true)
++      }
++      guard accepted else { throw SessionActionError.cancelled }
++      // A profile may have been removed while the prompt was visible.
++      guard BKHosts.withHost(host) != nil else { throw SessionActionError.unknownHost }
++    }
++    _newShellAction(command: link.terminalCommand)
++    if let id = link.id, let key = _currentKey { linkedSessions[id] = key }
++  }
++
+   @objc func runShellSessionIntent(command: String = "") {
+-    DispatchQueue.main.sync {
++    if Thread.isMainThread {
+       self._newShellAction(command: command)
++    } else {
++      DispatchQueue.main.sync { self._newShellAction(command: command) }
+     }
+   }
+ 
+--- /dev/null
++++ b/Blink/SessionLink.swift
+@@ -0,0 +1,124 @@
++//////////////////////////////////////////////////////////////////////////////////
++//
++// B L I N K
++//
++// Copyright (C) 2016-2019 Blink Mobile Shell Project
++//
++// This file is part of Blink.
++//
++// Blink is free software: you can redistribute it and/or modify
++// it under the terms of the GNU General Public License as published by
++// the Free Software Foundation, either version 3 of the License, or
++// (at your option) any later version.
++//
++// Blink is distributed in the hope that it will be useful,
++// but WITHOUT ANY WARRANTY; without even the implied warranty of
++// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++// GNU General Public License for more details.
++//
++// You should have received a copy of the GNU General Public License
++// along with Blink. If not, see <http://www.gnu.org/licenses/>.
++//
++// In addition, Blink is also subject to certain additional terms under
++// GNU GPL version 3 section 7.
++//
++// You should have received a copy of these additional terms immediately
++// following the terms and conditions of the GNU General Public License
++// which accompanied the Blink Source Code. If not, see
++// <http://www.github.com/blinksh/blink>.
++//
++////////////////////////////////////////////////////////////////////////////////
++
++
++// Adapted from blinksh/blink 7a427f3 SessionLink and FleetScript (GPL-3.0 + upstream terms).
++// URLs carry navigation only. Commands/scripts are private Shortcuts parameters;
++// every new connection/execution requires foreground confirmation.
++import Foundation
++
++struct SessionLink: Equatable {
++  enum Kind { case terminal, host, focus }
++  enum ValidationError: Error { case invalidLink, invalidHost, invalidID, invalidCommand }
++  let kind: Kind
++  let host: String?
++  let id: String?
++  let remoteCommand: String?
++  let preview: String?
++
++  static func isToken(_ value: String, limit: Int) -> Bool {
++    let allowed = CharacterSet(charactersIn: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._-")
++    return !value.isEmpty && value.count <= limit && value.unicodeScalars.allSatisfy { allowed.contains($0) }
++  }
++
++  static func validateHost(_ host: String) throws {
++    guard isToken(host, limit: 253), !host.hasPrefix("-"), !host.hasPrefix(".") else {
++      throw ValidationError.invalidHost
++    }
++  }
++
++  static func navigation(host: String?, id: String?) throws -> SessionLink {
++    if let id { guard isToken(id, limit: 64) else { throw ValidationError.invalidID } }
++    if let host {
++      try validateHost(host)
++      return SessionLink(kind: .host, host: host, id: id, remoteCommand: nil, preview: nil)
++    }
++    return SessionLink(kind: id == nil ? .terminal : .focus, host: nil, id: id, remoteCommand: nil, preview: nil)
++  }
++
++  static func parse(_ url: URL) throws -> SessionLink {
++    guard url.scheme?.lowercased() == "blinkshell",
++          let c = URLComponents(url: url, resolvingAgainstBaseURL: false),
++          c.user == nil, c.password == nil, c.port == nil, c.fragment == nil,
++          let action = c.host?.lowercased(), ["host", "focus"].contains(action) else {
++      throw ValidationError.invalidLink
++    }
++    let items = c.queryItems ?? []
++    // Reject cmd, script, key, duplicate/unknown arguments and hidden payloads.
++    guard items.count <= 1, items.allSatisfy({ $0.name == "id" && $0.value != nil }) else {
++      throw ValidationError.invalidLink
++    }
++    let id = items.first?.value
++    if action == "focus" {
++      guard c.path.isEmpty, id != nil else { throw ValidationError.invalidLink }
++      return try navigation(host: nil, id: id)
++    }
++    guard c.path.hasPrefix("/") else { throw ValidationError.invalidHost }
++    return try navigation(host: String(c.path.dropFirst()), id: id)
++  }
++
++  static func execution(host: String, command: String, interpreter: String? = nil) throws -> SessionLink {
++    try validateHost(host)
++    guard !command.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
++          command.utf8.count <= 8000 else { throw ValidationError.invalidCommand }
++    let remote: String
++    if let interpreter {
++      guard ["sh", "bash", "python3"].contains(interpreter),
++            !command.unicodeScalars.contains(where: { CharacterSet.controlCharacters.contains($0) && ![9, 10, 13].contains($0.value) }) else {
++        throw ValidationError.invalidCommand
++      }
++      let encoded = Data(command.utf8).base64EncodedString()
++      remote = "printf %s '\(encoded)' | base64 --decode | \(interpreter)"
++    } else {
++      guard command.rangeOfCharacter(from: .controlCharacters) == nil,
++            command.rangeOfCharacter(from: .newlines) == nil else { throw ValidationError.invalidCommand }
++      remote = command
++    }
++    return SessionLink(kind: .host, host: host, id: nil, remoteCommand: remote, preview: command)
++  }
++
++  // One shell token preserves the whole remote expression. It must never become
++  // a local pipeline/substitution in ios_system's initial command.
++  static func shellQuote(_ value: String) -> String {
++    "'" + value.replacingOccurrences(of: "'", with: "'\"'\"'") + "'"
++  }
++
++  var terminalCommand: String {
++    guard let host else { return "" }
++    let connect = "ssh -o StrictHostKeyChecking=yes " + host
++    guard let remoteCommand else { return connect }
++    return connect + " -- " + Self.shellQuote(remoteCommand)
++  }
++
++  func canReuseSession(_ exists: Bool) -> Bool {
++    exists && remoteCommand == nil
++  }
++}
+--- /dev/null
++++ b/Blink/BlinkIntents.swift
+@@ -0,0 +1,162 @@
++//////////////////////////////////////////////////////////////////////////////////
++//
++// B L I N K
++//
++// Copyright (C) 2016-2019 Blink Mobile Shell Project
++//
++// This file is part of Blink.
++//
++// Blink is free software: you can redistribute it and/or modify
++// it under the terms of the GNU General Public License as published by
++// the Free Software Foundation, either version 3 of the License, or
++// (at your option) any later version.
++//
++// Blink is distributed in the hope that it will be useful,
++// but WITHOUT ANY WARRANTY; without even the implied warranty of
++// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++// GNU General Public License for more details.
++//
++// You should have received a copy of the GNU General Public License
++// along with Blink. If not, see <http://www.gnu.org/licenses/>.
++//
++// In addition, Blink is also subject to certain additional terms under
++// GNU GPL version 3 section 7.
++//
++// You should have received a copy of these additional terms immediately
++// following the terms and conditions of the GNU General Public License
++// which accompanied the Blink Source Code. If not, see
++// <http://www.github.com/blinksh/blink>.
++//
++////////////////////////////////////////////////////////////////////////////////
++
++
++// Adapted from blinksh/blink 7a427f3 BlinkIntents.swift. Foreground terminal
++// execution intentionally replaces the Fleet/headless runner and output capture.
++import AppIntents
++import BlinkConfig
++import Foundation
++import UIKit
++
++enum SessionActionError: Error, LocalizedError {
++  case unknownHost, sessionNotFound, busy, cancelled, appNotReady
++  var errorDescription: String? {
++    switch self {
++    case .unknownHost: return "Save this host in Blink before using the action."
++    case .sessionNotFound: return "No session with that name is open in this window."
++    case .busy: return "Dismiss the current Blink dialog and try again."
++    case .cancelled: return "Cancelled. No connection or command was started."
++    case .appNotReady: return "Blink is not ready. Open its terminal and try again."
++    }
++  }
++}
++
++@available(iOS 16.0, *)
++struct BlinkHostEntity: AppEntity {
++  static var typeDisplayRepresentation = TypeDisplayRepresentation(name: "Blink Host")
++  static var defaultQuery = BlinkHostQuery()
++  let id: String
++  var displayRepresentation: DisplayRepresentation { DisplayRepresentation(title: "\(id)") }
++  static func all() -> [BlinkHostEntity] {
++    (BKHosts.allHosts() ?? []).compactMap { host -> BlinkHostEntity? in
++      guard let name = host.host, (try? SessionLink.validateHost(name)) != nil else { return nil }
++      return BlinkHostEntity(id: name)
++    }.sorted { $0.id.localizedCaseInsensitiveCompare($1.id) == .orderedAscending }
++  }
++}
++
++@available(iOS 16.0, *)
++struct BlinkHostQuery: EntityStringQuery {
++  func entities(for identifiers: [String]) async throws -> [BlinkHostEntity] {
++    BlinkHostEntity.all().filter { identifiers.contains($0.id) }
++  }
++  func entities(matching string: String) async throws -> [BlinkHostEntity] {
++    BlinkHostEntity.all().filter { $0.id.localizedCaseInsensitiveContains(string) }
++  }
++  func suggestedEntities() async throws -> [BlinkHostEntity] { BlinkHostEntity.all() }
++}
++
++@available(iOS 16.0, *)
++enum SessionInterpreter: String, AppEnum {
++  case sh, bash, python3
++  static var typeDisplayRepresentation = TypeDisplayRepresentation(name: "Remote Interpreter")
++  static var caseDisplayRepresentations: [SessionInterpreter: DisplayRepresentation] = [
++    .sh: "sh", .bash: "bash", .python3: "python3"
++  ]
++}
++
++@available(iOS 16.0, *)
++enum SessionActionRunner {
++  @MainActor
++  static func open(_ link: SessionLink) async throws {
++    for _ in 0..<40 {
++      if let scene = UIApplication.shared.connectedScenes.activeAppScene(),
++         scene.activationState == .foregroundActive,
++         let delegate = scene.delegate as? SceneDelegate,
++         delegate.spaceController.viewIfLoaded?.window != nil {
++        try await delegate.spaceController.openSessionLink(link)
++        return
++      }
++      try await Task.sleep(nanoseconds: 100_000_000)
++    }
++    throw SessionActionError.appNotReady
++  }
++}
++
++@available(iOS 16.0, *)
++struct OpenTerminalSessionIntent: AppIntent {
++  static var title: LocalizedStringResource = "Open Terminal Session"
++  static var description = IntentDescription("Open a terminal or connect to a saved host after confirmation. A session name reuses that open session in the current window; a name alone focuses it. Names last until Blink closes.")
++  static var openAppWhenRun: Bool = true
++  @Parameter(title: "Host") var host: BlinkHostEntity?
++  @Parameter(title: "Session Name") var sessionName: String?
++  static var parameterSummary: some ParameterSummary {
++    Summary("Open a terminal in Blink") { \.$host; \.$sessionName }
++  }
++  @MainActor
++  func perform() async throws -> some IntentResult {
++    try await SessionActionRunner.open(SessionLink.navigation(host: host?.id, id: sessionName))
++    return .result()
++  }
++}
++
++@available(iOS 16.0, *)
++struct RunCommandOnHostIntent: AppIntent {
++  static var title: LocalizedStringResource = "Run Command on Host"
++  static var description = IntentDescription("Confirm a command on a saved host, then start it in a new foreground SSH terminal. Output stays in the terminal; action completion means the session was opened, not that the remote command succeeded. No background execution or returned output.")
++  static var openAppWhenRun: Bool = true
++  @Parameter(title: "Host") var host: BlinkHostEntity
++  @Parameter(title: "Command") var command: String
++  static var parameterSummary: some ParameterSummary { Summary("Run \(\.$command) on \(\.$host)") }
++  @MainActor
++  func perform() async throws -> some IntentResult {
++    try await SessionActionRunner.open(SessionLink.execution(host: host.id, command: command))
++    return .result()
++  }
++}
++
++@available(iOS 16.0, *)
++struct RunScriptOnHostIntent: AppIntent {
++  static var title: LocalizedStringResource = "Run Script on Host"
++  static var description = IntentDescription("Confirm a script, then start it in a new foreground SSH terminal. The host needs base64 --decode and the chosen interpreter. Output and exit status stay in the terminal; the action returns when the session opens. No background execution or returned output.")
++  static var openAppWhenRun: Bool = true
++  @Parameter(title: "Host") var host: BlinkHostEntity
++  @Parameter(title: "Interpreter", default: .sh) var interpreter: SessionInterpreter
++  @Parameter(title: "Script", inputOptions: String.IntentInputOptions(multiline: true)) var script: String
++  static var parameterSummary: some ParameterSummary {
++    Summary("Run a \(\.$interpreter) script on \(\.$host)") { \.$script }
++  }
++  @MainActor
++  func perform() async throws -> some IntentResult {
++    try await SessionActionRunner.open(SessionLink.execution(host: host.id, command: script, interpreter: interpreter.rawValue))
++    return .result()
++  }
++}
++
++@available(iOS 16.0, *)
++struct BlinkSessionShortcuts: AppShortcutsProvider {
++  static var appShortcuts: [AppShortcut] {
++    AppShortcut(intent: OpenTerminalSessionIntent(), phrases: ["Open a terminal with \(.applicationName)"], shortTitle: "Open Terminal", systemImageName: "terminal")
++    AppShortcut(intent: RunCommandOnHostIntent(), phrases: ["Run a command with \(.applicationName)"], shortTitle: "Run Command", systemImageName: "terminal")
++    AppShortcut(intent: RunScriptOnHostIntent(), phrases: ["Run a script with \(.applicationName)"], shortTitle: "Run Script", systemImageName: "scroll")
++  }
++}
