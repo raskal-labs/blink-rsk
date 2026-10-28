@@ -20,7 +20,11 @@ with zipfile.ZipFile(ipa) as z:
     assert set(actions) == EXPECTED, set(actions)
     for name, action in actions.items():
         assert action['isDiscoverable'] and action['openAppWhenRun'], name
-        assert 'resultValueType' in action, (name, sorted(action))
+        # Xcode 26.6 extract.actionsdata uses outputType, not resultValueType.
+        expected_output = ({'intents': {'wrapper': {'typeIdentifier': 12}}}
+                           if name == 'DownloadFileIntent'
+                           else {'primitive': {'wrapper': {'typeIdentifier': 0}}})
+        assert action.get('outputType') == expected_output, (name, action.get('outputType'))
     parameters = {p['name'] for p in actions['OpenTerminalSessionIntent']['parameters']}
     assert parameters == {'host', 'sessionName', 'connection', 'startingCommand', 'reuse'}, parameters
     assert any(p['name'] == 'file' for p in actions['UploadFileIntent']['parameters'])
@@ -35,7 +39,7 @@ with zipfile.ZipFile(ipa) as z:
     assert appex == {'BlinkFileProviderExtension.appex','BlinkFileProviderExtensionUI.appex'}, appex
     assert not any(n.endswith('embedded.mobileprovision') for n in z.namelist())
     receipt = {'schema': 1, 'sha256': hashlib.sha256(ipa.read_bytes()).hexdigest(),
-               'actions': {name: {'resultValueType': action['resultValueType'],
+               'actions': {name: {'outputType': action['outputType'],
                                   'parameters': [p['name'] for p in action['parameters']]} for name, action in actions.items()},
                'bundle_ids': identifiers, 'zip_crc': 'passed', 'device_acceptance': 'Unknown'}
     Path(sys.argv[2]).write_text(json.dumps(receipt, indent=2)+'\n')
