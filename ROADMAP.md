@@ -1,6 +1,6 @@
 # Blink-RSK — Product roadmap
 
-**Updated:** 2026-10-27 (Shortcuts candidate compiled/signed; package independently verified after checker-only CI failure; device acceptance pending)
+**Updated:** 2026-10-27 (combined candidate accepted by user; PR #7 merged/issue #2 closed; customization scope review started)
 **Status:** Proposed (product direction); individual capabilities have their own statuses below  
 **Primary repository:** [raskal-labs/blink-rsk](https://github.com/raskal-labs/blink-rsk)  
 **Audience:** Private/personal iOS installation; not currently intended for distribution.
@@ -36,9 +36,9 @@ Evolve Blink-RSK from a SideStore-compatible Blink Shell build into a **personal
 | --- | --- | --- |
 | macOS GitHub Actions builds from pinned upstream Blink 18.7.0 | Verified | CI and archived artifacts recorded in [Phase 01](docs/phase-01/PHASE-01.md) on its working branch; Xcode 26.6 was used. |
 | A SideStore-installed Blink-RSK build launches and SSH/SFTP/SCP can work on iPhone | Verified | User observed working connections and transferred `hd-receipts.zip` from a local `iPhone` bookmark to GameCube `/lab`. |
-| Local file operations and bookmark persistence | In Progress | Earlier local operations and an initial persistence check succeeded. Later reports show inaccessible folder links and an empty Bookmarks list. Bookmark preservation/reselection is implemented in the unmerged October 24 candidate with 24 local manager regressions; Xcode 26.6 native tests and full iOS build passed in [run 40128366917](https://github.com/raskal-labs/blink-rsk/actions/runs/40128366917); October 25 user feedback reports bookmarks persisting well; full failure/recovery and refresh acceptance remain In Progress, and exact installed IPA identity remains Unknown. Details belong in issue #2. |
+| Local file operations and bookmark persistence | Verified | Positive persistence feedback followed by user-reported functional acceptance of the combined candidate. This is not an independent installed-checksum, exhaustive recovery or SideStore-refresh measurement. [Acceptance record](docs/phase-01/SHORTCUTS-EXPANSION-CANDIDATE.md#device-acceptance--2026-10-27). |
 | Host/session links and three foreground Shortcuts actions | Verified | October 26 user confirms links work and explicitly confirms all three actions appear and run. Basic user-reported functionality only; exact installed IPA SHA, cancellation/negative-input/host-key checks and refresh remain unestablished. Earlier link/discovery blocker is superseded; no additional source fix/build was performed. [Acceptance evidence](docs/phase-01/SESSION-ACTIONS-CANDIDATE.md#october-26-links-and-shortcuts-success). |
-| iOS Files.app remote File Provider | In Progress | October 26 sync-failure report is withdrawn by the user as mistaken and superseded; no active sync blocker or invented successful transfer test. Listing/transfer/reopen acceptance remains separately unestablished. Existing `7e28d172` startup-cleanup backport joins this batch's native validation while preserving polling/state; it is not a fix for that withdrawn report. [Combined candidate](docs/phase-01/SHORTCUTS-EXPANSION-CANDIDATE.md). |
+| iOS Files.app remote File Provider | Verified | Combined candidate accepted by user report; owner closed issue #2. The withdrawn October 26 sync report remains superseded. No fabricated per-transfer result or causal claim for startup cleanup; detailed per-case evidence remains separate. |
 | 2026-10-12 signing/FP candidate IPA | Verified | Structurally built/archived; *native installation and acceptance for this exact SHA remain Unknown* in [Codex runbook](docs/phase-01/CODEX-PHASE-01.md). |
 | Touch scrolling/selection/keyboard behavior | Proposed | Investigate reported scrolling behavior across local shell, SSH and Mosh, first outside Zellij/tmux. Whether Blink, Mosh or the remote application causes it remains Unknown; no scrolling code fix is assumed. Selection and keyboard improvements remain Proposed in [issue #3](https://github.com/raskal-labs/blink-rsk/issues/3). |
 | SSH keys and host profiles across GameCube, u64, T480, Oxygen | In Progress | Several connections have been configured; inventory and test each separately. Oxygen's phone-hotspot IP is not stable. |
@@ -51,8 +51,8 @@ Evolve Blink-RSK from a SideStore-compatible Blink Shell build into a **personal
 
 Milestones are **dependency ordered, not date estimates**. Ship one narrow increment at a time.
 
-### M0 — Close and protect the working foundation
-**Status:** In Progress  
+### M0 — Accepted working foundation and ongoing safeguards
+**Status:** Verified for user-reported functional acceptance; unmeasured lifecycle evidence remains separate
 **Goal:** A reproducible and restorable build, with a short acceptance record for the installed app.
 
 - Reconcile the actual installed IPA/version/SHA with the latest candidate and archived rollback build.
@@ -65,7 +65,14 @@ Milestones are **dependency ordered, not date estimates**. Ship one narrow incre
 
 **Exit gate:** One known restorable IPA, explicit test matrix and remaining limitations. Stop on unaccepted data-loss or provisioning risk.
 
-### M1 — Daily terminal usability
+### M1 + M2 — Combined customization
+**Status:** In Progress (source and scope review)
+
+**Accepted direction:** touch controls, terminal usability, workspace UI and appearance in one coherent milestone, preserving the terminal-first experience and current app/provider identities. The user accepted the previous batch and asked to move forward. Existing M1/M2 detail below remains the research backlog; it is not blanket authorization to import all experiments.
+
+**Proposed first batch:** a compact collapsible touch-action surface using existing keyboard/session/Snips/clipboard actions, explicit hide/show keyboard and local jump-to-bottom; a lightweight workspace launcher for existing native destinations; direct access to existing themes/fonts/style preview without changing current defaults. Confirm the preferred detail level before implementation. Select All/Copy All, optional D-pad and keyboard lock require an explicit scope decision; large-paste, renderer/backpressure and Mosh mouse/history work remain separate research. No speculative server integrations, rebrand/signing identity change or new extension.
+
+#### M1 — Daily terminal usability
 **Status:** Proposed; former issue #3 returns HTTP 410 (deleted), observed October 26
 
 **Goal:** Remove high-frequency frustrations with minimal terminal regressions.
@@ -82,7 +89,7 @@ Milestones are **dependency ordered, not date estimates**. Ship one narrow incre
 
 **Exit gate:** Scrolling and input pass real-device regression tests and users can switch, select, copy and resume sessions without surprises.
 
-### M2 — Personal identity and coherent navigation
+#### M2 — Personal identity and coherent navigation
 **Status:** Proposed  
 **Goal:** Make this unmistakably the user's own app without destabilizing identities or replacing the terminal.
 
@@ -140,9 +147,9 @@ Candidates: personalized dashboard/widgets and Control Centre extensions, lightw
 | **P4 — Integration** | Safe upstream session-link/Shortcuts audit; official HA widget/action/notification pilot; Atlas/Polaris and device actions | Reuse mature capabilities without sacrificing stability |
 | **P5 — Experiments** | Rich dashboards, visual controls, AI/native integrations, alternative input | Validate demand before complexity |
 
-**Current device feedback (October 27):** links/all three original Shortcuts work by user report; bookmarks have positive persistence feedback while broader acceptance remains In Progress. Files sync failure is withdrawn/superseded, not an active blocker. Remaining acceptance: detailed cancellation/invalid-input/SSH trust checks, bookmark recovery/refresh, actual Files transfers/reopen and installed-artifact reconciliation. No successful transfer test is inferred from the withdrawal.
+**Current device feedback (October 27):** the user reports the combined candidate passing and is ready to move forward; record functional acceptance. Keep earlier explicit link/three-action and bookmark-persistence feedback. Exact installed checksum, refresh and individually unreported negative/recovery outcomes remain follow-up evidence; do not infer per-test results from a general pass. Files sync failure remains withdrawn/superseded, and the withdrawal itself proves no transfer.
 
-**Current bounded batch (In Progress; candidate available):** foreground command/script results, SFTP upload/download/listing, SSH/Mosh startup commands, explicit focus and saved-folder terminal opening, plus the prepared provider backport and separately reviewable Snips/gesture corrections. After the first compilation failure and source correction, the user authorized one retry. [Run 40627574155](https://github.com/raskal-labs/blink-rsk/actions/runs/40627574155) passed complete native compilation/signing and produced an IPA; its final checker failed on a metadata field-name assumption. Corrected checker `c3ac048` independently verified the unchanged package and eight action outputs. CI remains red; no further dispatch. [Candidate, SHA, receipt provenance and combined device checklist](docs/phase-01/SHORTCUTS-EXPANSION-CANDIDATE.md#current-retry-result). PR #7 remains draft/unmerged; no installation/replacement, reset or identity change.
+**Accepted batch:** user reports the combined candidate passing and is ready to move forward. PR #7 was already merged by the owner at `38cbdb2`; issue #2 is closed. Preserve native build/package evidence and the archived IPA/rollback references; installed SHA and unmeasured refresh/per-case results remain distinct. [Acceptance and scope limits](docs/phase-01/SHORTCUTS-EXPANSION-CANDIDATE.md#device-acceptance--2026-10-27). The next active milestone combines touch controls, terminal usability, workspace UI and appearance.
 
 **Earlier source preflight:** Review the 18.7.1 callback restoration separately from the October 12 session-link/Shortcuts changes. Before implementing bookmark recovery, check existing work and source availability: public `raw` still points to April 14 pin `a90b4423`; October 12 commit `7a427f3` is retrievable by SHA but contains the identical bookmark manager. An exact shipping 18.7.1 source ref and the later documented bookmark fix remain unestablished. Prefer a compatible upstream repair if found; otherwise make the focused patch without automatically changing the baseline. Preservation will not recover already-erased bookmark data; folder reselection may be necessary. This is context and bounded preflight, not a new parity milestone. See issue #2 and [iOS integration research](docs/IOS-INTEGRATIONS.md).
 
@@ -169,8 +176,8 @@ Use narrowly scoped adapters to existing commands/APIs. Avoid designing a genera
 
 ## 7. Immediate next sequence
 
-1. **Combined Shortcuts batch / M0 acceptance (issue #2):** source/native compilation/signing and independent IPA verification are complete after the separately authorized retry. CI remains red due to a corrected metadata-checker field assumption. Deliver the candidate and finish separately authorized device acceptance; no further CI dispatch. Exact receipt origins and rollback references are archived. Keep existing positive device evidence separate from this candidate. The mistaken Files sync report is withdrawn. Device tests require a separate safe installation decision; no reset or merge.
-2. **Next: combined customization milestone:** touch controls, terminal usability, workspace UI and appearance, informed by retained M1/M2 research. Select All/Copy All, optional D-pad, keyboard lock, large-paste changes, renderer/backpressure and Mosh mouse/scrollback experiments stay outside the current build. Local retained-buffer copying and remote multiplexer history are distinct.
+1. **Accepted foundation:** record the user-reported pass, owner merge/issue closure and archived candidate reference. Carry installed-checksum, refresh and unmeasured per-case checks as follow-up evidence; do not reopen the withdrawn sync blocker or repeat the accepted batch.
+2. **Combined customization milestone (In Progress: scope review):** touch controls, terminal usability, workspace UI and appearance together. Reuse existing quick actions, keyboard actions, terminal scroll bridge and theme/font/style store. Select a coherent first batch before changing behavior; the earlier build remains unchanged. No new CI dispatch, installation, identity change, provider reset or rendering/Mosh experiment is authorized by the acceptance report.
 3. **Independent read-only research:** inventory existing Blink/iOS actions, test one official HA → approved GameCube action → actionable notification workflow without a new IPA, and review the upstream session-link/App Intents source for security and compatibility. Capture evidence in [iOS integrations](docs/IOS-INTEGRATIONS.md) and [UX research](docs/UX-RESEARCH.md); no build or new app identity is authorized.
 
 ## 8. Sources and linked tasks
