@@ -18,7 +18,7 @@ Reproducible, auditable SideStore builds of [Blink Shell](https://github.com/bli
 
 ## Current checkpoint
 
-The user reports the combined Shortcuts candidate passing and is ready to move forward. PR #7 is merged and issue #2 closed by the owner. [Device acceptance and evidence limits](docs/phase-01/SHORTCUTS-EXPANSION-CANDIDATE.md#device-acceptance--2026-10-27) remain separate from the historical checker-only CI failure and independent package validation. The next active scope review combines touch controls, terminal usability, workspace UI and appearance; no new build or device operation is authorized here.
+The user reports the combined Shortcuts candidate passing and is ready to move forward. PR #7 is merged and issue #2 closed by the owner. [Device acceptance and evidence limits](docs/phase-01/SHORTCUTS-EXPANSION-CANDIDATE.md#device-acceptance--2026-10-27) remain separate from the historical checker-only CI failure and independent package validation. The user rejected a small follow-on build: the next target is a substantial combined customization release covering configurable touch/D-pad, input/keyboard modes, clipboard/output/paste, sessions, workspace navigation and appearance. [Canonical scope](ROADMAP.md#m1--m2--combined-customization) remains design/source work; no new build or device operation is performed here.
 
 ## Build workflow roles
 
