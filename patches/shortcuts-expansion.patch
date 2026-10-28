@@ -397,7 +397,7 @@ diff --git a/Blink/BlinkIntents.swift b/Blink/BlinkIntents.swift
 +  static var title: LocalizedStringResource = "Upload File"
 +  static var description = IntentDescription("Upload one file from Shortcuts or a share-sheet shortcut in foreground Blink (16 MiB, 60 seconds). Returns a JSON receipt. Existing files/symlinks are rejected. Cancellation/failure may leave a partial file; inspect before retrying. Relative destinations start at the account home.")
 +  static var openAppWhenRun: Bool = true
-+  @Parameter(title: "File", supportedContentTypes: [.data]) var file: IntentFile
++  @Parameter(title: "File") var file: IntentFile
 +  @Parameter(title: "Host") var host: BlinkHostEntity
 +  @Parameter(title: "Remote Directory", default: "~") var directory: String
 +  @Parameter(title: "Destination Filename") var filename: String?

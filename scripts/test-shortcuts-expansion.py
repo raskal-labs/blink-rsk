@@ -72,7 +72,9 @@ with tempfile.TemporaryDirectory(prefix='blink-shortcuts-') as tmp:
     assert 'handleEvents(receiveCancel:' in runner and 'DispatchWorkItem' in runner
     intents = (tree/'Blink/BlinkIntents.swift').read_text()
     assert intents.count('openAppWhenRun: Bool = true') == 8
-    assert 'ReturnsValue<IntentFile>' in intents and 'supportedContentTypes: [.data]' in intents
+    assert 'ReturnsValue<IntentFile>' in intents and '@Parameter(title: "File") var file: IntentFile' in intents
+    # Candidate CI diagnosed this initializer as iOS 18-only; keep iOS 16 actions compatible.
+    assert 'supportedContentTypes:' not in intents
     assert 'location.isAvailable' in intents and 'removeLocation' not in intents
     files = (tree/'Blink/ShortcutsFiles.swift').read_text()
     assert 'NSFileCoordinator()' in files and 'if scoped { url.stopAccessingSecurityScopedResource() }' in files
