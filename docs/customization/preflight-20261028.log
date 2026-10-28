@@ -1,0 +1,54 @@
+PASS: pinned patch applies offline to exactly the two intended files
+PASS: changed input is rejected without partial edits: Settings/Model/BookmarkedLocationsManager.swift
+PASS: changed input is rejected without partial edits: Settings/ViewControllers/BookmarkedLocations/BookmarkedLocationsView.swift
+PASS: double application is rejected without edits
+PASS: patched settings Swift syntax (not SwiftUI type checking)
+PLATFORM: Linux URL shims; actual Apple bookmark/scope behavior is not tested
+PASS: legacy JSON round trip, readable-only exports and repeated reads reuse one scope
+PASS: resolution failure preserves bytes and names across reload, then recovers
+PASS: scope denial and unreadability retain saved data and balance successful starts
+PASS: stale refresh failure retains original bytes; retry persists refreshed legacy schema
+PASS: read collision with regular file or directory never removes data
+PASS: read collision with unrelated symlink preserves alias and excludes shell path
+PASS: dangling bookmark alias survives target outage and recovers when target returns
+PASS: add rejects unavailable duplicate names, dangling conflicts and unsafe names
+PASS: add failures do not leave aliases or leaked scopes
+PASS: reselection replaces only chosen record and alias, preserving target contents
+PASS: reselection refuses regular-file collision and preserves saved bytes
+PASS: reselection write failure restores alias and retains original active scope
+PASS: explicit unavailable deletion removes saved entry and dangling alias, never target
+PASS: explicit deletion preserves conflicting ordinary files
+PASS: unreadable store and malformed JSON never get overwritten or retain allowed paths
+PASS: missing store reads do not create an empty file
+PASS: one failed location does not remove a healthy neighbor
+PASS: access loss after a successful read releases its scope and permits later reacquisition
+PASS: missing alias directory causes a recoverable link creation failure
+PASS: unavailable legacy unsafe names remain saved and can be explicitly removed without path operations
+PASS: relative alias for the correct target is accepted without rewriting it
+PASS: concurrent shell reads retain one scope and do not rewrite saved bytes
+PASS: reselection grant and alias survive manager reload
+PASS: deletion with an unreadable store preserves entry, alias and acquired scope
+24 bookmark runtime regressions passed
+PASS: patch applies to exactly five paths; all modified/new path guards reject without partial edits
+PASS: navigation-only URLs, strict host tokens, invalid action parameters, script round trip and session reuse policy
+PASS: seven command/script fixtures preserve the remote shell boundary without local execution
+PASS: foreground confirmation, saved-host revalidation and existing main-thread entry-point guard are wired
+PASS: one provider file matches the exact upstream output blob; unrelated file preserved
+PASS: Swift syntax (Apple FileProvider type checking not performed)
+PASS: double application rejected without edits
+PASS: intervening edit rejected without edits
+PASS: exact three-line correction parity; atomic file guards; attachment retained; Snips dismiss/refocus path retained; Swift syntax
+PASS: navigation-only URLs, strict host tokens, invalid action parameters, script round trip and session reuse policy
+PASS: Mosh/fresh-start policy, filenames/paths, exact exit trailer, 80 continuation races
+PASS: seven-path patch and atomic guards; Swift syntax; seven SSH boundaries; 8 actual exit/stdio wrappers; Mosh shell boundary; foreground/auth/bounds/scopes/exclusive-create integration contracts
+PASS: three customization patches compose; exactly 20 reviewed source paths; all input/new-path/double-apply guards reject atomically
+PASS: preferences/profile round trip, ordering, recent dedup/bounds, version/corruption/unsafe data rejection and explicit input-mode transitions
+PASS: paste review UTF-8 threshold, multiline/control detection and visible preview escaping preserve original input
+PASS: exact byte ordering across partial writes/EINTR/EAGAIN, chunk cap, zero progress, real full pipe and closed-pipe failure
+PASS: retained-row Unicode/wrap preservation, screen scope, empty/zero-count capture, bottom jump and all four Select All first/last visibility branches
+PASS: Select/Scroll suppresses click, mouse and wheel terminal input; Input mode restores all three reporters
+NOT RUN on Linux: native Foundation input-queue integration and Apple UI type checking
+PASS: final wiring preserves Snips/session guard, target identity, native style draft scope, bounded export/input, temporary-file protection and exactly five main-app source registrations
+PASS: all nine guarded patches compose on exact pin; exactly 31 source paths; existing provider polling/startup and gesture teardown repairs retained
+PASS: manual-only workflow, embedded shell/Python, harness Python and whitespace checks
+NOT RUN locally: Apple UI type checking, native input delivery/resolver integration, full iOS compilation, codesigning, App Intents extraction and IPA packaging
