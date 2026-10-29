@@ -1,8 +1,18 @@
 # Combined Shortcuts candidate — October 27, 2026
 
-**Candidate available; device acceptance In Progress.** Supersedes the October 26 build deferral: the user authorizes one additional candidate CI dispatch after implementation/preflight. No install, replacement, provider reset, signing change or merge is authorized. PR #7 stays draft. The October 24 artifact/receipts remain historical, unchanged and available for rollback.
+**Verified by user-reported functional acceptance; PR #7 merged and issue #2 closed by the owner.** Supersedes the October 26 build deferral: the user authorizes one additional candidate CI dispatch after implementation/preflight. No install, replacement, provider reset, signing change or merge is authorized. PR #7 stays draft. The October 24 artifact/receipts remain historical, unchanged and available for rollback.
 
 Current device evidence: existing host/session links and all three original Shortcuts actions work by user report. Bookmark persistence has positive feedback; broader failure/recovery and refresh acceptance remains In Progress. The user withdrew the October 26 Files sync failure as mistaken. That report is superseded, is not an active blocker, and supplies no successful transfer test.
+
+## Device acceptance — 2026-10-27
+
+The user reports: “It all seems to be passing, I’m ready to move forward.” Record this as positive functional acceptance of the combined candidate and permission to move to the agreed customization milestone. This follows delivery of candidate run `40627574155`, IPA SHA `e540b1edd0f01eda5f68e43a50eced9c6af0424af2644eb11d1cd64c2f4c9bdb`. The candidate reference is established by conversation; the installed bytes/checksum were not independently measured.
+
+GitHub already showed PR #7 merged by `raskal-labs` at `38cbdb260b8729629c9885072834254ba922761d` and issue #2 closed when this feedback was reconciled. Preserve those owner actions; the agent did not perform a merge or installation. Earlier draft/unmerged/pending language below describes historical build checkpoints.
+
+Do not expand this general pass into fabricated per-case results. Refresh/long-term persistence and separately attributed negative/cancellation/SSH-trust/recovery checks remain unmeasured where not individually reported; they can be recorded as follow-up evidence without treating the accepted batch as blocked. The withdrawn Files sync report stays superseded. No scrolling-freeze fix, complete Mosh history, installation/reset or fresh CI permission is inferred. Native compilation, the checker-only red CI result and independent package validation remain recorded separately.
+
+The existing archive is preserved. A separate `device-acceptance-2026-10-27.json` records this later observation without relabeling historical build receipts. Next: combined touch controls, terminal usability, workspace UI and appearance on a fresh branch from merged main.
 
 ## Current retry result
 

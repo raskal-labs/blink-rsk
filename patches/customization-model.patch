@@ -1,0 +1,218 @@
+diff --git a/Resources/term.js b/Resources/term.js
+--- a/Resources/term.js
++++ b/Resources/term.js
+@@ -263,6 +263,7 @@
+ }
+ 
+ function term_reportMouseClick(x, y, buttons, display) {
++  if (_workbenchSelecting) return;
+   if (!t.prompt) {
+     return;
+   }
+@@ -280,6 +281,7 @@
+ }
+ 
+ function term_reportMouseEvent(name, x, y, buttons) {
++  if (_workbenchSelecting) return;
+   if (!t.prompt) {
+     return;
+   }
+@@ -290,6 +292,7 @@
+ }
+ 
+ function term_reportWheelEvent(name, x, y, deltaX, deltaY) {
++  if (_workbenchSelecting) return;
+   if (!t.prompt) {
+     return;
+   }
+@@ -553,3 +556,42 @@
+   t.setVTScrollRegion(null, null);
+   t.setCursorVisible(true);
+ }
++
++var _workbenchSelecting = false;
++function term_workbenchSetInteraction(selecting) { _workbenchSelecting = !!selecting; }
++
++// Workbench captures the retained row model, independent of native DOM-copy paths.
++// No renderer replacement, remote history retrieval or promise of original bytes.
++function term_workbenchRows(screenOnly, first, count) {
++  const total = t.getRowCount();
++  const base = screenOnly ? Math.max(0, total - t.screenSize.height) : 0;
++  const begin = Math.min(total, base + Math.max(0, first));
++  const end = Math.min(total, begin + Math.max(0, Math.min(count, 128)));
++  return {text: t.getRowsText(begin, end), next: end - base, total: total - base,
++          continued: end > begin && end < total && !!t.getRowNode(end - 1).o};
++}
++function term_workbenchSelectAll() {
++  const port = t.scrollPort_;
++  if (!t.getRowCount()) return;
++  // Same retained-row selection algorithm as bundled hterm, fixing its visible
++  // last-row branch: selection.extend requires a node, never rowIndex (a number).
++  let first;
++  if (port.topFold_.nextSibling.rowIndex !== 0) {
++    while (port.topFold_.previousSibling) port.rowNodes_.removeChild(port.topFold_.previousSibling);
++    first = port.fetchRowNode_(0);
++    port.rowNodes_.insertBefore(first, port.topFold_);
++    port.syncRowNodesDimensions_();
++  } else first = port.topFold_.nextSibling;
++  let last;
++  const end = t.getRowCount() - 1;
++  if (port.bottomFold_.previousSibling.rowIndex !== end) {
++    while (port.bottomFold_.nextSibling) port.rowNodes_.removeChild(port.bottomFold_.nextSibling);
++    last = port.fetchRowNode_(end);
++    port.rowNodes_.appendChild(last);
++  } else last = port.bottomFold_.previousSibling;
++  const selection = port.document_.getSelection();
++  selection.collapse(first, 0);
++  selection.extend(last, last.childNodes.length);
++  port.selection.sync();
++}
++function term_workbenchBottom() { t.scrollEnd(); }
+diff --git a/Blink/WorkbenchModel.swift b/Blink/WorkbenchModel.swift
+new file mode 100644
+--- /dev/null
++++ b/Blink/WorkbenchModel.swift
+@@ -0,0 +1,143 @@
++// GPL-3.0 + Blink additional terms. Shared, versioned customization state.
++import Foundation
++
++enum WorkbenchAction: String, Codable, CaseIterable, Identifiable {
++  case layoutMenu, workspace, keyboard, keyboardLock, interaction, selectAll, copy, copyRaw
++  case copyAll, copyScreen, bottom, paste, cancelPaste, snippets, scratch
++  case newSession, nextSession, previousSession, escape, tab, control, alternate
++  case up, down, left, right
++  var id: String { rawValue }
++  var title: String {
++    switch self {
++    case .layoutMenu: return "Layout and Terminal Menu"
++    case .workspace: return "Workspace"
++    case .keyboard: return "Show / Hide Keyboard"
++    case .keyboardLock: return "Lock / Unlock Keyboard"
++    case .interaction: return "Input / Select and Scroll"
++    case .selectAll: return "Select All Retained Text"
++    case .copy: return "Copy Selection"
++    case .copyRaw: return "Copy Raw Selection"
++    case .copyAll: return "Copy All Retained Text"
++    case .copyScreen: return "Copy Screen"
++    case .bottom: return "Jump to Latest Output"
++    case .paste: return "Paste"
++    case .cancelPaste: return "Cancel Pending Input"
++    case .snippets: return "Snips"
++    case .scratch: return "Scratch"
++    case .newSession: return "New Terminal"
++    case .nextSession: return "Next Session"
++    case .previousSession: return "Previous Session"
++    case .escape: return "Escape"
++    case .tab: return "Tab"
++    case .control: return "Control"
++    case .alternate: return "Option"
++    case .up: return "Up"
++    case .down: return "Down"
++    case .left: return "Left"
++    case .right: return "Right"
++    }
++  }
++  var symbol: String {
++    switch self {
++    case .layoutMenu: return "rectangle.3.group"
++    case .workspace: return "square.grid.2x2"
++    case .keyboard: return "keyboard"
++    case .keyboardLock: return "lock"
++    case .interaction: return "hand.draw"
++    case .selectAll: return "selection.pin.in.out"
++    case .copy, .copyRaw: return "doc.on.doc"
++    case .copyAll, .copyScreen: return "doc.text"
++    case .bottom: return "arrow.down.to.line"
++    case .paste: return "doc.on.clipboard"
++    case .cancelPaste: return "stop.circle"
++    case .snippets: return "chevron.left.forwardslash.chevron.right"
++    case .scratch: return "square.and.pencil"
++    case .newSession: return "plus"
++    case .nextSession: return "arrow.right.square"
++    case .previousSession: return "arrow.left.square"
++    case .escape: return "escape"
++    case .tab: return "arrow.right.to.line"
++    case .control: return "control"
++    case .alternate: return "option"
++    default: return "arrow." + rawValue
++    }
++  }
++}
++
++struct WorkbenchProfile: Codable, Equatable, Identifiable {
++  var id: UUID
++  var name: String
++  var actions: [WorkbenchAction]
++  var dpad: Bool
++  var trailing: Bool
++  var controlSize: Int
++  static let standard = WorkbenchProfile(id: UUID(uuidString: "52534B00-0000-0000-0000-000000000001")!, name: "Terminal",
++    actions: [.workspace, .keyboard, .interaction, .escape, .tab, .control, .alternate, .paste, .bottom],
++    dpad: false, trailing: true, controlSize: 48)
++}
++
++struct WorkbenchPreferences: Codable, Equatable {
++  var version = 1
++  var profiles = [WorkbenchProfile.standard]
++  var selectedProfile = WorkbenchProfile.standard.id
++  var dockVisible = true
++  var appearance = "system"
++  var accent = "cyan"
++  var compact = false
++  var previewPaste = true
++  var labels: [String: String] = [:]
++  var favoriteHosts: [String] = []
++  var recentHosts: [String] = []
++  var profile: WorkbenchProfile { profiles.first { $0.id == selectedProfile } ?? .standard }
++  enum Invalid: Error { case version, profiles, preference, label }
++  func validated() throws -> Self {
++    guard version == 1 else { throw Invalid.version }
++    guard (1...20).contains(profiles.count), Set(profiles.map(\.id)).count == profiles.count,
++          profiles.contains(where: { $0.id == selectedProfile }) else { throw Invalid.profiles }
++    for p in profiles {
++      guard !p.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty, p.name.count <= 64,
++            p.actions.count <= WorkbenchAction.allCases.count, Set(p.actions).count == p.actions.count,
++            (44...72).contains(p.controlSize) else { throw Invalid.profiles }
++    }
++    guard ["system", "light", "dark"].contains(appearance),
++          ["cyan", "violet", "green", "orange", "pink"].contains(accent),
++          favoriteHosts.count <= 100, recentHosts.count <= 12,
++          Set(favoriteHosts).count == favoriteHosts.count,
++          Set(recentHosts).count == recentHosts.count else { throw Invalid.preference }
++    guard labels.count <= 500, labels.allSatisfy({ UUID(uuidString: $0.key) != nil && $0.value.count <= 64 && !$0.value.contains("\0") }) else { throw Invalid.label }
++    return self
++  }
++  mutating func updateProfile(_ profile: WorkbenchProfile) {
++    if let i = profiles.firstIndex(where: { $0.id == profile.id }) { profiles[i] = profile }
++  }
++  mutating func visitHost(_ host: String) {
++    recentHosts.removeAll { $0 == host }; recentHosts.insert(host, at: 0)
++    recentHosts = Array(recentHosts.prefix(12))
++  }
++  static func decode(_ data: Data) throws -> Self {
++    guard data.count <= 1048576 else { throw Invalid.preference }
++    return try JSONDecoder().decode(Self.self, from: data).validated()
++  }
++}
++
++struct WorkbenchInteraction: Equatable {
++  var selecting = false
++  var keyboardLocked = false
++  var keyboardHidden = false
++  var suppressSoftwareKeyboard: Bool { selecting || keyboardLocked || keyboardHidden }
++  mutating func showKeyboard() { selecting = false; keyboardLocked = false; keyboardHidden = false }
++}
++
++enum WorkbenchPastePolicy {
++  static func needsReview(_ text: String, enabled: Bool) -> Bool {
++    enabled && (text.utf8.count > 4096 || text.unicodeScalars.contains { CharacterSet.controlCharacters.contains($0) && $0.value != 9 })
++  }
++  static func preview(_ text: String) -> String {
++    String(text.prefix(3000)).unicodeScalars.map { scalar in
++      if scalar.value == 10 { return "\n" }
++      if scalar.value == 9 { return "⇥" }
++      if CharacterSet.controlCharacters.contains(scalar) { return String(format: "\\u{%04X}", scalar.value) }
++      return String(scalar)
++    }.joined()
++  }
++}

@@ -1,0 +1,36 @@
+{
+  "order": [
+    "customization-model",
+    "customization-input",
+    "customization-workspace"
+  ],
+  "modified": [
+    "Blink.xcodeproj/project.pbxproj",
+    "Blink/SmarterKeys/KBView.swift",
+    "Blink/SmarterKeys/SmarterTermInput.swift",
+    "Blink/SpaceController.swift",
+    "Blink/Terminal/LayoutConstraintManager.h",
+    "Blink/Terminal/LayoutConstraintManager.m",
+    "Blink/Terminal/TermController.swift",
+    "Blink/Terminal/TermDevice.h",
+    "Blink/Terminal/TermDevice.m",
+    "Blink/Terminal/TermView.h",
+    "Blink/Terminal/TermView.m",
+    "Resources/term.js",
+    "Settings/SettingsView.swift"
+  ],
+  "new": [
+    "Blink/Terminal/WorkbenchInputDelivery.h",
+    "Blink/Terminal/WorkbenchInputDelivery.m",
+    "Blink/Terminal/WorkbenchWriteStep.h",
+    "Blink/WorkbenchDPadView.swift",
+    "Blink/WorkbenchDock.swift",
+    "Blink/WorkbenchModel.swift",
+    "Blink/WorkbenchUI.swift"
+  ],
+  "provenance": {
+    "dpad": "Selective panel + key adapter from ShogunPanda/blink c1bff729, reviewed local patch; no fork configuration/signing import",
+    "selection": "Bundled hterm retained-row helper: correct visible-last-row node argument in narrow bridge",
+    "input": "Ordered nonblocking queue adapted to reviewed partial-write requirement; no unbounded fork retry loop"
+  }
+}

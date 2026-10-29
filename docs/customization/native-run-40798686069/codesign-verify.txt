@@ -1,0 +1,2 @@
+/Users/runner/work/blink-rsk/blink-rsk/stage/Payload/Blink.app: valid on disk
+/Users/runner/work/blink-rsk/blink-rsk/stage/Payload/Blink.app: satisfies its Designated Requirement

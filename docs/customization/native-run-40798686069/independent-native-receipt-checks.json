@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "origin": "Independent local verification of unchanged CI-native artifact and receipts",
+  "run": "https://github.com/raskal-labs/blink-rsk/actions/runs/40798686069",
+  "conclusion": "success",
+  "harness_commit": "71c12fb94e79a08a50d6220effe993021ad4e632",
+  "upstream_commit": "a90b4423c8b7a86770c24a7eaa6c13b0a5904b18",
+  "artifact_id": 12865551302,
+  "artifact_url": "https://github.com/raskal-labs/blink-rsk/actions/runs/40798686069/artifacts/12865551302",
+  "ipa_sha256": "b06e36bc4a0b6c11fce8fa94dfc04a665dafab221497611992fbb0ed2d4398b2",
+  "github_artifact_zip_sha256": "d09f8630fbf5629474e74a9b55b05e72ccc8c47d09cb02fe7b484e4e3215c0fc",
+  "native_patched_source_paths": 31,
+  "native_receipt_checks": [
+    "exact patched-source SHA map equals reviewed output",
+    "native patch/test SHA map equals immutable harness",
+    "duplicated receipts agree",
+    "native harness archive equals exact commit contents",
+    "independent App Intents/CRC/ID/two-extension check matches runner receipt",
+    "requested entitlements equal accepted prior candidate",
+    "full build and all five customization compilation units present",
+    "native Foundation input integration passed",
+    "workflow log ZIP CRC passed"
+  ],
+  "device_acceptance": "Unknown",
+  "installation_performed": false,
+  "additional_dispatches": 0
+}

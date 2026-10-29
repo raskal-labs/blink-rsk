@@ -1,0 +1,427 @@
+diff --git a/Blink/Terminal/TermDevice.h b/Blink/Terminal/TermDevice.h
+--- a/Blink/Terminal/TermDevice.h
++++ b/Blink/Terminal/TermDevice.h
+@@ -99,6 +99,8 @@
+ - (void)write:(NSString *)input;
+ - (void)writeIn:(NSString *)input;
+ - (void)writeInDirectly:(NSString *)input;
++- (void)cancelPendingInput;
++- (NSUInteger)inputPendingBytes;
+ - (void)writeOut:(NSString *)output;
+ - (void)writeOutLn:(NSString *)output;
+ - (void)close;
+diff --git a/Blink/Terminal/TermDevice.m b/Blink/Terminal/TermDevice.m
+--- a/Blink/Terminal/TermDevice.m
++++ b/Blink/Terminal/TermDevice.m
+@@ -30,6 +30,7 @@
+ ////////////////////////////////////////////////////////////////////////////////
+ 
+ #import "TermDevice.h"
++#import "WorkbenchInputDelivery.h"
+ 
+ static int __sizeOfIncompleteSequenceAtTheEnd(const char *buffer, size_t len) {
+   // Find the first UTF mark and compare with the iterator.
+@@ -151,6 +152,7 @@
+   // The stream then has access to the "device" or "widget"
+   // The Widget then has functions to read from the stream and pass it.
+   int _pinput[2];
++  WorkbenchInputDelivery *_inputDelivery;
+   int _poutput[2];
+   int _perror[2];
+   
+@@ -174,6 +176,7 @@
+     _isReady = FALSE;
+ 
+     pipe(_pinput);
++    [self _setupWorkbenchInput];
+     pipe(_poutput);
+     pipe(_perror);
+     
+@@ -243,9 +246,28 @@
+ 
+ - (void)writeInDirectly:(NSString *)input
+ {
+-  NSUInteger len = [input lengthOfBytesUsingEncoding:NSUTF8StringEncoding];
+-  write(_pinput[1], input.UTF8String, len);
++  NSData *data = [input dataUsingEncoding:NSUTF8StringEncoding];
++  if (![_inputDelivery enqueue:data]) {
++    dispatch_async(dispatch_get_main_queue(), ^{
++      [[NSNotificationCenter defaultCenter] postNotificationName:@"BlinkWorkbenchInputStatus" object:self
++        userInfo:@{@"pending": @(self.inputPendingBytes), @"error": @"Input queue unavailable or exceeds 4 MiB. Input was not queued."}];
++    });
++  }
++}
++
++- (void)_setupWorkbenchInput {
++  [_inputDelivery invalidate];
++  __weak TermDevice *weak = self;
++  _inputDelivery = [[WorkbenchInputDelivery alloc] initWithFD:_pinput[1] status:^(NSUInteger pending, NSString *error) {
++    TermDevice *device = weak;
++    if (!device) return;
++    NSMutableDictionary *info = [@{@"pending": @(pending)} mutableCopy];
++    if (error) info[@"error"] = error;
++    [[NSNotificationCenter defaultCenter] postNotificationName:@"BlinkWorkbenchInputStatus" object:device userInfo:info];
++  }];
+ }
++- (void)cancelPendingInput { [_inputDelivery cancelPending]; }
++- (NSUInteger)inputPendingBytes { return _inputDelivery.pendingBytes; }
+ 
+ - (void)writeIn:(NSString *)input
+ {
+@@ -266,6 +288,8 @@
+   _delegate = NULL;
+   _readlineListener = NULL;
+   
++  [_inputDelivery invalidate];
++  if (_pinput[1] >= 0) { close(_pinput[1]); _pinput[1] = -1; }
+   // Closing the Device streams. These are the main device, usually duped in Sessions.
+   [_stream close];
+   [_outStream close];
+@@ -351,9 +375,11 @@
+   // through the Terminal Delegate so sessions can "restore" stdin and continue reading from it if necessary.
+   // TODO We should return the last input we have from the device, but not easy to do atm.
+   [self closeReadline];
++  [_inputDelivery invalidate];
+   close(_pinput[1]);
+   close(_pinput[0]);
+   pipe(_pinput);
++  [self _setupWorkbenchInput];
+   _stream.in = fdopen(_pinput[0], "rb");
+   setvbuf(_stream.in, NULL, _IONBF, 0);
+ }
+diff --git a/Blink/Terminal/TermView.h b/Blink/Terminal/TermView.h
+--- a/Blink/Terminal/TermView.h
++++ b/Blink/Terminal/TermView.h
+@@ -125,6 +125,7 @@
+ - (void)modifySelectionInDirection:(NSString *)direction granularity:(NSString *)granularity;
+ 
+ - (void)pasteString:(NSString *)str;
++- (void)workbenchPasteConfirmed:(NSString *)str;
+ 
+ // Layout mode control methods
+ - (void)setLayoutModeFill;
+diff --git a/Blink/Terminal/TermView.m b/Blink/Terminal/TermView.m
+--- a/Blink/Terminal/TermView.m
++++ b/Blink/Terminal/TermView.m
+@@ -847,7 +847,7 @@
+ {
+   NSString *str = _selectedText;
+   if (str) {
+-    [_webView evaluateJavaScript:term_paste(str) completionHandler:nil];
++    [self pasteString:str];
+   }
+   [self cleanSelection];
+ }
+@@ -908,30 +908,26 @@
+   [self cleanSelection];
+ }
+ 
+-- (void)paste:(id)sender
+-{
+-  NSString *str = [UIPasteboard generalPasteboard].string;
+-  if (str) {
+-    if (_browserView) {
+-      [_browserView evaluateJavaScript:term_paste(str) completionHandler:nil];
+-    } else {
+-      [_webView evaluateJavaScript:term_paste(str) completionHandler:nil];
+-    }
+-  }
+-  
++- (void)paste:(id)sender {
++  NSString *text = UIPasteboard.generalPasteboard.string;
++  if (text) [self pasteString:text];
+   [self cleanSelection];
+ }
+ 
+ - (void)pasteString:(NSString *)str {
+-  if (str) {
+-    if (_browserView) {
+-      [_browserView evaluateJavaScript:term_paste(str) completionHandler:nil];
+-    } else {
+-      [_webView evaluateJavaScript:term_paste(str) completionHandler:nil];
+-    }
++  if (!str) return;
++  if ([_termController respondsToSelector:@selector(confirmWorkbenchPaste:)]) {
++    [(TermController *)_termController confirmWorkbenchPaste:str];
++  } else {
++    [self workbenchPasteConfirmed:str];
+   }
+ }
+ 
++- (void)workbenchPasteConfirmed:(NSString *)str {
++  if (_browserView) [_browserView evaluateJavaScript:term_paste(str) completionHandler:nil];
++  else [_webView evaluateJavaScript:term_paste(str) completionHandler:nil];
++}
++
+ - (NSString *)_detectFontFamilyFromContent:(NSString *)content
+ {
+   NSRegularExpression *regex = [NSRegularExpression
+diff --git a/Blink/Terminal/TermController.swift b/Blink/Terminal/TermController.swift
+--- a/Blink/Terminal/TermController.swift
++++ b/Blink/Terminal/TermController.swift
+@@ -405,6 +405,8 @@
+   }
+ 
+   public func deviceIsReady() {
++    // Reapply the current window mode after terminal JavaScript has loaded.
++    (delegate as? SpaceController)?.workbenchTerminalReady(self)
+     if _sessionPayload != nil {
+       _startSession()
+     } else {
+@@ -646,3 +648,15 @@
+   }
+ }
+ 
++
++extension TermController {
++  @objc func confirmWorkbenchPaste(_ text: String) {
++    guard let space = delegate as? SpaceController else { return }
++    DispatchQueue.main.async { space.workbenchReviewPaste(text, terminal: self) }
++  }
++  var workbenchCommandContext: String {
++    if meta.isSuspended { return "Suspended terminal" }
++    if let mcp = _session as? MCPSession { return mcp.isRunningCmd() ? "Command running" : "Local prompt" }
++    return "Terminal"
++  }
++}
+diff --git a/Blink/SmarterKeys/SmarterTermInput.swift b/Blink/SmarterKeys/SmarterTermInput.swift
+--- a/Blink/SmarterKeys/SmarterTermInput.swift
++++ b/Blink/SmarterKeys/SmarterTermInput.swift
+@@ -35,6 +35,17 @@
+ 
+ @objc class SmarterTermInput: KBWebView {
+   
++  // Keep the responder for hardware input while replacing only the software
++  // keyboard surface. UIKit/WebKit behavior must be checked on device.
++  var workbenchSelecting = false
++  var workbenchSuppressSoftwareKeyboard = false {
++    didSet { if oldValue != workbenchSuppressSoftwareKeyboard { reloadInputViews() } }
++  }
++  private lazy var workbenchEmptyInput = UIView(frame: .zero)
++  override var inputView: UIView? {
++    workbenchSuppressSoftwareKeyboard ? workbenchEmptyInput : super.inputView
++  }
++
+   var kbView = KBView()
+   var _proxyBarButtonItem: UIBarButtonItem!
+   var _barButtonItemGroup: UIBarButtonItemGroup!
+@@ -160,6 +171,7 @@
+   }
+   
+   override func canBeFocused() -> Bool {
++    if workbenchSelecting { return false }
+     let res = super.canBeFocused()
+     if let delegate = self.window?.windowScene?.delegate as? SceneDelegate {
+       if delegate.showingPaywall() {
+@@ -208,6 +220,7 @@
+   }
+ 
+   override var inputAccessoryView: UIView? {
++    if workbenchSuppressSoftwareKeyboard { return nil }
+     if isHardwareKB {
+       return nil
+     }
+@@ -571,6 +584,7 @@
+   }
+   
+   override func canBeFocused() -> Bool {
++    if workbenchSelecting { return false }
+     let res = super.canBeFocused()
+    
+     if res == false {
+diff --git a/Blink/SmarterKeys/KBView.swift b/Blink/SmarterKeys/KBView.swift
+--- a/Blink/SmarterKeys/KBView.swift
++++ b/Blink/SmarterKeys/KBView.swift
+@@ -422,6 +422,12 @@
+       stopRepeats()
+     }
+ 
++    sendKey(value)
++  }
++
++  // Selectively adapted from ShogunPanda/blink dpad c1bff729: floating
++  // controls use exactly the Smart Keys modifier/binding/terminal encoding path.
++  func sendKey(_ value: KBKeyValue) {
+     defer { turnOffUntracked() }
+ 
+     guard let keyInput = keyInput
+@@ -511,3 +517,14 @@
+     }
+   }
+ }
++
++extension KBView {
++  func workbenchToggleModifier(_ value: KBKeyValue) {
++    switch value {
++    case .ctrl: traits.toggle(!traits.contains(.ctrlOn), on: .ctrlOn, off: .ctrlOff)
++    case .alt: traits.toggle(!traits.contains(.altOn), on: .altOn, off: .altOff)
++    default: return
++    }
++    _reportModifiers()
++  }
++}
+diff --git a/Blink/Terminal/WorkbenchInputDelivery.h b/Blink/Terminal/WorkbenchInputDelivery.h
+new file mode 100644
+--- /dev/null
++++ b/Blink/Terminal/WorkbenchInputDelivery.h
+@@ -0,0 +1,11 @@
++// GPL-3.0 + Blink additional terms.
++#import <Foundation/Foundation.h>
++NS_ASSUME_NONNULL_BEGIN
++@interface WorkbenchInputDelivery : NSObject
++- (nullable instancetype)initWithFD:(int)fd status:(void (^)(NSUInteger pending, NSString * _Nullable error))status;
++- (BOOL)enqueue:(NSData *)data;
++- (void)cancelPending;
++- (void)invalidate;
++@property (readonly) NSUInteger pendingBytes;
++@end
++NS_ASSUME_NONNULL_END
+diff --git a/Blink/Terminal/WorkbenchInputDelivery.m b/Blink/Terminal/WorkbenchInputDelivery.m
+new file mode 100644
+--- /dev/null
++++ b/Blink/Terminal/WorkbenchInputDelivery.m
+@@ -0,0 +1,119 @@
++// GPL-3.0 + Blink additional terms. One serialized writer per input-pipe generation.
++#import "WorkbenchInputDelivery.h"
++#import "WorkbenchWriteStep.h"
++#import <fcntl.h>
++#import <dispatch/dispatch.h>
++
++@implementation WorkbenchInputDelivery {
++  int _fd;
++  dispatch_queue_t _queue;
++  dispatch_source_t _source;
++  dispatch_source_t _deadline;
++  NSMutableArray<NSData *> *_frames;
++  NSUInteger _offset, _pending, _epoch, _reservations, _framesEpoch;
++  BOOL _invalid, _running;
++  NSTimeInterval _lastProgress;
++  void (^_status)(NSUInteger, NSString *);
++}
++- (instancetype)initWithFD:(int)fd status:(void (^)(NSUInteger, NSString *))status {
++  if (!(self = [super init])) return nil;
++  _fd = dup(fd);
++  if (_fd < 0) return nil;
++  int flags = fcntl(_fd, F_GETFL);
++  if (flags < 0 || fcntl(_fd, F_SETFL, flags | O_NONBLOCK) < 0) { close(_fd); return nil; }
++#ifdef F_SETNOSIGPIPE
++  if (fcntl(_fd, F_SETNOSIGPIPE, 1) < 0) { close(_fd); return nil; }
++#endif
++  _status = [status copy];
++  _frames = [NSMutableArray array];
++  _queue = dispatch_queue_create("blink.workbench.input", DISPATCH_QUEUE_SERIAL);
++  _source = dispatch_source_create(DISPATCH_SOURCE_TYPE_WRITE, _fd, 0, _queue);
++  __weak WorkbenchInputDelivery *weak = self;
++  dispatch_source_set_event_handler(_source, ^{ [weak drain]; });
++  int ownedFD = _fd;
++  dispatch_source_set_cancel_handler(_source, ^{ close(ownedFD); });
++  _deadline = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0, _queue);
++  dispatch_source_set_timer(_deadline, dispatch_time(DISPATCH_TIME_NOW, NSEC_PER_SEC), NSEC_PER_SEC, NSEC_PER_SEC / 10);
++  dispatch_source_set_event_handler(_deadline, ^{
++    WorkbenchInputDelivery *strong = weak;
++    if (strong && strong->_frames.count && NSDate.timeIntervalSinceReferenceDate - strong->_lastProgress > 15)
++      [strong fail:@"Input stopped making progress. Pending bytes cancelled; some input may already have reached the session."];
++  });
++  dispatch_resume(_deadline);
++  // Write source remains suspended while idle, avoiding an always-writable spin.
++  return self;
++}
++- (NSUInteger)pendingBytes { @synchronized(self) { return _pending; } }
++- (BOOL)enqueue:(NSData *)data {
++  if (!data.length) return YES;
++  @synchronized(self) {
++    if (_invalid || data.length > 4 * 1024 * 1024 || _pending + data.length > 4 * 1024 * 1024 || _reservations >= 2048) return NO;
++    _pending += data.length; _reservations++;
++    NSUInteger epoch = _epoch;
++    NSData *owned = [data copy];
++    dispatch_async(_queue, ^{
++      @synchronized(self) { if (self->_invalid || self->_epoch != epoch) return; }
++      if (!self->_frames.count) self->_framesEpoch = epoch;
++      [self->_frames addObject:owned];
++      self->_lastProgress = NSDate.timeIntervalSinceReferenceDate;
++      if (!self->_running) { self->_running = YES; dispatch_resume(self->_source); }
++      [self report:nil];
++    });
++  }
++  return YES;
++}
++- (void)report:(NSString *)error {
++  NSUInteger count = self.pendingBytes;
++  void (^status)(NSUInteger, NSString *) = _status;
++  dispatch_async(dispatch_get_main_queue(), ^{ status(count, error); });
++}
++- (void)pauseIfEmpty {
++  if (!_frames.count && _running) { dispatch_suspend(_source); _running = NO; }
++}
++- (void)fail:(NSString *)message {
++  [_frames removeAllObjects]; _offset = 0;
++  @synchronized(self) { _pending = 0; _reservations = 0; _epoch++; }
++  [self pauseIfEmpty]; [self report:message];
++}
++- (void)drain {
++  @synchronized(self) { if (_invalid) return; }
++  // Bound work per readiness event so large pastes do not starve cancellation.
++  for (int turn = 0; turn < 16 && _frames.count; turn++) {
++    NSUInteger epoch;
++    @synchronized(self) { if (_invalid || _framesEpoch != _epoch) return; epoch = _epoch; }
++    NSData *frame = _frames.firstObject;
++    WBWriteResult result = WBWriteStep(_fd, ((const char *)frame.bytes) + _offset, frame.length - _offset, write);
++    if (result.error) { [self fail:@"Input pipe closed or failed. Pending input cancelled; inspect the session before retrying."]; return; }
++    if (result.wait) break;
++    if (result.advanced) {
++      _offset += result.advanced;
++      @synchronized(self) { if (epoch == _epoch) _pending -= result.advanced; }
++      _lastProgress = NSDate.timeIntervalSinceReferenceDate;
++      if (_offset == frame.length) { [_frames removeObjectAtIndex:0]; _offset = 0; @synchronized(self) { if (epoch == _epoch) _reservations--; } }
++    }
++  }
++  [self pauseIfEmpty]; [self report:nil];
++}
++- (void)cancelPending {
++  @synchronized(self) {
++    if (_invalid) return;
++    _epoch++; _pending = 0; _reservations = 0;
++    dispatch_async(_queue, ^{
++      [self->_frames removeAllObjects]; self->_offset = 0;
++      [self pauseIfEmpty]; [self report:@"Pending input cancelled. Some bytes may already have been delivered."];
++    });
++  }
++}
++- (void)invalidate {
++  @synchronized(self) {
++    if (_invalid) return; _invalid = YES;
++    dispatch_async(_queue, ^{
++      [self->_frames removeAllObjects];
++      if (!self->_running) { dispatch_resume(self->_source); self->_running = YES; }
++      dispatch_source_cancel(self->_source); dispatch_source_cancel(self->_deadline);
++      self->_source = nil; self->_deadline = nil;
++      @synchronized(self) { self->_pending = 0; }
++    });
++  }
++}
++@end
+diff --git a/Blink/Terminal/WorkbenchWriteStep.h b/Blink/Terminal/WorkbenchWriteStep.h
+new file mode 100644
+--- /dev/null
++++ b/Blink/Terminal/WorkbenchWriteStep.h
+@@ -0,0 +1,20 @@
++// GPL-3.0 + Blink additional terms. Pure, injectable nonblocking write step.
++#ifndef BLINK_WORKBENCH_WRITE_STEP_H
++#define BLINK_WORKBENCH_WRITE_STEP_H
++#include <errno.h>
++#include <stddef.h>
++#include <sys/types.h>
++#include <unistd.h>
++typedef ssize_t (*WBWriteFunction)(int, const void *, size_t);
++typedef struct { size_t advanced; int error; int wait; } WBWriteResult;
++static inline WBWriteResult WBWriteStep(int fd, const void *bytes, size_t length, WBWriteFunction fn) {
++  WBWriteResult result = {0, 0, 0};
++  if (!length) return result;
++  ssize_t count = fn(fd, bytes, length > 16384 ? 16384 : length);
++  if (count > 0 && (size_t)count <= length) result.advanced = (size_t)count;
++  else if (count < 0 && errno == EINTR) { /* bounded caller retries on its next turn */ }
++  else if (count < 0 && (errno == EAGAIN || errno == EWOULDBLOCK)) result.wait = 1;
++  else result.error = count < 0 ? errno : EIO;
++  return result;
++}
++#endif
