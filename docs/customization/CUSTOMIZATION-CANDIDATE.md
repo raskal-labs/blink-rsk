@@ -1,6 +1,6 @@
 # Combined customization candidate
 
-Updated 2026-10-28. **In Progress: source implemented; local preflight passes; native build and device behavior Unknown.** [Draft PR #8](https://github.com/raskal-labs/blink-rsk/pull/8) remains unmerged. The user chose the roadmap batch after requesting a substantial next build. This implements the seven-workstream target in the root [roadmap](../../ROADMAP.md#m1--m2--combined-customization).
+Updated 2026-10-28. **In Progress: native candidate available; device behavior Unknown.** [Draft PR #8](https://github.com/raskal-labs/blink-rsk/pull/8) remains unmerged. The user chose the roadmap batch after requesting a substantial next build. This implements the seven-workstream target in the root [roadmap](../../ROADMAP.md#m1--m2--combined-customization).
 
 ## Implemented source
 
@@ -33,11 +33,23 @@ Command: `PATH=/tmp/blink-m0-swift/usr/bin:$PATH python3 scripts/preflight-custo
 
 **Source checks pass:** all nine patches compose from the exact pin, all input/collision guards reject atomically, existing bookmark/session/Shortcuts/provider/terminal regressions pass, Swift syntax parses, pure model runtime tests pass, JavaScript tests cover wrap/Unicode/screen scope/empty capture/all four Select All visibility branches and Select/Scroll mouse suppression, C tests cover partial writes/EINTR/EAGAIN/zero progress and actual full/closed pipes. Workflow stays manual-only; YAML, embedded shell/Python, source allowlists and whitespace checks pass. Existing Snips dismissal and session guards remain checked.
 
-[Local preflight log](preflight-20261028.log) and [machine receipt](source-preflight-20261028.json) identify local measurements. They are not native runner receipts. UIKit/SwiftUI type checking and actual Foundation queue/resolver integration are unavailable on Linux. **No customization candidate has been compiled, signed, packaged or device-tested yet.** The workflow runs the native Foundation FIFO/UTF-8/cancel-new-input/closed-pipe tests on macOS, then complete iOS Release compilation, identity/signature checks, App Intents metadata and IPA packaging.
+[Local preflight log](preflight-20261028.log) and [machine receipt](source-preflight-20261028.json) identify local measurements. They are not native runner receipts. UIKit/SwiftUI type checking and actual Foundation queue/resolver integration are unavailable on Linux. That earlier source checkpoint is superseded for native validation by the successful candidate below. The macOS workflow passed the native Foundation FIFO/UTF-8/cancel-new-input/closed-pipe tests, complete iOS Release compilation, identity/signature checks, App Intents metadata and IPA packaging. Device behavior remains Unknown.
 
 Source diff, patched-source SHA-256, patch/test SHA-256 and immutable harness archive are now generated before native compilation and uploaded even after later failure. IPA SHA and build manifest precede the final package checker so checker failure preserves provenance. Preserve the native receipts' origin; do not relabel a local reconstruction as runner evidence.
 
-Earlier build permissions were used by the preceding Shortcuts attempts. No new dispatch is performed by this source implementation. Under [AGENTS.md](../../AGENTS.md), a new candidate build needs a particular bounded work order. Installation/replacement/reset, identity change and merge remain outside authorization.
+Earlier build permissions were used by the preceding Shortcuts attempts. The user subsequently explicitly authorized exactly one customization candidate CI build from `71c12fb`, covering compilation, App Intents metadata and IPA packaging. Run `40798686069` consumes that authorization; no additional dispatch is authorized. Installation/replacement/reset, identity change and merge remain outside authorization.
+
+## Native candidate — 2026-10-28
+
+**Verified: native compilation and packaging; device behavior Unknown.** The single authorized [run 40798686069](https://github.com/raskal-labs/blink-rsk/actions/runs/40798686069) completed successfully from exact harness `71c12fb94e79a08a50d6220effe993021ad4e632`. All macOS preflight suites passed, including native Foundation input-queue integration. The full iOS build compiled all five customization compilation units, signature verification passed, all eight foreground App Intents retain their result/parameter contracts, and the original bundle IDs, both provider extensions, App Group and keychain requests passed checks.
+
+[Download candidate artifact](https://github.com/raskal-labs/blink-rsk/actions/runs/40798686069/artifacts/12865551302), then choose `artifact/Blink-SideStore-18.7.0-1097-native-fileprovider.ipa`.
+
+IPA SHA-256: `b06e36bc4a0b6c11fce8fa94dfc04a665dafab221497611992fbb0ed2d4398b2`.
+
+The unchanged downloaded IPA independently passes CRC, eight-action metadata/outputs/parameters, original IDs and two-extension checks; its check receipt equals the runner receipt. All 31 native patched-source hashes equal the locally reviewed output. Native patch/test hashes and the full harness archive match the exact immutable dispatched commit. All requested entitlement dictionaries equal the accepted previous candidate. Native receipts were generated/uploaded by this run, not reconstructed afterward. [Native build manifest](native-run-40798686069/build-manifest.json), [metadata/package receipt](native-run-40798686069/app-intents-package-checks.json), [source hashes](native-run-40798686069/patched-source-SHA256SUMS), [patch/test hashes](native-run-40798686069/patch-SHA256SUMS), [native customization tests](native-run-40798686069/customization-checks.log), [run result](native-run-40798686069/run-result.json) and [independent receipt checks](native-run-40798686069/independent-native-receipt-checks.json).
+
+Complete archive: `/lab/blink-rsk-release/customization-20261028-run-40798686069/`. It retains the GitHub ZIP/digest, unchanged IPA, native source/patch/harness/build/signature/metadata receipts, full workflow/build/test logs, authorization, immutable source bundle and rollback references. The accepted previous IPA was rehashed successfully. Artifact retention ends November 12 UTC; the local archive remains the durable copy. No installation, reset, identity change or merge occurred; no retry was dispatched.
 
 ## Combined device checklist
 

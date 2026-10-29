@@ -1,6 +1,6 @@
 # Blink-RSK — Product roadmap
 
-**Updated:** 2026-10-28 (customization source implemented; local preflight passes; native/device results pending)
+**Updated:** 2026-10-28 (customization candidate compiled, signed, packaged and archived; device results pending)
 **Status:** Proposed (product direction); individual capabilities have their own statuses below  
 **Primary repository:** [raskal-labs/blink-rsk](https://github.com/raskal-labs/blink-rsk)  
 **Audience:** Private/personal iOS installation; not currently intended for distribution.
@@ -66,7 +66,7 @@ Milestones are **dependency ordered, not date estimates**. Ship one narrow incre
 **Exit gate:** One known restorable IPA, explicit test matrix and remaining limitations. Stop on unaccepted data-loss or provisioning risk.
 
 ### M1 + M2 — Combined customization
-**Status:** In Progress (seven-workstream source implementation and local preflight complete; native/device validation pending)
+**Status:** In Progress (seven-workstream native candidate available; device validation pending)
 
 **Accepted direction:** touch controls, terminal usability, workspace UI and appearance in one coherent milestone, preserving the terminal-first experience and current app/provider identities. The user accepted the previous batch and asked to move forward. Existing M1/M2 detail below remains the research backlog; it is not blanket authorization to import all experiments.
 
@@ -83,6 +83,8 @@ Milestones are **dependency ordered, not date estimates**. Ship one narrow incre
 | Appearance and customization | A coordinated workspace/dock/settings visual treatment with light/dark choices, accents and density; named terminal/control presets; theme/font/cursor/bold preview and explicit per-session versus future-session apply behavior. | Extend TerminalStyle/TerminalStyleStore and existing theme/font management. Preserve current custom settings and make resets explicit. App-wide visuals should change meaningfully; merely linking to the existing Style screen is insufficient. Final public name/icon is a separate choice; internal bundle/App Group/keychain identities stay fixed. |
 
 **October 28 source checkpoint:** the user chose the roadmap batch. Three separately guarded customization patches now implement the seven workstreams above, composed with the six accepted foundation patches. Local model/JavaScript/real-pipe regressions and all existing combined preflight checks pass on exactly 31 source paths. Native Apple UI/queue validation, iOS compilation, metadata/packaging and device behavior remain Unknown; no new CI dispatch or device operation occurred. [Concrete behavior, constraints, exact local receipts and combined device checklist](docs/customization/CUSTOMIZATION-CANDIDATE.md). Session context is command state plus labeled launch targets, not invented live transport state; close uses existing terminal lifecycle, with remote detach left to the remote application. Retained export is bounded local text. Dock/D-pad respect viewport and explicit layout-lock limits.
+
+**October 28 native checkpoint:** the user explicitly authorized one candidate CI build from `71c12fb`. [Run 40798686069](https://github.com/raskal-labs/blink-rsk/actions/runs/40798686069) passed all native preflight, iOS compilation, signature/identity checks, eight-action App Intents metadata and packaging. [Candidate](https://github.com/raskal-labs/blink-rsk/actions/runs/40798686069/artifacts/12865551302), IPA SHA `b06e36bc4a0b6c11fce8fa94dfc04a665dafab221497611992fbb0ed2d4398b2`. Independent downloaded-package and exact native receipt checks pass; [archive, provenance and combined device checklist](docs/customization/CUSTOMIZATION-CANDIDATE.md#native-candidate--2026-10-28). This supersedes the source checkpoint's pending native gates; device behavior remains Unknown. One dispatch used, no retry/install/reset/identity change/merge; draft PR #8 remains unmerged.
 
 **Build-size rule:** do not produce an interim candidate after only hide/show, a jump button and links to Settings. Assemble the compatible targets above, exercise their interactions, then prepare one combined candidate handoff. Split/defer a target only for a documented source/platform/correctness constraint and finish the remaining substantial scope; do not silently reduce the milestone to the earlier tiny batch.
 
@@ -195,7 +197,7 @@ Use narrowly scoped adapters to existing commands/APIs. Avoid designing a genera
 ## 7. Immediate next sequence
 
 1. **Accepted foundation:** record the user-reported pass, owner merge/issue closure and archived candidate reference. Carry installed-checksum, refresh and unmeasured per-case checks as follow-up evidence; do not reopen the withdrawn sync blocker or repeat the accepted batch.
-2. **Large combined customization milestone (In Progress: source implemented; native/device pending):** validate the seven-workstream target above as one substantial next-build batch: configurable dock/D-pad, input modes/keyboard lock, selection/copy/export, safe large paste, session manager, workspace/palette and meaningful appearance customization. The user rejected the tiny first batch. Keep the accepted app intact and preserve source/native/device evidence; this scope update does not dispatch CI or operate on the phone.
+2. **Large combined customization milestone (In Progress: native candidate available; device pending):** device-check the seven-workstream target above as one substantial next-build batch: configurable dock/D-pad, input modes/keyboard lock, selection/copy/export, safe large paste, session manager, workspace/palette and meaningful appearance customization. The user rejected the tiny first batch. Keep the accepted app intact and preserve source/native/device evidence; the subsequent single authorized run passed and is archived; no phone operation occurred.
 3. **Independent read-only research:** inventory existing Blink/iOS actions, test one official HA → approved GameCube action → actionable notification workflow without a new IPA, and review the upstream session-link/App Intents source for security and compatibility. Capture evidence in [iOS integrations](docs/IOS-INTEGRATIONS.md) and [UX research](docs/UX-RESEARCH.md); no build or new app identity is authorized.
 
 ## 8. Sources and linked tasks
