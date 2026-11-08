@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "projects": {
+    "blink-rsk": {
+      "title": "Blink-RSK",
+      "parent": "atlas.ios_tooling",
+      "purpose": "A terminal-first personal iOS workspace based on Blink, preserving reliable SSH/Mosh, files, automation and signing identities.",
+      "status": "In Progress",
+      "lifecycle": "active",
+      "current": "PR #7 foundation accepted by user report and merged on main. PR #8 customization has implemented source and successful native/package verification; its device behavior and checklist remain Unknown. GameCube is working authority; GitHub mirrors tracked branches.",
+      "next_checkpoint": "Identify which candidate is on the iPhone and capture PR #8 customization checklist results; resolve observed defects, then review its merge readiness without another speculative build.",
+      "issues": [
+        {
+          "id": "customization-device-evidence",
+          "kind": "question",
+          "text": "No recorded PR #8 device checklist, installed SHA or refresh result. This limits acceptance, not source/build completion.",
+          "source": "docs/customization/CUSTOMIZATION-CANDIDATE.md"
+        },
+        {
+          "id": "terminal-scroll-cause",
+          "kind": "question",
+          "text": "Scrolling behavior remains unattributed across local shell, SSH, Mosh and multiplexers; no scrolling-freeze fix is claimed.",
+          "source": "docs/TERMINAL-UX-UPSTREAM-REVIEW.md"
+        }
+      ],
+      "evidence": [
+        "docs/phase-01/SHORTCUTS-EXPANSION-CANDIDATE.md",
+        "docs/customization/CUSTOMIZATION-CANDIDATE.md",
+        "docs/RECONCILIATION-2026-11-07.md"
+      ]
+    }
+  }
+}

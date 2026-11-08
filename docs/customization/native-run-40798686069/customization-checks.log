@@ -1,0 +1,9 @@
+PASS: three customization patches compose; exactly 20 reviewed source paths; all input/new-path/double-apply guards reject atomically
+PASS: preferences/profile round trip, ordering, recent dedup/bounds, version/corruption/unsafe data rejection and explicit input-mode transitions
+PASS: paste review UTF-8 threshold, multiline/control detection and visible preview escaping preserve original input
+PASS: exact byte ordering across partial writes/EINTR/EAGAIN, chunk cap, zero progress, real full pipe and closed-pipe failure
+PASS: retained-row Unicode/wrap preservation, screen scope, empty/zero-count capture, bottom jump and all four Select All first/last visibility branches
+PASS: Select/Scroll suppresses click, mouse and wheel terminal input; Input mode restores all three reporters
+PASS: native input FIFO, UTF-8 frames, bounded queue, cancel/new-input race, owned descriptor lifetime and closed-pipe reporting
+PASS: native Foundation ordered-input integration
+PASS: final wiring preserves Snips/session guard, target identity, native style draft scope, bounded export/input, temporary-file protection and exactly five main-app source registrations

@@ -1,10 +1,28 @@
-# Role discovery only; selected product roadmap is tracked on main.
-version: 1
-project:
-  id: blink-rsk
-authority:
-  state: README.md
-  plan: ROADMAP.md
-  historical_plan: docs/ROADMAP.md
-git:
-  authoritative_branch: main
+{
+  "version": 2,
+  "project": {
+    "id": "blink-rsk"
+  },
+  "authority": {
+    "rules": "AGENTS.md",
+    "state": {
+      "path": "PROJECT.yaml",
+      "profile": "atlas-project/v1"
+    },
+    "plan": "ROADMAP.md",
+    "tasks": {
+      "path": "TASKS.yaml",
+      "profile": "atlas-work/v1"
+    },
+    "threads": {
+      "path": "TASKS.yaml",
+      "profile": "atlas-work/v1"
+    },
+    "decisions": "docs/PRODUCT-DIRECTION.md",
+    "evidence": "docs/RECONCILIATION-2026-11-07.md",
+    "historical_plan": "docs/ROADMAP.md"
+  },
+  "git": {
+    "authoritative_branch": "main"
+  }
+}

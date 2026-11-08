@@ -1,0 +1,110 @@
+{
+  "databaseId": 40798686069,
+  "headSha": "71c12fb94e79a08a50d6220effe993021ad4e632",
+  "event": "workflow_dispatch",
+  "status": "completed",
+  "conclusion": "success",
+  "url": "https://github.com/raskal-labs/blink-rsk/actions/runs/40798686069",
+  "workflowName": "Build native SideStore Blink File Provider candidate",
+  "number": 10,
+  "createdAt": "2026-10-29T01:09:36Z",
+  "updatedAt": "2026-10-29T01:17:39Z",
+  "jobs": [
+    {
+      "databaseId": 123201274507,
+      "name": "build",
+      "status": "completed",
+      "conclusion": "success",
+      "steps": [
+        {
+          "completedAt": "2026-10-29T01:09:44Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-10-29T01:09:42Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-29T01:09:45Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@v4",
+          "number": 2,
+          "startedAt": "2026-10-29T01:09:44Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-29T01:09:49Z",
+          "conclusion": "success",
+          "name": "Select and verify Xcode",
+          "number": 3,
+          "startedAt": "2026-10-29T01:09:45Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-29T01:10:43Z",
+          "conclusion": "success",
+          "name": "Prepare exact upstream source",
+          "number": 4,
+          "startedAt": "2026-10-29T01:09:49Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-29T01:11:12Z",
+          "conclusion": "success",
+          "name": "Apply and test the scoped foundation and complete customization batch",
+          "number": 5,
+          "startedAt": "2026-10-29T01:10:43Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-29T01:17:12Z",
+          "conclusion": "success",
+          "name": "Resolve packages and build complete Release app",
+          "number": 6,
+          "startedAt": "2026-10-29T01:11:12Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-29T01:17:19Z",
+          "conclusion": "success",
+          "name": "Stage complete app and sign SideStore capability requests",
+          "number": 7,
+          "startedAt": "2026-10-29T01:17:12Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-29T01:17:28Z",
+          "conclusion": "success",
+          "name": "Validate and package candidate",
+          "number": 8,
+          "startedAt": "2026-10-29T01:17:19Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-29T01:17:33Z",
+          "conclusion": "success",
+          "name": "Upload candidate and diagnostics",
+          "number": 9,
+          "startedAt": "2026-10-29T01:17:28Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-29T01:17:34Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@v4",
+          "number": 18,
+          "startedAt": "2026-10-29T01:17:33Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-29T01:17:37Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 19,
+          "startedAt": "2026-10-29T01:17:34Z",
+          "status": "completed"
+        }
+      ]
+    }
+  ]
+}

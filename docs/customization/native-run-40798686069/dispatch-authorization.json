@@ -1,0 +1,11 @@
+{
+  "schema": 1,
+  "repository": "raskal-labs/blink-rsk",
+  "branch": "work/customization-foundation",
+  "authorized_commit": "71c12fb94e79a08a50d6220effe993021ad4e632",
+  "authorization": "User explicitly authorized exactly one candidate CI build at 71c12fb; no installation/reset/identity change/merge",
+  "authorized_dispatch_count": 1,
+  "prior_runs": [],
+  "requested_at_utc": "2026-10-29T01:09:35.664598+00:00",
+  "dispatch_command_succeeded": true
+}

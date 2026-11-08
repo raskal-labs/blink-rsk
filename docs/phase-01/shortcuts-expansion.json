@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "date": "2026-10-27",
-  "status": "In Progress",
+  "status": "Verified",
   "branch": "fix/bookmarks-session-actions",
   "upstream_commit": "a90b4423c8b7a86770c24a7eaa6c13b0a5904b18",
   "patch_order": [
@@ -36,7 +36,7 @@
     "validator_correction_commit": "c3ac0483227d50017ded160a1bcd87defda2da43",
     "binary_rebuilt_or_modified": false
   },
-  "new_candidate_device_acceptance": "Unknown",
+  "new_candidate_device_acceptance": "Verified by user-reported functional acceptance; granular/lifecycle limits retained",
   "existing_device_evidence": {
     "links_and_original_three_actions": "Verified by user report",
     "bookmarks": "positive persistence feedback; broader acceptance In Progress",
@@ -114,5 +114,34 @@
     "patch_hashes_and_harness_source": "Exact dispatched git archive; every listed patch/script/test hash verified against it",
     "app_intents_package_checks": "Corrected outputType checker run locally against unchanged CI IPA",
     "prepared_source_changes": "Not uploaded because final checker failed before receipt-copy step; not fabricated"
+  },
+  "device_acceptance_report": {
+    "recorded_date": "2026-10-27",
+    "status": "Verified",
+    "evidence_kind": "user-reported functional acceptance",
+    "user_statement": "It all seems to be passing, I\u2019m ready to move forward",
+    "scope": "Combined candidate is acceptable to the user for moving to the agreed customization milestone; no individually measured negative-test matrix is inferred",
+    "candidate_run": "https://github.com/raskal-labs/blink-rsk/actions/runs/40627574155",
+    "candidate_ipa_sha256": "e540b1edd0f01eda5f68e43a50eced9c6af0424af2644eb11d1cd64c2f4c9bdb",
+    "candidate_harness_commit": "6864ce8092f6eeaa14f16cc2c2ae3f12cd0cede3",
+    "installed_ipa_sha_independently_verified": false,
+    "remaining_unmeasured": [
+      "exact installed IPA checksum",
+      "SideStore refresh/long-term persistence",
+      "separately attributed outcomes for every negative/cancellation/host-key and recovery case"
+    ],
+    "github_state_observed": {
+      "pr_7": "merged by raskal-labs at 38cbdb260b8729629c9885072834254ba922761d",
+      "issue_2": "closed by owner"
+    },
+    "new_build_or_device_operation": false
+  },
+  "integration": {
+    "pr": 7,
+    "state": "merged",
+    "merge_commit": "38cbdb260b8729629c9885072834254ba922761d",
+    "issue": 2,
+    "issue_state": "closed",
+    "performed_by_this_agent": false
   }
 }

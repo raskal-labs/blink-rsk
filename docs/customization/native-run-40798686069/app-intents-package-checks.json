@@ -1,0 +1,121 @@
+{
+  "schema": 1,
+  "sha256": "b06e36bc4a0b6c11fce8fa94dfc04a665dafab221497611992fbb0ed2d4398b2",
+  "actions": {
+    "DownloadFileIntent": {
+      "outputType": {
+        "intents": {
+          "wrapper": {
+            "typeIdentifier": 12
+          }
+        }
+      },
+      "parameters": [
+        "host",
+        "path"
+      ]
+    },
+    "FocusSessionIntent": {
+      "outputType": {
+        "primitive": {
+          "wrapper": {
+            "typeIdentifier": 0
+          }
+        }
+      },
+      "parameters": [
+        "sessionName"
+      ]
+    },
+    "ListRemoteDirectoryIntent": {
+      "outputType": {
+        "primitive": {
+          "wrapper": {
+            "typeIdentifier": 0
+          }
+        }
+      },
+      "parameters": [
+        "host",
+        "path"
+      ]
+    },
+    "OpenSavedFolderIntent": {
+      "outputType": {
+        "primitive": {
+          "wrapper": {
+            "typeIdentifier": 0
+          }
+        }
+      },
+      "parameters": [
+        "folder"
+      ]
+    },
+    "OpenTerminalSessionIntent": {
+      "outputType": {
+        "primitive": {
+          "wrapper": {
+            "typeIdentifier": 0
+          }
+        }
+      },
+      "parameters": [
+        "host",
+        "sessionName",
+        "connection",
+        "startingCommand",
+        "reuse"
+      ]
+    },
+    "RunCommandOnHostIntent": {
+      "outputType": {
+        "primitive": {
+          "wrapper": {
+            "typeIdentifier": 0
+          }
+        }
+      },
+      "parameters": [
+        "host",
+        "command"
+      ]
+    },
+    "RunScriptOnHostIntent": {
+      "outputType": {
+        "primitive": {
+          "wrapper": {
+            "typeIdentifier": 0
+          }
+        }
+      },
+      "parameters": [
+        "host",
+        "interpreter",
+        "script"
+      ]
+    },
+    "UploadFileIntent": {
+      "outputType": {
+        "primitive": {
+          "wrapper": {
+            "typeIdentifier": 0
+          }
+        }
+      },
+      "parameters": [
+        "file",
+        "host",
+        "directory",
+        "filename"
+      ]
+    }
+  },
+  "bundle_ids": {
+    "main": "sh.blink.blinkshell",
+    "PlugIns/BlinkFileProviderExtension.appex/": "sh.blink.blinkshell.BlinkFileProviderExtension",
+    "PlugIns/BlinkFileProviderExtensionUI.appex/": "sh.blink.blinkshell.BlinkFileProviderExtensionUI"
+  },
+  "zip_crc": "passed",
+  "device_acceptance": "Unknown"
+}
