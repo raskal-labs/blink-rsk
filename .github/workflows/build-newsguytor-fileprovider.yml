@@ -52,7 +52,7 @@ jobs:
           # step can prove the exact additional repair source scope.
           git diff --name-only | sort > ../prepared-source-changes.txt
 
-      - name: Apply and test the scoped SideStore, bookmark, session, provider and Shortcuts batch
+      - name: Apply and test the scoped foundation and complete customization batch
         run: |
           set -euxo pipefail
           python3 scripts/patch-sidestore-app-groups.py "$GITHUB_WORKSPACE/blink"
@@ -68,31 +68,56 @@ jobs:
           python3 scripts/patch-terminal-input-gestures.py "$GITHUB_WORKSPACE/blink"
           python3 scripts/test-shortcuts-expansion.py "$GITHUB_WORKSPACE/blink" 2>&1 | tee shortcuts-checks.log
           python3 scripts/patch-shortcuts-expansion.py "$GITHUB_WORKSPACE/blink"
-          # Include exactly the four reviewed main-app Swift sources in diff receipts.
-          git -C blink add --intent-to-add -- Blink/SessionLink.swift Blink/BlinkIntents.swift Blink/ShortcutsRunner.swift Blink/ShortcutsFiles.swift
+          python3 scripts/test-customization.py "$GITHUB_WORKSPACE/blink" 2>&1 | tee customization-checks.log
+          python3 scripts/patch-customization-model.py "$GITHUB_WORKSPACE/blink"
+          python3 scripts/patch-customization-input.py "$GITHUB_WORKSPACE/blink"
+          python3 scripts/patch-customization-workspace.py "$GITHUB_WORKSPACE/blink"
+          # Include exactly the reviewed new main-app sources and local input headers.
+          git -C blink add --intent-to-add -- Blink/SessionLink.swift Blink/BlinkIntents.swift Blink/ShortcutsRunner.swift Blink/ShortcutsFiles.swift Blink/Terminal/WorkbenchInputDelivery.h Blink/Terminal/WorkbenchInputDelivery.m Blink/Terminal/WorkbenchWriteStep.h Blink/WorkbenchDPadView.swift Blink/WorkbenchDock.swift Blink/WorkbenchModel.swift Blink/WorkbenchUI.swift
           git -C blink diff --check
           git -C blink diff --name-only | sort > source-modified-files.txt
           comm -13 prepared-source-changes.txt source-modified-files.txt > sidestore-patch-files.txt
           python3 - <<'PY'
           from pathlib import Path
           expected = {
+            "Blink.xcodeproj/project.pbxproj",
+            "Blink/BlinkIntents.swift",
+            "Blink/SceneDelegate.swift",
+            "Blink/SessionLink.swift",
+            "Blink/ShortcutsFiles.swift",
+            "Blink/ShortcutsRunner.swift",
+            "Blink/SmarterKeys/KBView.swift",
+            "Blink/SmarterKeys/SmarterTermInput.swift",
+            "Blink/SpaceController.swift",
+            "Blink/Terminal/LayoutConstraintManager.h",
+            "Blink/Terminal/LayoutConstraintManager.m",
+            "Blink/Terminal/TermController.swift",
+            "Blink/Terminal/TermDevice.h",
+            "Blink/Terminal/TermDevice.m",
+            "Blink/Terminal/TermView.h",
+            "Blink/Terminal/TermView.m",
+            "Blink/Terminal/WorkbenchInputDelivery.h",
+            "Blink/Terminal/WorkbenchInputDelivery.m",
+            "Blink/Terminal/WorkbenchWriteStep.h",
+            "Blink/WebKit/WKWebView.swift",
+            "Blink/WorkbenchDPadView.swift",
+            "Blink/WorkbenchDock.swift",
+            "Blink/WorkbenchModel.swift",
+            "Blink/WorkbenchUI.swift",
             "BlinkConfig/XCConfig.m",
             "BlinkFileProvider/FileProviderReplicatedExtension.swift",
-            "Blink.xcodeproj/project.pbxproj",
-            "Blink/SceneDelegate.swift",
-            "Blink/SpaceController.swift",
-            "Blink/SessionLink.swift",
-            "Blink/BlinkIntents.swift",
-            "Blink/ShortcutsRunner.swift",
-            "Blink/ShortcutsFiles.swift",
-            "Blink/WebKit/WKWebView.swift",
+            "Resources/term.js",
             "SSH/SFTP.swift",
             "Settings/Model/BookmarkedLocationsManager.swift",
+            "Settings/SettingsView.swift",
             "Settings/ViewControllers/BookmarkedLocations/BookmarkedLocationsView.swift",
           }
           assert set(Path("sidestore-patch-files.txt").read_text().splitlines()) == expected
           PY
-          git -C blink diff --no-ext-diff --binary -- BlinkConfig/XCConfig.m BlinkFileProvider/FileProviderReplicatedExtension.swift Settings/Model/BookmarkedLocationsManager.swift Settings/ViewControllers/BookmarkedLocations/BookmarkedLocationsView.swift Blink.xcodeproj/project.pbxproj Blink/SceneDelegate.swift Blink/SpaceController.swift Blink/SessionLink.swift Blink/BlinkIntents.swift Blink/ShortcutsRunner.swift Blink/ShortcutsFiles.swift Blink/WebKit/WKWebView.swift SSH/SFTP.swift > source-patches.diff
+          git -C blink diff --no-ext-diff --binary -- Blink.xcodeproj/project.pbxproj Blink/BlinkIntents.swift Blink/SceneDelegate.swift Blink/SessionLink.swift Blink/ShortcutsFiles.swift Blink/ShortcutsRunner.swift Blink/SmarterKeys/KBView.swift Blink/SmarterKeys/SmarterTermInput.swift Blink/SpaceController.swift Blink/Terminal/LayoutConstraintManager.h Blink/Terminal/LayoutConstraintManager.m Blink/Terminal/TermController.swift Blink/Terminal/TermDevice.h Blink/Terminal/TermDevice.m Blink/Terminal/TermView.h Blink/Terminal/TermView.m Blink/Terminal/WorkbenchInputDelivery.h Blink/Terminal/WorkbenchInputDelivery.m Blink/Terminal/WorkbenchWriteStep.h Blink/WebKit/WKWebView.swift Blink/WorkbenchDPadView.swift Blink/WorkbenchDock.swift Blink/WorkbenchModel.swift Blink/WorkbenchUI.swift BlinkConfig/XCConfig.m BlinkFileProvider/FileProviderReplicatedExtension.swift Resources/term.js SSH/SFTP.swift Settings/Model/BookmarkedLocationsManager.swift Settings/SettingsView.swift Settings/ViewControllers/BookmarkedLocations/BookmarkedLocationsView.swift > source-patches.diff
+          (cd blink && shasum -a 256 Blink.xcodeproj/project.pbxproj Blink/BlinkIntents.swift Blink/SceneDelegate.swift Blink/SessionLink.swift Blink/ShortcutsFiles.swift Blink/ShortcutsRunner.swift Blink/SmarterKeys/KBView.swift Blink/SmarterKeys/SmarterTermInput.swift Blink/SpaceController.swift Blink/Terminal/LayoutConstraintManager.h Blink/Terminal/LayoutConstraintManager.m Blink/Terminal/TermController.swift Blink/Terminal/TermDevice.h Blink/Terminal/TermDevice.m Blink/Terminal/TermView.h Blink/Terminal/TermView.m Blink/Terminal/WorkbenchInputDelivery.h Blink/Terminal/WorkbenchInputDelivery.m Blink/Terminal/WorkbenchWriteStep.h Blink/WebKit/WKWebView.swift Blink/WorkbenchDPadView.swift Blink/WorkbenchDock.swift Blink/WorkbenchModel.swift Blink/WorkbenchUI.swift BlinkConfig/XCConfig.m BlinkFileProvider/FileProviderReplicatedExtension.swift Resources/term.js SSH/SFTP.swift Settings/Model/BookmarkedLocationsManager.swift Settings/SettingsView.swift Settings/ViewControllers/BookmarkedLocations/BookmarkedLocationsView.swift) > patched-source-SHA256SUMS
+          shasum -a 256 patches/*.patch scripts/*.py scripts/customization-paths.json scripts/customization-combined-paths.json tests/bookmarks/*.swift tests/session-actions/*.swift tests/shortcuts/*.swift tests/customization/* > patch-SHA256SUMS
+          git archive --format=tar.gz --output=harness-source.tar.gz HEAD
 
       - name: Resolve packages and build complete Release app
         working-directory: blink
@@ -201,18 +226,14 @@ jobs:
           IPA="artifact/Blink-SideStore-${VERSION}-${BUILD}-native-fileprovider.ipa"
           (cd stage && zip -qry "../$IPA" Payload)
           unzip -t "$IPA"
-          python3 scripts/validate-shortcuts-package.py "$IPA" artifact/app-intents-package-checks.json
           shasum -a 256 "$IPA" > artifact/SHA256SUMS
-          cp blink-commit.txt source-patches.diff prepared-source-changes.txt source-modified-files.txt sidestore-patch-files.txt artifact/
-          git archive --format=tar.gz --output=artifact/harness-source.tar.gz HEAD
-          shasum -a 256 patches/*.patch scripts/*.py tests/bookmarks/*.swift tests/session-actions/*.swift tests/shortcuts/*.swift > artifact/patch-SHA256SUMS
-          (cd blink && shasum -a 256 BlinkConfig/XCConfig.m BlinkFileProvider/FileProviderReplicatedExtension.swift Settings/Model/BookmarkedLocationsManager.swift Settings/ViewControllers/BookmarkedLocations/BookmarkedLocationsView.swift Blink.xcodeproj/project.pbxproj Blink/SceneDelegate.swift Blink/SpaceController.swift Blink/SessionLink.swift Blink/BlinkIntents.swift Blink/ShortcutsRunner.swift Blink/ShortcutsFiles.swift Blink/WebKit/WKWebView.swift SSH/SFTP.swift) > artifact/patched-source-SHA256SUMS
+          cp blink-commit.txt source-patches.diff prepared-source-changes.txt source-modified-files.txt sidestore-patch-files.txt patched-source-SHA256SUMS patch-SHA256SUMS harness-source.tar.gz artifact/
           export VERSION BUILD
           python3 - <<'PY'
           import json, os
           json.dump({
-            "schema": 5,
-            "artifact": "Blink combined Shortcuts expansion, terminal corrections, bookmarks and provider candidate",
+            "schema": 6,
+            "artifact": "Blink full customization candidate on accepted Shortcuts/provider foundation",
             "harness_commit": os.environ["GITHUB_SHA"],
             "ci_run": os.environ["GITHUB_SERVER_URL"] + "/" + os.environ["GITHUB_REPOSITORY"] + "/actions/runs/" + os.environ["GITHUB_RUN_ID"],
             "integration_source": "blinksh/blink@7a427f3db37ec25869b24226905d89103a8ad99d (selective adaptation; not a source upgrade)",
@@ -221,9 +242,12 @@ jobs:
             "terminal_correction_sources": ["blinksh/blink@9e8767b75df35571012140ffe509fb8259cb908e (only two Snips resign lines)", "madjinn/blink@a31aa977e297c9c4a2c3a54e6a3d9b191cf17a85 (only gesture-detach correction)"],
             "execution_contract": "Foreground only; strict known-host verification, existing signers/agent/password/challenges; 60s action deadline, 256KiB per output channel, 16MiB files and 2000 listing entries. Cancellation may leave remote work/partial uploads. Blocking native I/O cleanup can lag action cancellation.",
             "saved_folders": "Existing bookmark scopes, new local terminal only; standalone Files navigation unsupported by inspected source",
-            "build_authority": "October 27 combined batch: one additional candidate dispatch; October 26 deferral superseded",
+            "build_authority": "Customization milestone: verify current bounded user build authorization before manual dispatch; no installation or merge",
             "withdrawn_report": "October 26 Files sync failure withdrawn by user; no successful transfer test inferred",
-            "native_validation": "macOS bookmark runtime suite, session validation/shell boundary suite, provider/terminal patch parity and guards, Shortcuts policy/shell/cancellation checks, complete iOS Release compilation and packaged eight-action metadata",
+            "customization_sources": "Three guarded model/input/workspace patches; ShogunPanda c1bff729 D-pad panel + existing key path only; retained-row helper correction; no renderer or signing fork import",
+            "native_validation": "macOS resolver/bookmark/session/provider/terminal/Shortcuts/customization suites, real Foundation FIFO/cancellation/pipe integration, full iOS Release compilation and native signature checks",
+            "metadata_validation": "See app-intents-package-checks.json; absent receipt means the final metadata gate did not pass",
+            "customization_contract": "Configurable dock/profiles/D-pad; input/keyboard modes; retained Select All/capture; bounded ordered input; session overview; workspace palette/hosts/bookmarks; draft-first appearance presets. Source/runtime/platform limits in customization evidence.",
             "device_acceptance": "Unknown; no installation performed",
             "upstream_commit": open("blink-commit.txt").read().strip(),
             "version": os.environ["VERSION"], "build": os.environ["BUILD"],
@@ -234,10 +258,15 @@ jobs:
               "Settings/ViewControllers/BookmarkedLocations/BookmarkedLocationsView.swift: show unavailable entries with Retry and folder reselection",
               "Blink/SessionLink.swift + Blink/BlinkIntents.swift: navigation-only links and eight foreground actions with output, files, Mosh, focus and saved folders",
               "Blink/SceneDelegate.swift + Blink/SpaceController.swift: route/confirm fresh or reused sessions; preserve Snips resign/dismiss focus and main-thread guard",
-              "Blink.xcodeproj/project.pbxproj: register only four new main-app Swift sources",
+              "Blink.xcodeproj/project.pbxproj: register eight Swift and one Objective-C main-app sources across foundation and customization; no extension changes",
               "Blink/ShortcutsRunner.swift + Blink/ShortcutsFiles.swift: bounded foreground SSH/SFTP with returned results and cancellation",
               "SSH/SFTP.swift: exclusive file creation and bounded listing overload; existing callers retain semantics",
-              "Blink/WebKit/WKWebView.swift: remove recognizers on detachment, retain attachment"
+              "Blink/WebKit/WKWebView.swift: remove recognizers on detachment, retain attachment",
+              "Blink/WorkbenchModel.swift + WorkbenchUI.swift + WorkbenchDock.swift + WorkbenchDPadView.swift: customization state, workspace, control profiles and reviewed D-pad",
+              "Blink/Terminal/WorkbenchInputDelivery.* + WorkbenchWriteStep.h: bounded ordered nonblocking input with cancellation and errors",
+              "Blink/SpaceController.swift + TermController.swift + SmarterTermInput.swift + KBView.swift: composed input modes, existing key path and serialized session controls",
+              "Resources/term.js + TermView.*: retained-row selection/export and explicit paste-review gate",
+              "LayoutConstraintManager.* + Settings/SettingsView.swift: dock space reservation and native customization entry"
             ],
             "side_store_contract": {
               "pre_signing_requests": "Main + File Provider share keychain suffix sh.blink and request group.sh.blink; SideStore supplies profile values and rewrites the File Provider document group.",
@@ -247,6 +276,7 @@ jobs:
             "migration_safety": "Upstream migrations are unchanged. Do not update an existing installation until its App Group state and a restorable backup have been verified."
           }, open("artifact/build-manifest.json", "w"), indent=2)
           PY
+          python3 scripts/validate-shortcuts-package.py "$IPA" artifact/app-intents-package-checks.json
 
       - name: Upload candidate and diagnostics
         if: always()
@@ -267,5 +297,14 @@ jobs:
             fileprovider-checks.log
             terminal-checks.log
             shortcuts-checks.log
+            customization-checks.log
+            blink-commit.txt
+            prepared-source-changes.txt
+            source-modified-files.txt
+            sidestore-patch-files.txt
+            source-patches.diff
+            patched-source-SHA256SUMS
+            patch-SHA256SUMS
+            harness-source.tar.gz
           if-no-files-found: ignore
           retention-days: 14

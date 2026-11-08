@@ -1,0 +1,1282 @@
+diff --git a/Blink/SpaceController.swift b/Blink/SpaceController.swift
+--- a/Blink/SpaceController.swift
++++ b/Blink/SpaceController.swift
+@@ -37,6 +37,7 @@
+ import MBProgressHUD
+ import SwiftUI
+ import BlinkConfig
++import Combine
+ 
+ 
+ // MARK: UIViewController
+@@ -60,6 +61,14 @@
+   private var _viewportsKeys = [UUID]()
+   private var _currentKey: UUID? = nil
+   private var linkedSessions: [String: UUID] = [:]
++  private var workbenchState = WorkbenchInteraction()
++  private var workbenchDock = WorkbenchDock()
++  private var workbenchPad = WorkbenchDPadView()
++  private var workbenchSubscriptions = Set<AnyCancellable>()
++  private var workbenchTargets: [UUID: String] = [:]
++  private var workbenchCapture: Task<Void, Never>?
++  private var workbenchInputError: String?
++
+   
+   private var _hud: MBProgressHUD? = nil
+   
+@@ -76,6 +85,8 @@
+     didSet {
+       guard _isSnipsInputModeActive != oldValue else { return }
+       _configureCapabilitiesForSnipsInputMode(_isSnipsInputModeActive)
++      workbenchPad.stopRepeating()
++      workbenchApplyInteraction()
+     }
+   }
+ 
+@@ -129,6 +140,7 @@
+   
+   public override func viewDidLayoutSubviews() {
+     super.viewDidLayoutSubviews()
++    workbenchLayoutDock()
+     
+     guard let window = view.window
+     else {
+@@ -258,7 +270,7 @@
+     view.addSubview(_overlay)
+     
+     _registerForNotifications()
+-    
++    workbenchSetup()
+     setupOverlayConstraints()
+     
+     if _viewportsKeys.isEmpty {
+@@ -335,8 +347,11 @@
+       return
+     }
+     
++    workbenchPad.stopRepeating()
++    workbenchCapture?.cancel()
++    currentDevice?.cancelPendingInput()
+     let currentTerm = currentTerm()
+-    
++
+     forEachActive { ctrl in
+       if ctrl.viewIsLoaded && ctrl !== currentTerm {
+         _ = ctrl.removeFromContainer()
+@@ -407,6 +422,10 @@
+     sessionPayload: TermSessionPayload,
+     completion: ((Bool) -> Void)? = nil)
+   {
++    guard !_spaceControllerAnimating else { completion?(false); return }
++    workbenchPad.stopRepeating()
++    workbenchCapture?.cancel()
++    _spaceControllerAnimating = true
+     let term = TermController(sceneRole: sceneRole, sessionPayload: sessionPayload)
+     term.delegate = self
+     //term.layoutProvider = self
+@@ -425,15 +444,26 @@
+     _currentKey = term.meta.key
+     
+     _viewportsController.setViewControllers([term], direction: .forward, animated: animated) { (didComplete) in
++      self._spaceControllerAnimating = false
+       self._displayHUD()
+       self._attachInputToCurrentTerm()
++      self.workbenchRefresh()
+       completion?(didComplete)
+     }
+   }
+   
+   func _closeCurrentSpace() {
++    guard !_spaceControllerAnimating else { return }
++    workbenchPad.stopRepeating()
++    workbenchCapture?.cancel()
++    let closingKey = _currentKey
+     currentTerm()?.terminate()
+     _removeCurrentSpace()
++    if let key = closingKey {
++      linkedSessions = linkedSessions.filter { $0.value != key }
++      workbenchTargets.removeValue(forKey: key)
++      WorkbenchStore.shared.edit { $0.labels.removeValue(forKey: key.uuidString) }
++    }
+   }
+   
+   private func _removeCurrentSpace(attachInput: Bool = true) {
+@@ -481,13 +511,14 @@
+   
+   
+   private func _attachInputToCurrentTerm() {
++    workbenchApplyInteraction()
+     // Check capability flag instead of mode directly
+     guard canTerminalBecomeFirstResponder else {
+       return
+     }
+     currentTerm()?.activateInput()
+   }
+-  
++
+   var currentDevice: TermDevice? {
+     currentTerm()?.termDevice
+   }
+@@ -583,11 +614,16 @@
+ 
+ // MARK: UIPageViewControllerDelegate
+ extension SpaceController: UIPageViewControllerDelegate {
++  public func pageViewController(_ pageViewController: UIPageViewController, willTransitionTo pendingViewControllers: [UIViewController]) {
++    workbenchPad.stopRepeating(); workbenchCapture?.cancel()
++    _spaceControllerAnimating = true
++  }
+   public func pageViewController(
+     _ pageViewController: UIPageViewController,
+     didFinishAnimating finished: Bool,
+     previousViewControllers: [UIViewController],
+     transitionCompleted completed: Bool) {
++    _spaceControllerAnimating = false
+     guard completed else {
+       return
+     }
+@@ -986,7 +1022,7 @@
+ 
+     self.presentSnippetsController()
+     if let _ = self._interactiveSpaceController()._blinkMenu {
+-      self.toggleQuickActionsAction()
++      self._interactiveSpaceController()._toggleQuickActionActionWith(receiver: self)
+     }
+   }
+ 
+@@ -1051,8 +1087,7 @@
+   }
+   
+   @objc func toggleQuickActionsAction() {
+-    _interactiveSpaceController()
+-      ._toggleQuickActionActionWith(receiver: self)
++    _interactiveSpaceController().workbenchShow()
+   }
+   
+   @objc func toggleGeoTrack() {
+@@ -1156,6 +1191,9 @@
+   }
+   
+   private func _moveToShell(key: UUID, animated: Bool = true) {
++    guard !_spaceControllerAnimating, !_isSnipsInputModeActive else { return }
++    workbenchPad.stopRepeating()
++    workbenchCapture?.cancel()
+     guard
+       let currentKey = _currentKey,
+       let currentIdx = _viewportsKeys.firstIndex(of: currentKey),
+@@ -1298,7 +1336,9 @@
+       guard BKHosts.withHost(host) != nil else { throw SessionActionError.unknownHost }
+     }
+     try Task.checkCancellation()
++    guard !_spaceControllerAnimating, !_isSnipsInputModeActive else { throw SessionActionError.busy }
+     _newShellAction(command: link.terminalCommand)
++    if let key = _currentKey, let host = link.host { workbenchTargets[key] = link.transport.rawValue.uppercased() + " · " + host + " (launch target)" }
+     if let id = link.id, let key = _currentKey { linkedSessions[id] = key }
+     return "Opened " + link.transport.rawValue.uppercased() + " terminal" + (link.id.map { " named " + $0 } ?? "")
+   }
+@@ -1312,3 +1352,287 @@
+   }
+ 
+ }
++
++// MARK: Combined customization — one action catalogue across dock and workspace
++extension SpaceController {
++  private func workbenchSetup() {
++    workbenchDock.onAction = { [weak self] in self?.workbenchRun($0) }
++    workbenchDock.onCollapse = { [weak self] in
++      guard let self else { return }
++      self.workbenchDock.collapsed.toggle(); self.workbenchRefresh()
++    }
++    workbenchPad.onClose = {
++      WorkbenchStore.shared.edit { prefs in
++        var profile = prefs.profile; profile.dpad = false; prefs.updateProfile(profile)
++      }
++    }
++    workbenchPad.inputProvider = { [weak self] in
++      guard let self, self.foregroundActive, !self.isSnipsInputModeActive,
++            self.presentedViewController == nil else { return nil }
++      return self.currentDevice?.view?.browserView ?? self.currentDevice?.view?.webView
++    }
++    view.addSubview(workbenchDock); view.addSubview(workbenchPad)
++    WorkbenchStore.shared.$preferences.receive(on: RunLoop.main).sink { [weak self] _ in self?.workbenchRefresh() }.store(in: &workbenchSubscriptions)
++    NotificationCenter.default.publisher(for: NSNotification.Name("BlinkWorkbenchInputStatus"))
++      .receive(on: RunLoop.main).sink { [weak self] note in
++        guard let self, let device = note.object as? TermDevice, device === self.currentDevice else { return }
++        if let error = note.userInfo?["error"] as? String {
++          self.workbenchInputError = error
++          if self.presentedViewController == nil { self.showAlert(msg: error) }
++        }
++        self.workbenchRefresh()
++      }.store(in: &workbenchSubscriptions)
++    workbenchRefresh()
++  }
++  private func workbenchRefresh() {
++    guard isViewLoaded else { return }
++    workbenchDock.rebuild(WorkbenchStore.shared.preferences.profile, color: workbenchInputError == nil ? WorkbenchStore.shared.uiColor : .systemOrange,
++      state: workbenchState, pending: Int(currentDevice?.inputPendingBytes() ?? 0))
++    workbenchDock.overrideUserInterfaceStyle = WorkbenchStore.shared.preferences.appearance == "system" ? .unspecified : WorkbenchStore.shared.preferences.appearance == "dark" ? .dark : .light
++    view.setNeedsLayout()
++  }
++  private func workbenchLayoutDock() {
++    guard workbenchDock.superview != nil else { return }
++    let prefs = WorkbenchStore.shared.preferences
++    let profile = prefs.profile
++    let lockedLayout = currentTerm()?.termView.isLayoutLocked() ?? false
++    let hidden = !prefs.dockVisible || _isSnipsInputModeActive || lockedLayout || sceneRole != .windowApplication
++    workbenchDock.isHidden = hidden
++    let safe = _overlay.frame.insetBy(dx: 12, dy: 8)
++    guard safe.width >= CGFloat(profile.controlSize * 3 + 16), safe.height >= CGFloat(profile.controlSize + 16) else {
++      workbenchDock.isHidden = true; workbenchPad.isHidden = true; workbenchPad.stopRepeating()
++      currentTerm()?.termView.constraintManager?.workbenchBottomInset = 0
++      return
++    }
++    if !workbenchDock.collapsed && safe.width < CGFloat(profile.controlSize * 3 + 64) {
++      workbenchDock.collapsed = true; workbenchRefresh()
++    }
++    let height = CGFloat(profile.controlSize + 8)
++    let width = workbenchDock.collapsed ? min(safe.width, CGFloat(profile.controlSize * 3 + 16)) : min(safe.width, 720)
++    let x = profile.trailing ? safe.maxX - width : safe.minX
++    workbenchDock.frame = CGRect(x: x, y: safe.maxY - height, width: max(0, width), height: height)
++    currentTerm()?.termView.constraintManager?.workbenchBottomInset = hidden ? 0 : height + 16
++    workbenchPad.isHidden = !profile.dpad || _isSnipsInputModeActive || lockedLayout || sceneRole != .windowApplication
++    if workbenchPad.isHidden { workbenchPad.stopRepeating() }
++    let area = CGRect(x: safe.minX, y: safe.minY, width: max(0, safe.width), height: max(0, safe.height - (hidden ? 0 : height + 12)))
++    if area.width < 168 || area.height < 168 { workbenchPad.isHidden = true; workbenchPad.stopRepeating() }
++    if workbenchPad.frame.origin == .zero { workbenchPad.center = CGPoint(x: area.maxX - 90, y: area.maxY - 90) }
++    workbenchPad.constrainPosition(to: area)
++    view.bringSubviewToFront(workbenchDock); view.bringSubviewToFront(workbenchPad)
++  }
++  private func workbenchApplyInteraction() {
++    guard let terminal = currentTerm() else { return }
++    // Snips owns the responder capability; browsing suppresses touch refocus and
++    // the software surface without disabling intentional hardware-key events.
++    terminal.shouldBlockFirstResponder = _isSnipsInputModeActive
++    terminal.termView.webView?.workbenchSelecting = workbenchState.selecting
++    terminal.termView.webView?.evaluateJavaScript("term_workbenchSetInteraction(\(workbenchState.selecting ? "true" : "false"))", completionHandler: nil)
++    terminal.termView.browserView?.workbenchSelecting = workbenchState.selecting
++    terminal.termView.webView?.workbenchSuppressSoftwareKeyboard = workbenchState.suppressSoftwareKeyboard
++    terminal.termView.browserView?.workbenchSuppressSoftwareKeyboard = workbenchState.suppressSoftwareKeyboard
++  }
++  func workbenchTerminalReady(_ terminal: TermController) {
++    if terminal === currentTerm() { workbenchApplyInteraction() }
++  }
++  func workbenchRestoreInput() {
++    workbenchApplyInteraction()
++    if !_isSnipsInputModeActive { _attachInputToCurrentTerm() }
++    workbenchRefresh()
++  }
++  func workbenchShow() {
++    guard presentedViewController == nil, !_isSnipsInputModeActive, !_spaceControllerAnimating else { return }
++    workbenchPad.stopRepeating()
++    currentTerm()?.resignInput()
++    let context = WorkbenchContext(space: self)
++    let controller = WorkbenchPresentation(rootView: WorkbenchRootView(context: context))
++    controller.onInteractiveDismiss = { [weak self] in self?.workbenchRestoreInput() }
++    controller.presentationController?.delegate = controller
++    controller.modalPresentationStyle = .pageSheet
++    if let sheet = controller.sheetPresentationController {
++      sheet.detents = [.large()]; sheet.prefersGrabberVisible = true
++    }
++    present(controller, animated: true)
++  }
++  func workbenchInputStatus() -> String? { workbenchInputError }
++  func workbenchAcknowledgeInputError() { workbenchInputError = nil; workbenchRefresh() }
++  func workbenchSessions() -> [WorkbenchSessionRow] {
++    _viewportsKeys.compactMap { key in
++      guard let terminal: TermController = SessionRegistry.shared.sessionFromIndexWith(key: key) else { return nil }
++      let label = WorkbenchStore.shared.preferences.labels[key.uuidString]
++      let title = label.flatMap { $0.isEmpty ? nil : $0 } ?? terminal.title.flatMap { $0.isEmpty ? nil : $0 } ?? "Terminal"
++      let detail = terminal.workbenchCommandContext + (workbenchTargets[key].map { " · " + $0 } ?? "")
++      return WorkbenchSessionRow(id: key, title: title, detail: detail, selected: key == _currentKey)
++    }
++  }
++  func workbenchFocus(_ key: UUID) { _moveToShell(key: key) }
++  func workbenchClose(_ key: UUID) {
++    guard !_spaceControllerAnimating, _viewportsKeys.contains(key), !_isSnipsInputModeActive else { return }
++    if key == _currentKey { _closeCurrentSpace(); return }
++    guard let terminal: TermController = SessionRegistry.shared.sessionFromIndexWith(key: key) else { return }
++    workbenchPad.stopRepeating()
++    terminal.terminate(); terminal.delegate = nil
++    _viewportsKeys.removeAll { $0 == key }; SessionRegistry.shared.remove(forKey: key)
++    linkedSessions = linkedSessions.filter { $0.value != key }
++    workbenchTargets.removeValue(forKey: key)
++    WorkbenchStore.shared.edit { $0.labels.removeValue(forKey: key.uuidString) }
++    workbenchRefresh()
++  }
++  func workbenchReorder(_ source: IndexSet, to destination: Int) {
++    guard !_spaceControllerAnimating, !_isSnipsInputModeActive,
++          source.allSatisfy({ _viewportsKeys.indices.contains($0) }), (0..._viewportsKeys.count).contains(destination) else { return }
++    workbenchPad.stopRepeating(); _viewportsKeys.move(fromOffsets: source, toOffset: destination)
++  }
++  func workbenchConnect(_ host: String, mosh: Bool) {
++    Task { @MainActor in
++      do {
++        let link = try SessionLink.opening(host: host, id: nil, transport: mosh ? .mosh : .ssh, command: nil, reuse: false)
++        _ = try await openSessionLink(link)
++        WorkbenchStore.shared.edit { $0.visitHost(host) }
++      } catch { showAlert(msg: SessionActionRunner.describe(error).localizedDescription) }
++    }
++  }
++  func workbenchOpenFolder(_ name: String) {
++    do {
++      guard let location = try BookmarkedLocationsManager.default.getLocations().first(where: { $0.name == name }),
++            location.isAvailable, let url = location.url else {
++        showAlert(msg: "Folder unavailable. Retry or reselect it in Bookmarks; its saved record has been retained."); return
++      }
++      _newShellAction(command: "cd " + SessionLink.shellQuote(url.path))
++    } catch { showAlert(msg: "Bookmarks could not be read. Saved records were preserved.") }
++  }
++  func workbenchApplyDraft(_ style: TerminalStyle) {
++    guard let terminal = currentTerm() else { return }
++    let state = terminal.termView.termUIState
++    state.themeName = style.themeName; state.fontName = style.fontName; state.fontSize = Int(style.fontSize)
++    state.enableBold = UInt(style.boldMode.rawValue); state.boldAsBright = style.boldAsBright
++    terminal.termView.applyTermUIState(state); terminal.termView.setCursorBlink(style.cursorBlink)
++    workbenchRestoreInput()
++  }
++  func workbenchRun(_ action: WorkbenchAction) {
++    guard foregroundActive, presentedViewController == nil, !_isSnipsInputModeActive else { return }
++    let terminal = currentTerm()
++    let input = currentDevice?.view?.browserView ?? currentDevice?.view?.webView
++    switch action {
++    case .workspace: workbenchShow()
++    case .keyboard:
++      let softwareVisible = view.keyboardLayoutGuide.layoutFrame.height > view.safeAreaInsets.bottom + 60
++      if workbenchState.suppressSoftwareKeyboard || !softwareVisible { workbenchState.showKeyboard() }
++      else { workbenchState.keyboardHidden = true }
++      workbenchRestoreInput()
++    case .keyboardLock:
++      workbenchState.keyboardLocked.toggle()
++      if !workbenchState.keyboardLocked { workbenchState.keyboardHidden = false }
++      workbenchRestoreInput()
++    case .interaction:
++      workbenchState.selecting.toggle(); workbenchRestoreInput()
++    case .selectAll:
++      guard terminal?.termView.browserView == nil else { showAlert(msg: "Retained terminal selection is not available in browser content."); return }
++      workbenchState.selecting = true; workbenchApplyInteraction()
++      terminal?.termView.webView.evaluateJavaScript("term_workbenchSelectAll()") { [weak self] _, error in
++        if let error { self?.showAlert(msg: "Selection could not be completed: " + error.localizedDescription) }
++      }
++    case .copy: terminal?.termView.copy(self)
++    case .copyRaw: terminal?.termView.copyRaw(self)
++    case .copyAll, .copyScreen: workbenchExport(screenOnly: action == .copyScreen)
++    case .bottom: terminal?.termView.webView.evaluateJavaScript("term_workbenchBottom()", completionHandler: nil)
++    case .paste: if let text = UIPasteboard.general.string, let terminal { workbenchReviewPaste(text, terminal: terminal) }
++    case .cancelPaste: currentDevice?.cancelPendingInput()
++    case .snippets: showSnippetsAction()
++    case .scratch: showScratchAction()
++    case .newSession: _newShellAction()
++    case .nextSession: _advanceShellCycling(by: 1)
++    case .previousSession: _advanceShellCycling(by: -1)
++    case .escape: input?.kbView.sendKey(.esc)
++    case .tab: input?.kbView.sendKey(.tab)
++    case .control: input?.kbView.workbenchToggleModifier(.ctrl)
++    case .alternate: input?.kbView.workbenchToggleModifier(.alt)
++    case .up: input?.kbView.sendKey(.up)
++    case .down: input?.kbView.sendKey(.down)
++    case .left: input?.kbView.sendKey(.left)
++    case .right: input?.kbView.sendKey(.right)
++    case .layoutMenu: _toggleQuickActionActionWith(receiver: self)
++    }
++    workbenchRefresh()
++  }
++  func workbenchReviewPaste(_ text: String, terminal: TermController) {
++    guard terminal === currentTerm(), !_spaceControllerAnimating, !_isSnipsInputModeActive else { return }
++    guard text.utf8.count <= 4 * 1024 * 1024 else { showAlert(msg: "Paste exceeds 4 MiB and was not sent."); return }
++    let needsReview = WorkbenchPastePolicy.needsReview(text, enabled: WorkbenchStore.shared.preferences.previewPaste)
++    if !needsReview { terminal.termView.workbenchPasteConfirmed(text); return }
++    guard presentedViewController == nil else { return }
++    let alert = UIAlertController(title: "Review Paste", message: WorkbenchPastePolicy.preview(text) + (text.count > 3000 ? "\n… (preview shortened; full reviewed text goes through terminal paste handling)" : "") + "\n\n\(text.utf8.count) UTF-8 bytes. Existing terminal paste/bracketed-paste rules apply. Newlines may execute commands; cancelling later cannot retract delivered input.", preferredStyle: .alert)
++    alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
++    alert.addAction(UIAlertAction(title: "Paste Reviewed Text", style: .default) { [weak self, weak terminal] _ in
++      guard let self, let terminal, terminal === self.currentTerm(), !self._isSnipsInputModeActive else { return }
++      terminal.termView.workbenchPasteConfirmed(text)
++    })
++    present(alert, animated: true)
++  }
++  private func workbenchExport(screenOnly: Bool) {
++    guard let terminal = currentTerm(), terminal.termView.browserView == nil else { showAlert(msg: "Retained text export is available only in terminal content."); return }
++    workbenchCapture?.cancel()
++    let key = terminal.meta.key
++    let progress = UIAlertController(title: "Capturing Retained Text", message: "Only text retained by this terminal is available. Output arriving during capture can change the buffer.", preferredStyle: .alert)
++    progress.addAction(UIAlertAction(title: "Cancel", style: .cancel) { [weak self] _ in self?.workbenchCapture?.cancel() })
++    present(progress, animated: true)
++    workbenchCapture = Task { @MainActor [weak self, weak terminal] in
++      guard let self, let terminal else { return }
++      do {
++        var offset = 0, expected: Int?, result = ""
++        var continued = false
++        while true {
++          try Task.checkCancellation()
++          guard self._currentKey == key else { throw CancellationError() }
++          let js = "term_workbenchRows(\(screenOnly ? "true" : "false"),\(offset),128)"
++          let raw: Any? = try await withCheckedThrowingContinuation { continuation in
++            terminal.termView.webView.evaluateJavaScript(js) { value, error in
++              if let error { continuation.resume(throwing: error) } else { continuation.resume(returning: value) }
++            }
++          }
++          guard let data = raw as? [String: Any], let text = data["text"] as? String,
++                let next = data["next"] as? Int, let total = data["total"] as? Int,
++                next >= offset, total >= next, total <= 200000 else { throw ShortcutFailure(message: "Terminal capture returned invalid or excessive rows.") }
++          if let expected, expected != total { throw ShortcutFailure(message: "The retained row count changed during capture. Pause output and retry.") }
++          expected = total
++          if offset > 0 && !continued { result += "\n" }
++          guard result.utf8.count + text.utf8.count <= 4 * 1024 * 1024 else { throw ShortcutFailure(message: "Capture exceeds 4 MiB. No partial output was copied.") }
++          result += text; continued = data["continued"] as? Bool ?? false
++          if next == total { break }
++          guard next > offset else { throw ShortcutFailure(message: "Capture made no progress.") }
++          offset = next
++          await Task.yield()
++        }
++        try Task.checkCancellation()
++        progress.dismiss(animated: true) { [weak self] in self?.workbenchShowOutput(result) }
++      } catch {
++        progress.dismiss(animated: true) { [weak self] in
++          if !(error is CancellationError) { self?.showAlert(msg: error.localizedDescription) }
++        }
++      }
++    }
++  }
++  private func workbenchShowOutput(_ text: String) {
++    let controller = WorkbenchPresentation(rootView: WorkbenchOutputView(text: text, share: { [weak self] in
++      guard let self else { return }
++      let folder = FileManager.default.temporaryDirectory.appendingPathComponent("Blink-Export-" + UUID().uuidString, isDirectory: true)
++      let file = folder.appendingPathComponent("Retained Terminal Text.txt")
++      do {
++        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: false)
++        try Data(text.utf8).write(to: file, options: [.atomic, .completeFileProtection])
++      } catch {
++        try? FileManager.default.removeItem(at: folder)
++        self.presentedViewController?.dismiss(animated: true) { self.showAlert(msg: "Output could not be staged for sharing.") }; return
++      }
++      let sheet = UIActivityViewController(activityItems: [file], applicationActivities: nil)
++      sheet.completionWithItemsHandler = { _, _, _, _ in try? FileManager.default.removeItem(at: folder) }
++      if let popover = sheet.popoverPresentationController {
++        popover.sourceView = self.presentedViewController?.view ?? self.view
++        popover.sourceRect = CGRect(x: popover.sourceView!.bounds.midX, y: popover.sourceView!.bounds.midY, width: 1, height: 1)
++      }
++      self.presentedViewController?.present(sheet, animated: true)
++    }, close: { [weak self] in self?.dismiss(animated: true) { self?.workbenchRestoreInput() } }))
++    controller.onInteractiveDismiss = { [weak self] in self?.workbenchRestoreInput() }
++    controller.presentationController?.delegate = controller
++    present(controller, animated: true)
++  }
++}
+diff --git a/Blink.xcodeproj/project.pbxproj b/Blink.xcodeproj/project.pbxproj
+--- a/Blink.xcodeproj/project.pbxproj
++++ b/Blink.xcodeproj/project.pbxproj
+@@ -7,6 +7,11 @@
+ 	objects = {
+ 
+ /* Begin PBXBuildFile section */
++		52534B000000000000000029 /* WorkbenchInputDelivery.m in Sources */ = {isa = PBXBuildFile; fileRef = 52534B000000000000000028 /* WorkbenchInputDelivery.m */; };
++		52534B000000000000000027 /* WorkbenchDPadView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52534B000000000000000026 /* WorkbenchDPadView.swift */; };
++		52534B000000000000000025 /* WorkbenchDock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52534B000000000000000024 /* WorkbenchDock.swift */; };
++		52534B000000000000000023 /* WorkbenchUI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52534B000000000000000022 /* WorkbenchUI.swift */; };
++		52534B000000000000000021 /* WorkbenchModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52534B000000000000000020 /* WorkbenchModel.swift */; };
+ 		52534B000000000000000008 /* ShortcutsFiles.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52534B000000000000000007 /* ShortcutsFiles.swift */; };
+ 		52534B000000000000000006 /* ShortcutsRunner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52534B000000000000000005 /* ShortcutsRunner.swift */; };
+ 		52534B000000000000000004 /* BlinkIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52534B000000000000000003 /* BlinkIntents.swift */; };
+@@ -761,6 +766,11 @@
+ /* End PBXCopyFilesBuildPhase section */
+ 
+ /* Begin PBXFileReference section */
++		52534B000000000000000028 /* WorkbenchInputDelivery.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "Terminal/WorkbenchInputDelivery.m"; sourceTree = "<group>"; };
++		52534B000000000000000026 /* WorkbenchDPadView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "WorkbenchDPadView.swift"; sourceTree = "<group>"; };
++		52534B000000000000000024 /* WorkbenchDock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "WorkbenchDock.swift"; sourceTree = "<group>"; };
++		52534B000000000000000022 /* WorkbenchUI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "WorkbenchUI.swift"; sourceTree = "<group>"; };
++		52534B000000000000000020 /* WorkbenchModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "WorkbenchModel.swift"; sourceTree = "<group>"; };
+ 		52534B000000000000000007 /* ShortcutsFiles.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutsFiles.swift; sourceTree = "<group>"; };
+ 		52534B000000000000000005 /* ShortcutsRunner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutsRunner.swift; sourceTree = "<group>"; };
+ 		52534B000000000000000003 /* BlinkIntents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlinkIntents.swift; sourceTree = "<group>"; };
+@@ -1503,6 +1513,11 @@
+ 				D2887A5D22DCA6D500701BD5 /* SceneDelegate.swift */,
+ 				52534B000000000000000005 /* ShortcutsRunner.swift */,
+ 				52534B000000000000000007 /* ShortcutsFiles.swift */,
++				52534B000000000000000020 /* WorkbenchModel.swift */,
++				52534B000000000000000022 /* WorkbenchUI.swift */,
++				52534B000000000000000024 /* WorkbenchDock.swift */,
++				52534B000000000000000026 /* WorkbenchDPadView.swift */,
++				52534B000000000000000028 /* WorkbenchInputDelivery.m */,
+ 				52534B000000000000000003 /* BlinkIntents.swift */,
+ 				52534B000000000000000001 /* SessionLink.swift */,
+ 				D248E67522DDDF130057FE67 /* UIStateRestorable.swift */,
+@@ -3655,6 +3670,11 @@
+ 				D2887A5E22DCA6D500701BD5 /* SceneDelegate.swift in Sources */,
+ 				52534B000000000000000006 /* ShortcutsRunner.swift in Sources */,
+ 				52534B000000000000000008 /* ShortcutsFiles.swift in Sources */,
++				52534B000000000000000021 /* WorkbenchModel.swift in Sources */,
++				52534B000000000000000023 /* WorkbenchUI.swift in Sources */,
++				52534B000000000000000025 /* WorkbenchDock.swift in Sources */,
++				52534B000000000000000027 /* WorkbenchDPadView.swift in Sources */,
++				52534B000000000000000029 /* WorkbenchInputDelivery.m in Sources */,
+ 				52534B000000000000000004 /* BlinkIntents.swift in Sources */,
+ 				52534B000000000000000002 /* SessionLink.swift in Sources */,
+ 				D231F5072A54478800ED82B0 /* BlinkMenu.m in Sources */,
+diff --git a/Settings/SettingsView.swift b/Settings/SettingsView.swift
+--- a/Settings/SettingsView.swift
++++ b/Settings/SettingsView.swift
+@@ -117,6 +117,13 @@
+         }, storyBoardId: "BKDefaultUserViewController")
+       }
+ 
++      Section("Workspace") {
++        Button {
++          let controller = _nav.navController
++          let space = controller.presentingViewController as? SpaceController
++          controller.dismiss(animated: true) { space?.workbenchShow() }
++        } label: { Label("Customize Workspace and Controls", systemImage: "slider.horizontal.3") }
++      }
+       Section("Terminal") {
+         Row {
+           Label("Style", systemImage: "paintpalette")
+diff --git a/Blink/Terminal/LayoutConstraintManager.h b/Blink/Terminal/LayoutConstraintManager.h
+--- a/Blink/Terminal/LayoutConstraintManager.h
++++ b/Blink/Terminal/LayoutConstraintManager.h
+@@ -46,6 +46,8 @@
+ 
+ + (BKLayoutMode) deviceDefaultLayoutMode;
+ 
++@property (nonatomic) CGFloat workbenchBottomInset;
++
+ // Update layout mode
+ - (void)updateLayoutMode:(BKLayoutMode)mode;
+ 
+diff --git a/Blink/Terminal/LayoutConstraintManager.m b/Blink/Terminal/LayoutConstraintManager.m
+--- a/Blink/Terminal/LayoutConstraintManager.m
++++ b/Blink/Terminal/LayoutConstraintManager.m
+@@ -136,6 +136,14 @@
+     }
+ }
+ 
++- (void)setWorkbenchBottomInset:(CGFloat)value {
++    value = MAX(0, value);
++    if (_workbenchBottomInset == value) return;
++    _workbenchBottomInset = value;
++    self.bottomToKeyboardConstraint.constant = self.isLayoutLocked ? 0 : -value;
++    [self updateConstraintsForCurrentState];
++}
++
+ - (void)updateConstraintsForCurrentState {
+     if (self.isLayoutLocked) {
+         [self updateConstraintsForLockedFrame];
+@@ -147,10 +155,12 @@
+     self.topConstraint.constant = insets.top;
+     self.leadingConstraint.constant = insets.left;
+     self.trailingConstraint.constant = -insets.right;
+-    self.bottomConstraint.constant = -insets.bottom;
++    self.bottomConstraint.constant = -insets.bottom - self.workbenchBottomInset;
++    self.bottomToKeyboardConstraint.constant = -self.workbenchBottomInset;
+ }
+ 
+ - (void)updateConstraintsForLockedFrame {
++    self.bottomToKeyboardConstraint.constant = 0;
+     if (CGRectIsEmpty(self.lockedFrame)) return;
+     
+     UIView *superview = self.managedView.superview;
+diff --git a/Blink/WorkbenchUI.swift b/Blink/WorkbenchUI.swift
+new file mode 100644
+--- /dev/null
++++ b/Blink/WorkbenchUI.swift
+@@ -0,0 +1,394 @@
++// GPL-3.0 + Blink additional terms. Native workspace and customization surfaces.
++import SwiftUI
++import UIKit
++import Combine
++import BlinkConfig
++
++@MainActor
++final class WorkbenchStore: ObservableObject {
++  static let shared = WorkbenchStore()
++  static let key = "blink.rsk.workbench.v1"
++  @Published private(set) var preferences = WorkbenchPreferences()
++  @Published private(set) var storageError: String?
++  @Published private(set) var editError: String?
++  private let defaults: UserDefaults
++  init(defaults: UserDefaults = .standard) {
++    self.defaults = defaults
++    if let data = defaults.data(forKey: Self.key) {
++      do { preferences = try WorkbenchPreferences.decode(data) }
++      catch { storageError = "Saved customization could not be read. It has been preserved. Reset only if you want to replace it." }
++    }
++  }
++  func edit(_ change: (inout WorkbenchPreferences) -> Void) {
++    guard storageError == nil else { return }
++    var next = preferences; change(&next)
++    do {
++      next = try next.validated()
++      defaults.set(try JSONEncoder().encode(next), forKey: Self.key)
++      preferences = next; editError = nil
++    } catch { editError = "Customization was not saved because it is invalid. Previous settings remain stored." }
++  }
++  func resetExplicitly() {
++    defaults.removeObject(forKey: Self.key); storageError = nil; preferences = WorkbenchPreferences()
++  }
++  var color: Color {
++    switch preferences.accent {
++    case "violet": return .purple
++    case "green": return .green
++    case "orange": return .orange
++    case "pink": return .pink
++    default: return .cyan
++    }
++  }
++  var uiColor: UIColor { UIColor(color) }
++  var colorScheme: ColorScheme? { preferences.appearance == "system" ? nil : preferences.appearance == "light" ? .light : .dark }
++}
++
++struct WorkbenchSessionRow: Identifiable {
++  var id: UUID
++  var title: String
++  var detail: String
++  var selected: Bool
++}
++@MainActor
++final class WorkbenchContext: ObservableObject {
++  weak var space: SpaceController?
++  @Published var sessions: [WorkbenchSessionRow] = []
++  @Published var hosts: [String] = []
++  @Published var folders: [BookmarkedLocation] = []
++  @Published var pendingBytes = 0
++  @Published var bookmarkError: String?
++  @Published var inputError: String?
++  init(space: SpaceController) { self.space = space; refresh() }
++  func refresh() {
++    sessions = space?.workbenchSessions() ?? []
++    hosts = (BKHosts.allHosts() ?? []).compactMap { $0.host }.sorted()
++    do { folders = try BookmarkedLocationsManager.default.getLocations(); bookmarkError = nil }
++    catch { bookmarkError = "Bookmarks could not be read. Saved records were preserved; open Bookmarks to retry." }
++    pendingBytes = Int(space?.currentDevice?.inputPendingBytes() ?? 0)
++    inputError = space?.workbenchInputStatus()
++  }
++  func leave(_ operation: @escaping (SpaceController) -> Void) {
++    guard let space else { return }
++    space.dismiss(animated: true) {
++      operation(space)
++      if space.presentedViewController == nil { space.workbenchRestoreInput() }
++    }
++  }
++}
++
++@MainActor
++struct WorkbenchRootView: View {
++  @ObservedObject var store = WorkbenchStore.shared
++  @ObservedObject var context: WorkbenchContext
++  @State private var query = ""
++  @State private var rename: WorkbenchSessionRow?
++  @State private var renameText = ""
++  @State private var closing: WorkbenchSessionRow?
++  @State private var reset = false
++  @State private var newProfileName = ""
++  @State private var editingProfile: WorkbenchProfile?
++  @State private var selectedTab = 0
++  @State private var newStyleName = ""
++  @State private var styleRevision = 0
++  @State private var styleChoice = TerminalStyleStore.shared.selectedStyle.id
++  @State private var editedStyle = TerminalStyleStore.shared.selectedStyle
++  @ObservedObject private var styles = TerminalStyleStore.shared
++  private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
++
++  var body: some View {
++    NavigationView {
++      TabView(selection: $selectedTab) {
++        workspace.tabItem { Label("Workspace", systemImage: "square.grid.2x2") }.tag(0)
++        sessions.tabItem { Label("Sessions", systemImage: "rectangle.stack") }.tag(1)
++        controls.tabItem { Label("Controls", systemImage: "slider.horizontal.3") }.tag(2)
++        appearance.tabItem { Label("Appearance", systemImage: "paintpalette") }.tag(3)
++      }
++      .navigationTitle("Workspace")
++      .navigationBarTitleDisplayMode(.inline)
++      .searchable(text: $query, prompt: "Actions, hosts, folders and sessions")
++      .toolbar {
++        ToolbarItem(placement: .cancellationAction) { Button("Terminal") { context.leave { $0.workbenchRestoreInput() } } }
++      }
++    }
++    .navigationViewStyle(.stack)
++    .tint(store.color)
++    .preferredColorScheme(store.colorScheme)
++    .onReceive(timer) { _ in context.refresh() }
++    .onChange(of: styles.styles) { _ in styleRevision += 1 }
++    .onChange(of: styleChoice) { id in if let style = styles.style(for: id) { editedStyle = style; styleRevision += 1 } }
++    .alert("Rename session", isPresented: Binding(get: { rename != nil }, set: { if !$0 { rename = nil } })) {
++      TextField("Label", text: $renameText)
++      Button("Save") {
++        if let rename { store.edit { $0.labels[rename.id.uuidString] = String(renameText.prefix(64)) }; context.refresh() }
++        rename = nil
++      }
++      Button("Cancel", role: .cancel) { rename = nil }
++    } message: { Text("User labels do not change terminal titles or Shortcuts session names.") }
++    .confirmationDialog("Close terminal?", isPresented: Binding(get: { closing != nil }, set: { if !$0 { closing = nil } })) {
++      Button("Close Terminal", role: .destructive) {
++        if let closing { context.leave { $0.workbenchClose(closing.id) } }
++        closing = nil
++      }
++      Button("Cancel", role: .cancel) { closing = nil }
++    } message: { Text("This closes the local terminal and its command. Remote session persistence depends on the remote application; closing is not a guaranteed detach.") }
++    .confirmationDialog("Reset workspace customization?", isPresented: $reset) {
++      Button("Reset Customization", role: .destructive) { store.resetExplicitly() }
++    } message: { Text("Replaces only workspace/dock preferences. Terminal styles, keys, hosts and bookmarks are preserved.") }
++  }
++  private func matches(_ text: String) -> Bool { query.isEmpty || text.localizedCaseInsensitiveContains(query) }
++  private var workspace: some View {
++    List {
++      Section {
++        VStack(alignment: .leading, spacing: 8) {
++          Text("YOUR TERMINAL, YOUR WORKSPACE").font(.caption).fontWeight(.semibold).foregroundColor(store.color)
++          Text("Connect. Work. Return.").font(store.preferences.compact ? .title3 : .largeTitle).bold()
++          Text("Local terminals, saved destinations and explicit actions in one place.").font(.subheadline).foregroundColor(.secondary)
++        }.padding(.vertical, store.preferences.compact ? 4 : 16)
++      }
++      Section("Actions") {
++        ForEach(WorkbenchAction.allCases.filter { matches($0.title) }) { action in
++          Button { context.leave { $0.workbenchRun(action) } } label: { Label(action.title, systemImage: action.symbol) }
++        }
++      }
++      if context.pendingBytes > 0 || context.inputError != nil {
++        Section("Input delivery") {
++          if let error = context.inputError {
++            Text(error).foregroundColor(.orange)
++            Button("Acknowledge") { context.space?.workbenchAcknowledgeInputError(); context.refresh() }
++          }
++          Text("\(context.pendingBytes) bytes pending")
++          Button("Cancel Pending Input", role: .destructive) { context.space?.currentDevice?.cancelPendingInput() }
++        }
++      }
++      hostSection("Favorites", names: store.preferences.favoriteHosts)
++      hostSection("Recent hosts", names: store.preferences.recentHosts)
++      hostSection("Saved hosts", names: context.hosts)
++      Section("Saved folders") {
++        if let error = context.bookmarkError { Text(error).foregroundColor(.orange) }
++        ForEach(context.folders.filter { matches($0.name) }) { folder in
++          Button { context.leave { $0.workbenchOpenFolder(folder.name) } } label: {
++            HStack { Label(folder.name, systemImage: "folder"); Spacer(); if !folder.isAvailable { Text("Unavailable").foregroundColor(.secondary) } }
++          }
++        }
++      }
++      Section {
++        Button("Manage Hosts, Bookmarks and Settings") { context.leave { $0.showConfigAction() } }
++        Text("Saved profiles are destinations, not a live-connection indicator. Unavailable bookmarks remain saved.").font(.footnote).foregroundColor(.secondary)
++      }
++    }.listStyle(.insetGrouped)
++  }
++  private func hostSection(_ title: String, names: [String]) -> some View {
++    Section(title) {
++      ForEach(names.filter { context.hosts.contains($0) && matches($0) }, id: \.self) { host in
++        HStack {
++          Menu {
++            Button("New SSH Terminal") { context.leave { $0.workbenchConnect(host, mosh: false) } }
++            Button("New Mosh Terminal") { context.leave { $0.workbenchConnect(host, mosh: true) } }
++          } label: { Label(host, systemImage: "server.rack") }
++          Spacer()
++          Button {
++            store.edit { prefs in
++              if prefs.favoriteHosts.contains(host) { prefs.favoriteHosts.removeAll { $0 == host } }
++              else { prefs.favoriteHosts.append(host) }
++            }
++          } label: { Image(systemName: store.preferences.favoriteHosts.contains(host) ? "star.fill" : "star") }
++          .buttonStyle(.borderless).accessibilityLabel("Toggle favorite for " + host)
++        }
++      }
++    }
++  }
++  private var sessions: some View {
++    List {
++      Section("This window") {
++        ForEach(context.sessions.filter { matches($0.title + " " + $0.detail) }) { session in
++          HStack {
++            Button { context.leave { $0.workbenchFocus(session.id) } } label: {
++              VStack(alignment: .leading, spacing: 4) {
++                Label(session.title, systemImage: session.selected ? "terminal.fill" : "terminal")
++                Text(session.detail).font(.caption).foregroundColor(.secondary)
++              }
++            }
++            Spacer()
++            Menu {
++              Button("Rename Label") { renameText = session.title; rename = session }
++              Button("Close Terminal…", role: .destructive) { closing = session }
++            } label: { Image(systemName: "ellipsis.circle") }.buttonStyle(.borderless)
++          }
++        }.onMove { source, destination in
++          guard query.isEmpty else { return }
++          context.space?.workbenchReorder(source, to: destination); context.refresh()
++        }
++      }
++      Section {
++        Button("New Local Terminal") { context.leave { $0.newShellAction() } }
++        Text("Use the terminal application's own detach/disconnect commands when you want to keep a remote process alive. Switch and close operate on the selected local terminal only.").font(.footnote).foregroundColor(.secondary)
++      }
++    }.toolbar { EditButton().disabled(!query.isEmpty) }.listStyle(.insetGrouped)
++  }
++  private var controls: some View {
++    List {
++      if let error = store.storageError ?? store.editError { Section { Text(error).foregroundColor(.orange) } }
++      Section("Dock") {
++        Toggle("Show touch dock", isOn: pref(\.dockVisible))
++        Picker("Profile", selection: pref(\.selectedProfile)) {
++          ForEach(store.preferences.profiles) { Text($0.name).tag($0.id) }
++        }
++        Toggle("Separate D-pad", isOn: profile(\.dpad))
++        Toggle("Dock on trailing side", isOn: profile(\.trailing))
++        Stepper("Control size: \(store.preferences.profile.controlSize)", value: profile(\.controlSize), in: 44...72, step: 4)
++        Button("Edit profile actions") { editingProfile = store.preferences.profile }
++      }
++      Section("New profile") {
++        TextField("Profile name", text: $newProfileName)
++        Button("Duplicate Current Profile") {
++          guard !newProfileName.trimmingCharacters(in: .whitespaces).isEmpty else { return }
++          store.edit { prefs in
++            var copy = prefs.profile; copy.id = UUID(); copy.name = String(newProfileName.prefix(64))
++            prefs.profiles.append(copy); prefs.selectedProfile = copy.id
++          }; newProfileName = ""
++        }.disabled(store.preferences.profiles.count >= 20 || newProfileName.isEmpty)
++        Button("Delete Current Profile", role: .destructive) {
++          store.edit { prefs in
++            guard prefs.profiles.count > 1 else { return }
++            let id = prefs.selectedProfile; prefs.profiles.removeAll { $0.id == id }; prefs.selectedProfile = prefs.profiles[0].id
++          }
++        }.disabled(store.preferences.profiles.count == 1)
++      }
++      Section("Input") {
++        Toggle("Review multiline or control-character paste", isOn: pref(\.previewPaste))
++        Text("Input delivery is ordered and capped at 4 MiB pending. Cancel cannot retract bytes already sent. Keyboard lock suppresses the software keyboard; Select/Scroll prevents touch refocus while preserving deliberate controls.").font(.footnote).foregroundColor(.secondary)
++      }
++      Section("Discoverability") {
++        Text("Workspace is always available from the dock's grid button or the existing bottom-edge double tap. The dock chevron collapses it. Keyboard explicitly reopens input and clears keyboard lock. Session names in Shortcuts remain separate from the labels here.").font(.footnote)
++        Button("Reset Customization…", role: .destructive) { reset = true }
++      }
++    }
++    .sheet(item: $editingProfile) { value in WorkbenchProfileEditor(profile: value, store: store) }
++    .listStyle(.insetGrouped)
++  }
++  private var appearance: some View {
++    List {
++      Section("Workspace appearance") {
++        Picker("Appearance", selection: pref(\.appearance)) {
++          Text("System").tag("system"); Text("Light").tag("light"); Text("Dark").tag("dark")
++        }
++        Picker("Accent", selection: pref(\.accent)) {
++          ForEach(["cyan", "violet", "green", "orange", "pink"], id: \.self) { Text($0.capitalized).tag($0) }
++        }
++        Toggle("Compact workspace", isOn: pref(\.compact))
++      }
++      Section("Terminal presets") {
++        Picker("Preset", selection: $styleChoice) { ForEach(styles.allStyles) { Text($0.name).tag($0.id) } }
++        if styles.style(for: styleChoice) != nil {
++          let style = editedStyle
++          VStack(alignment: .leading, spacing: 8) {
++            Text(style.name).font(.headline)
++            Text("\(style.themeName) · \(style.fontName) · \(Int(style.fontSize)) px").font(.caption).foregroundColor(.secondary)
++            TerminalPreviewCell(style: style, revision: styleRevision).frame(height: 180)
++          }
++          Button("Apply to Current Terminal") { context.leave { $0.workbenchApplyDraft(style) } }
++          Button("Use for Future Terminals") {
++            if styles.style(for: style.id) == style { styles.setSelected(style.id) }
++            else {
++              let copy = styles.createStyle(name: style.name + " Custom", themeName: style.themeName, fontName: style.fontName,
++                fontSize: style.fontSize, cursorBlink: style.cursorBlink, boldMode: style.boldMode, boldAsBright: style.boldAsBright)
++              styles.setSelected(copy.id); styleChoice = copy.id
++            }
++          }
++          TextField("New preset name", text: $newStyleName)
++          Button("Duplicate as Named Preset") {
++            guard !newStyleName.isEmpty else { return }
++            let copy = styles.createStyle(name: String(newStyleName.prefix(64)), themeName: style.themeName, fontName: style.fontName,
++              fontSize: style.fontSize, cursorBlink: style.cursorBlink, boldMode: style.boldMode, boldAsBright: style.boldAsBright)
++            styleChoice = copy.id; newStyleName = ""
++          }
++          Group {
++            Stepper("Font size: \(Int(style.fontSize)) px", value: styleBinding(style, \.fontSize), in: 6...48)
++            Toggle("Blink cursor", isOn: styleBinding(style, \.cursorBlink))
++            Toggle("Bold as bright", isOn: styleBinding(style, \.boldAsBright))
++            Picker("Bold", selection: styleBinding(style, \.boldMode)) {
++              Text("Auto").tag(TerminalStyle.BoldMode.auto); Text("On").tag(TerminalStyle.BoldMode.on); Text("Off").tag(TerminalStyle.BoldMode.off)
++            }
++            Picker("Theme", selection: styleBinding(style, \.themeName)) {
++              ForEach((BKTheme.all() as? [BKTheme]) ?? [], id: \.name) { Text($0.name).tag($0.name) }
++            }
++            Picker("Font", selection: styleBinding(style, \.fontName)) {
++              ForEach((BKFont.all() as? [BKFont]) ?? [], id: \.name) { Text($0.name).tag($0.name) }
++            }
++          }
++        }
++        Text("Editing changes only this draft preview. Apply to Current, choose Future, or save a new named preset explicitly. The live terminal preview uses the installed theme and font.").font(.footnote).foregroundColor(.secondary)
++      }
++    }.listStyle(.insetGrouped)
++  }
++  private func pref<Value>(_ key: WritableKeyPath<WorkbenchPreferences, Value>) -> Binding<Value> {
++    Binding(get: { store.preferences[keyPath: key] }, set: { value in store.edit { $0[keyPath: key] = value } })
++  }
++  private func profile<Value>(_ key: WritableKeyPath<WorkbenchProfile, Value>) -> Binding<Value> {
++    Binding(get: { store.preferences.profile[keyPath: key] }, set: { value in
++      store.edit { prefs in var p = prefs.profile; p[keyPath: key] = value; prefs.updateProfile(p) }
++    })
++  }
++  private func styleBinding<Value>(_ style: TerminalStyle, _ key: WritableKeyPath<TerminalStyle, Value>) -> Binding<Value> {
++    Binding(get: { editedStyle[keyPath: key] }, set: { value in
++      editedStyle[keyPath: key] = value; styleRevision += 1
++    })
++  }
++}
++
++@MainActor
++struct WorkbenchProfileEditor: View {
++  @State var profile: WorkbenchProfile
++  @ObservedObject var store: WorkbenchStore
++  @Environment(\.dismiss) var dismiss
++  var body: some View {
++    NavigationView {
++      List {
++        TextField("Profile name", text: $profile.name)
++        Section("Visible actions — drag to reorder") {
++          ForEach(profile.actions) { action in Label(action.title, systemImage: action.symbol) }
++            .onMove { profile.actions.move(fromOffsets: $0, toOffset: $1) }
++            .onDelete { profile.actions.remove(atOffsets: $0) }
++        }
++        Section("Add action") {
++          ForEach(WorkbenchAction.allCases.filter { !profile.actions.contains($0) }) { action in
++            Button { profile.actions.append(action) } label: { Label(action.title, systemImage: action.symbol) }
++          }
++        }
++      }.environment(\.editMode, .constant(.active))
++      .navigationTitle("Control Profile")
++      .toolbar {
++        ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } }
++        ToolbarItem(placement: .confirmationAction) { Button("Save") { store.edit { $0.updateProfile(profile) }; dismiss() }.disabled(profile.name.isEmpty || profile.name.count > 64) }
++      }
++    }.navigationViewStyle(.stack)
++  }
++}
++
++@MainActor
++struct WorkbenchOutputView: View {
++  let text: String
++  let share: () -> Void
++  let close: () -> Void
++  var body: some View {
++    NavigationView {
++      ScrollView {
++        Text(String(text.prefix(65536))).font(.system(.body, design: .monospaced)).textSelection(.enabled).frame(maxWidth: .infinity, alignment: .leading).padding()
++        if text.count > 65536 { Text("Preview shows the first 65,536 characters. Copy and Share/Save use the entire capture.").font(.footnote).padding() }
++      }.navigationTitle("Retained Terminal Text").navigationBarTitleDisplayMode(.inline)
++        .toolbar {
++          ToolbarItem(placement: .cancellationAction) { Button("Done", action: close) }
++          ToolbarItemGroup(placement: .bottomBar) {
++            Button("Copy") { UIPasteboard.general.string = text }
++            Spacer(); Button("Share / Save", action: share)
++          }
++        }
++    }.navigationViewStyle(.stack)
++  }
++}
++
++final class WorkbenchPresentation<Content: View>: UIHostingController<Content>, UIAdaptivePresentationControllerDelegate {
++  var onInteractiveDismiss: (() -> Void)?
++  func presentationControllerDidDismiss(_ presentationController: UIPresentationController) { onInteractiveDismiss?() }
++}
+diff --git a/Blink/WorkbenchDock.swift b/Blink/WorkbenchDock.swift
+new file mode 100644
+--- /dev/null
++++ b/Blink/WorkbenchDock.swift
+@@ -0,0 +1,59 @@
++// GPL-3.0 + Blink additional terms. Shared catalogue, no independent key encoding.
++import UIKit
++
++final class WorkbenchDock: UIVisualEffectView {
++  var onAction: ((WorkbenchAction) -> Void)?
++  var onCollapse: (() -> Void)?
++  var collapsed = true
++  private let row = UIStackView()
++  private let scroll = UIScrollView()
++  private let actions = UIStackView()
++  private var scrollHeight: NSLayoutConstraint!
++  init() {
++    super.init(effect: UIBlurEffect(style: .systemMaterial))
++    layer.cornerRadius = 18; clipsToBounds = true
++    accessibilityIdentifier = "terminal.customizationDock"
++    row.axis = .horizontal; row.alignment = .center; row.spacing = 4
++    row.translatesAutoresizingMaskIntoConstraints = false
++    contentView.addSubview(row)
++    scroll.translatesAutoresizingMaskIntoConstraints = false
++    scroll.showsHorizontalScrollIndicator = false
++    actions.axis = .horizontal; actions.spacing = 4; actions.translatesAutoresizingMaskIntoConstraints = false
++    scroll.addSubview(actions)
++    scrollHeight = scroll.heightAnchor.constraint(equalToConstant: 48)
++    NSLayoutConstraint.activate([scroll.widthAnchor.constraint(greaterThanOrEqualToConstant: 44), scrollHeight,
++      actions.leadingAnchor.constraint(equalTo: scroll.contentLayoutGuide.leadingAnchor), actions.trailingAnchor.constraint(equalTo: scroll.contentLayoutGuide.trailingAnchor),
++      actions.topAnchor.constraint(equalTo: scroll.contentLayoutGuide.topAnchor), actions.bottomAnchor.constraint(equalTo: scroll.contentLayoutGuide.bottomAnchor),
++      actions.heightAnchor.constraint(equalTo: scroll.frameLayoutGuide.heightAnchor)])
++    NSLayoutConstraint.activate([row.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 4), row.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -4), row.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 4), row.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -4)])
++  }
++  required init?(coder: NSCoder) { nil }
++  func rebuild(_ profile: WorkbenchProfile, color: UIColor, state: WorkbenchInteraction, pending: Int) {
++    for view in row.arrangedSubviews { row.removeArrangedSubview(view); view.removeFromSuperview() }
++    let size = CGFloat(profile.controlSize)
++    func button(_ title: String, _ symbol: String, _ action: @escaping () -> Void) -> UIButton {
++      let value = UIButton(type: .system)
++      value.setImage(UIImage(systemName: symbol), for: .normal); value.tintColor = color
++      value.accessibilityLabel = title
++      value.addAction(UIAction { _ in action() }, for: .touchUpInside)
++      value.widthAnchor.constraint(equalToConstant: size).isActive = true
++      value.heightAnchor.constraint(equalToConstant: size).isActive = true
++      return value
++    }
++    row.addArrangedSubview(button("Workspace", "square.grid.2x2") { [weak self] in self?.onAction?(.workspace) })
++    row.addArrangedSubview(button(state.keyboardLocked ? "Unlock and Show Keyboard" : "Show or Hide Keyboard", state.keyboardLocked ? "lock.open" : "keyboard") { [weak self] in self?.onAction?(.keyboard) })
++    if !collapsed {
++      for view in actions.arrangedSubviews { actions.removeArrangedSubview(view); view.removeFromSuperview() }
++      scrollHeight.constant = size
++      row.addArrangedSubview(scroll)
++      for action in profile.actions where action != .workspace && action != .keyboard {
++        let value = button(action.title, action.symbol) { [weak self] in self?.onAction?(action) }
++        if action == .keyboardLock { value.accessibilityValue = state.keyboardLocked ? "Locked" : "Unlocked" }
++        if action == .interaction { value.accessibilityValue = state.selecting ? "Select and Scroll" : "Input" }
++        if action == .cancelPaste { value.accessibilityValue = "\(pending) bytes pending" }
++        actions.addArrangedSubview(value)
++      }
++    }
++    row.addArrangedSubview(button(collapsed ? "Expand Controls" : "Collapse Controls", collapsed ? "chevron.left" : "chevron.right") { [weak self] in self?.onCollapse?() })
++  }
++}
+diff --git a/Blink/WorkbenchDPadView.swift b/Blink/WorkbenchDPadView.swift
+new file mode 100644
+--- /dev/null
++++ b/Blink/WorkbenchDPadView.swift
+@@ -0,0 +1,239 @@
++// Selective panel adaptation: ShogunPanda/blink@c1bff729; upstream license below.
++////////////////////////////////////////////////////////////////////////////////
++//
++// B L I N K
++//
++// Copyright (C) 2026 Blink Mobile Shell Project
++//
++// This file is part of Blink.
++//
++// Blink is free software: you can redistribute it and/or modify
++// it under the terms of the GNU General Public License as published by
++// the Free Software Foundation, either version 3 of the License, or
++// (at your option) any later version.
++//
++// Blink is distributed in the hope that it will be useful,
++// but WITHOUT ANY WARRANTY; without even the implied warranty of
++// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++// GNU General Public License for more details.
++//
++// You should have received a copy of the GNU General Public License
++// along with Blink. If not, see <http://www.gnu.org/licenses/>.
++//
++// In addition, Blink is also subject to certain additional terms under
++// GNU GPL version 3 section 7.
++//
++// You should have received a copy of these additional terms immediately
++// following the terms and conditions of the GNU General Public License
++// which accompanied the Blink Source Code. If not, see
++// <http://www.github.com/blinksh/blink>.
++//
++////////////////////////////////////////////////////////////////////////////////
++
++import UIKit
++
++private final class KBDPadButton: UIButton {
++  var onActivate: (() -> Void)?
++
++  override func accessibilityActivate() -> Bool {
++    guard let onActivate = onActivate else { return false }
++    onActivate()
++    return true
++  }
++}
++
++// This panel never becomes first responder, so dragging and pressing it preserve terminal focus.
++final class WorkbenchDPadView: UIView, UIGestureRecognizerDelegate {
++  var inputProvider: (() -> SmarterTermInput?)?
++  var onClose: (() -> Void)?
++  private let _values: [KBKeyValue] = [.up, .left, .right, .down]
++  private var _timer: Timer?
++  private weak var _repeatingInput: SmarterTermInput?
++  private weak var _pressedButton: UIButton?
++  private var _availableFrame: CGRect = .zero
++  private var _dragOrigin: CGPoint = .zero
++
++  init() {
++    super.init(frame: CGRect(x: 0, y: 0, width: 168, height: 168))
++    backgroundColor = .secondarySystemBackground
++    layer.cornerRadius = 16
++    layer.shadowColor = UIColor.black.cgColor
++    layer.shadowOpacity = 0.2
++    layer.shadowRadius = 8
++    layer.shadowOffset = CGSize(width: 0, height: 2)
++    accessibilityIdentifier = "terminal.dPad"
++
++    let positions: [CGPoint] = [
++      CGPoint(x: 60, y: 8), CGPoint(x: 8, y: 60),
++      CGPoint(x: 112, y: 60), CGPoint(x: 60, y: 112),
++    ]
++    for (index, value) in _values.enumerated() {
++      let button = KBDPadButton(type: .system)
++      button.frame = CGRect(origin: positions[index], size: CGSize(width: 48, height: 48))
++      button.tag = index
++      button.setImage(UIImage(systemName: value.symbolName ?? "arrow.up"), for: .normal)
++      button.tintColor = .label
++      button.backgroundColor = .tertiarySystemFill
++      button.layer.cornerRadius = 10
++      button.accessibilityLabel = value.accessibilityLabel
++      button.accessibilityTraits.insert(.keyboardKey)
++      button.isExclusiveTouch = true
++      button.addTarget(self, action: #selector(press(_:)), for: .touchDown)
++      button.addTarget(
++        self, action: #selector(releasePress),
++        for: [.touchUpInside, .touchUpOutside, .touchCancel, .touchDragExit])
++      // VoiceOver activates controls without a touch-down event.
++      button.onActivate = { [weak self] in
++        self?.inputProvider?()?.kbView.sendKey(value)
++      }
++      addSubview(button)
++    }
++
++    let close = UIButton(type: .system)
++    close.frame = CGRect(x: 8, y: 8, width: 44, height: 44)
++    close.setImage(UIImage(systemName: "xmark"), for: .normal)
++    close.tintColor = .secondaryLabel
++    close.accessibilityLabel = "Close D-pad"
++    close.addTarget(self, action: #selector(closePanel), for: .touchUpInside)
++    addSubview(close)
++
++    let reset = UIButton(type: .system)
++    reset.frame = CGRect(x: 116, y: 8, width: 44, height: 44)
++    reset.setImage(UIImage(systemName: "arrow.counterclockwise"), for: .normal)
++    reset.tintColor = .secondaryLabel
++    reset.accessibilityLabel = "Reset D-pad position"
++    reset.addTarget(self, action: #selector(resetPosition), for: .touchUpInside)
++    addSubview(reset)
++
++    let grip = UIImageView(image: UIImage(systemName: "circle.grid.2x2.fill"))
++    grip.frame = CGRect(x: 74, y: 74, width: 20, height: 20)
++    grip.tintColor = .tertiaryLabel
++    grip.isAccessibilityElement = false
++    addSubview(grip)
++
++    let pan = UIPanGestureRecognizer(target: self, action: #selector(drag(_:)))
++    pan.delegate = self
++    addGestureRecognizer(pan)
++    NotificationCenter.default.addObserver(
++      self, selector: #selector(stopRepeating),
++      name: UIApplication.willResignActiveNotification, object: nil)
++  }
++
++  required init?(coder: NSCoder) {
++    return nil
++  }
++
++  deinit {
++    _timer?.invalidate()
++    NotificationCenter.default.removeObserver(self)
++  }
++
++  override func didMoveToWindow() {
++    super.didMoveToWindow()
++    if window == nil {
++      stopRepeating()
++    }
++  }
++
++  func constrainPosition(to availableFrame: CGRect) {
++    if availableFrame != _availableFrame {
++      stopRepeating()
++    }
++    _availableFrame = availableFrame
++    // Keep the user's open/closed state while keyboard transitions leave no usable area.
++    alpha = availableFrame.isEmpty ? 0 : 1
++    isUserInteractionEnabled = !availableFrame.isEmpty
++    guard !availableFrame.isEmpty else {
++      stopRepeating()
++      return
++    }
++
++    // Shrink only when necessary, keeping every control inside narrow or short viewports.
++    let scale = min(
++      1, min(availableFrame.width / bounds.width, availableFrame.height / bounds.height))
++    transform = CGAffineTransform(scaleX: scale, y: scale)
++    let halfWidth = bounds.width * scale / 2
++    let halfHeight = bounds.height * scale / 2
++    center = CGPoint(
++      x: min(max(center.x, availableFrame.minX + halfWidth), availableFrame.maxX - halfWidth),
++      y: min(max(center.y, availableFrame.minY + halfHeight), availableFrame.maxY - halfHeight))
++  }
++
++  func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch)
++    -> Bool
++  {
++    // Only the panel background drags; all buttons retain their touches.
++    return touch.view === self
++  }
++
++  @objc private func drag(_ gesture: UIPanGestureRecognizer) {
++    if gesture.state == .began {
++      stopRepeating()
++      _dragOrigin = center
++    }
++    let translation = gesture.translation(in: superview)
++    center = CGPoint(x: _dragOrigin.x + translation.x, y: _dragOrigin.y + translation.y)
++    constrainPosition(to: _availableFrame)
++  }
++
++  @objc private func closePanel() {
++    stopRepeating()
++    isHidden = true
++    onClose?()
++  }
++
++  @objc func resetPosition() {
++    stopRepeating()
++    guard !_availableFrame.isEmpty else { return }
++    center = CGPoint(
++      x: _availableFrame.maxX - bounds.width * transform.a / 2 - 12,
++      y: _availableFrame.maxY - bounds.height * transform.d / 2 - 12)
++    constrainPosition(to: _availableFrame)
++  }
++
++  @objc private func press(_ button: UIButton) {
++    stopRepeating()
++    guard let input = inputProvider?() else {
++      return
++    }
++    _pressedButton = button
++    _repeatingInput = input
++    input.kbView.stopRepeats()
++    input.kbView.sendKey(_values[button.tag])
++    let timer = Timer(timeInterval: 0.5, repeats: false) { [weak self] _ in
++      guard let self = self else { return }
++      self.repeatPress()
++      guard self._pressedButton != nil else { return }
++      let repeatingTimer = Timer(timeInterval: 0.1, repeats: true) { [weak self] _ in
++        self?.repeatPress()
++      }
++      self._timer = repeatingTimer
++      RunLoop.main.add(repeatingTimer, forMode: .common)
++    }
++    _timer = timer
++    RunLoop.main.add(timer, forMode: .common)
++  }
++
++  private func repeatPress() {
++    // A held arrow must never leak into another session or a background window.
++    guard !isHidden, window != nil, let input = _repeatingInput,
++      input === inputProvider?(), let button = _pressedButton
++    else {
++      stopRepeating()
++      return
++    }
++    input.kbView.sendKey(_values[button.tag])
++  }
++
++  @objc private func releasePress() {
++    stopRepeating()
++  }
++
++  @objc func stopRepeating() {
++    _timer?.invalidate()
++    _timer = nil
++    _pressedButton?.isHighlighted = false
++    _pressedButton = nil
++    _repeatingInput = nil
++  }
++}
