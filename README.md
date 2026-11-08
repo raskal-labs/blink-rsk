@@ -32,9 +32,9 @@ All workflows are build tools, not install authorization. Do not dispatch a buil
 
 ## Upstream source target
 
-The App Store currently ships Blink **18.7.1**, but that exact release source is not exposed by a public upstream branch/tag that can be pinned reproducibly.
+At baseline selection, the App Store release was recorded as Blink **18.7.1**, without an established exact public release ref. This repository reconciliation does not recheck the current shipping release.
 
-The newest public **18.7** source currently exposed by `blinksh/blink` is the upstream default branch `raw` at:
+The selected reproducible public **18.7** source from `blinksh/blink` is:
 
 - source version: **18.7.0**
 - branch at selection: `raw`
