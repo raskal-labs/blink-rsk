@@ -126,10 +126,18 @@ Keyboard lock, the reproduced Select All branch bug, partial-write delivery and 
 
 ## Customization implementation checkpoint — 2026-10-28
 
-The user selected the roadmap batch within the expanded combined milestone. Source now includes configurable dock/profiles/D-pad, input and software-keyboard modes, retained text selection/export, bounded ordered paste, per-window session management, a searchable workspace and draft-first appearance presets. [Exact behavior, limits and evidence](customization/CUSTOMIZATION-CANDIDATE.md). Earlier compact-first proposals are superseded; rendering/Mosh protocol/history experiments remain research.
+The user selected the roadmap batch within the expanded combined milestone. PR #8 source on work/customization-foundation includes configurable dock/profiles/D-pad, input and software-keyboard modes, retained text selection/export, bounded ordered paste, per-window session management, a searchable workspace and draft-first appearance presets. [Exact behavior, limits and evidence](customization/CUSTOMIZATION-CANDIDATE.md). Earlier compact-first proposals are superseded; rendering/Mosh protocol/history experiments remain research.
 
 All nine patches compose and local source regressions pass. Native UIKit/SwiftUI type checking, the macOS input-queue integration suite, iOS compilation, signing, App Intents metadata, packaging and device acceptance remain separate pending gates. Preserve the accepted Shortcuts IPA and rollback references. This source checkpoint dispatches no CI build and performs no device operation or merge.
 
 ## Customization native checkpoint — 2026-10-28
 
 The user explicitly authorized one candidate build from `71c12fb`. [Run 40798686069](https://github.com/raskal-labs/blink-rsk/actions/runs/40798686069) passed macOS preflight with native input-queue integration, complete iOS compilation, signatures/identities, App Intents metadata and packaging. The [candidate, exact native receipts and combined device checklist](customization/CUSTOMIZATION-CANDIDATE.md#native-candidate--2026-10-28) are available; all 31 native source hashes match reviewed source and the downloaded IPA independently validates. This supersedes the preceding pending native gates. Device behavior remains Unknown. Preserve the earlier accepted IPA, identities, keys, state and rollback references. One dispatch used; no retry, installation, reset, identity change or merge.
+
+## Current authority and deferred TRACE direction — 2026-11-07
+
+PROJECT.yaml owns current state, TASKS.yaml tasks/threads, and root ROADMAP.md milestone outcomes. Accepted PR #7 is main; PR #8 source remains on work/customization-foundation pending device evidence. The native candidate is already built; do not reinterpret earlier build-checkpoint instructions as current work orders.
+
+TRACE (a separate terminal transcript/copy/export surface, potentially live-consumable later) remains an incubating proposal from the October 29 discussion. Finish, simplify and stabilize the existing roadmap first. It is not an accepted rename, logging deployment, AI integration or reason to expand PR #8. Local retained-row capture is not a complete input/output transcript or remote Mosh/multiplexer history.
+
+Atlas owns accepted canonical project state; Polaris supplies observations/provenance/candidate changes through a distinct interface. Source project detail stays in this repository.

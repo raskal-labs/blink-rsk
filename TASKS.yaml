@@ -1,0 +1,123 @@
+{
+  "version": 1,
+  "project": "blink-rsk",
+  "items": [
+    {
+      "id": "foundation-acceptance",
+      "kind": "task",
+      "title": "Preserve accepted bookmark, provider and eight-action foundation",
+      "status": "Verified",
+      "acceptance": "User-reported combined functional acceptance; PR #7 merged and issue #2 closed.",
+      "details": "General pass only; no invented individual transfer, checksum or refresh measurement.",
+      "evidence": [
+        "docs/phase-01/SHORTCUTS-EXPANSION-CANDIDATE.md"
+      ]
+    },
+    {
+      "id": "customization-native",
+      "kind": "task",
+      "title": "Build and archive the combined customization candidate",
+      "status": "Verified",
+      "acceptance": "Successful native build/package plus independently checked archive.",
+      "details": "Run 40798686069, dispatched source 71c12fb; PR #8 tip 122e630 is later documentation. No further build implied.",
+      "evidence": [
+        "docs/customization/native-run-40798686069/run-result.json",
+        "docs/customization/native-run-40798686069/independent-native-receipt-checks.json"
+      ]
+    },
+    {
+      "id": "customization-device",
+      "kind": "task",
+      "title": "Record customization phone results against the installed candidate",
+      "status": "In Progress",
+      "acceptance": "Record build identity and observed outcomes for the existing combined checklist.",
+      "details": "First establish whether PR #8 is already installed. Do not infer an installation or repeat one. Checklist covers controls/keyboard, selection/capture, paste cancellation/order, sessions, workspace, appearance, existing actions and files.",
+      "evidence": [
+        "docs/customization/CUSTOMIZATION-CANDIDATE.md"
+      ]
+    },
+    {
+      "id": "customization-merge",
+      "kind": "task",
+      "title": "Review PR #8 after device acceptance",
+      "status": "Proposed",
+      "acceptance": "Device results assessed, defects resolved, preservation checks recorded and source diff reviewed.",
+      "details": "PR is technically mergeable but not accepted on-device; keep draft and unmerged.",
+      "evidence": [
+        "docs/RECONCILIATION-2026-11-07.md"
+      ]
+    },
+    {
+      "id": "lifecycle-evidence",
+      "kind": "task",
+      "title": "Record refresh and recovery behavior when actually exercised",
+      "status": "Unknown",
+      "acceptance": "Dated user observations attributed to a candidate, with unknowns preserved.",
+      "details": "Retain existing general acceptance; do not reopen issue #2 just because exhaustive negative/recovery/refresh evidence is absent. No refresh or install operation authorized here.",
+      "evidence": [
+        "docs/phase-01/SHORTCUTS-EXPANSION-CANDIDATE.md"
+      ]
+    },
+    {
+      "id": "scroll-diagnosis",
+      "kind": "thread",
+      "title": "Distinguish local, SSH, Mosh and multiplexer scrolling behavior",
+      "status": "Proposed",
+      "details": "Compare outside Zellij/tmux first. Renderer/backpressure and Mosh protocol/history experiments remain research.",
+      "evidence": [
+        "docs/TERMINAL-UX-UPSTREAM-REVIEW.md"
+      ]
+    },
+    {
+      "id": "history-range-export",
+      "kind": "thread",
+      "title": "Line-range export and remote-history workflow",
+      "status": "Proposed",
+      "details": "Retain the accepted October 29 planning direction, but PR #8 only captures bounded locally retained rows. Line numbers/range export and remote history are not claimed implemented.",
+      "evidence": [
+        "docs/RECONCILIATION-2026-11-07.md"
+      ]
+    },
+    {
+      "id": "zellij-mobile",
+      "kind": "thread",
+      "title": "Reusable mobile Zellij layouts and clear pane/scroll focus",
+      "status": "Proposed",
+      "details": "Retain fixed pane-area/template direction; no remote layout/profile deployment performed.",
+      "evidence": [
+        "docs/RECONCILIATION-2026-11-07.md"
+      ]
+    },
+    {
+      "id": "files-browser",
+      "kind": "thread",
+      "title": "Evaluate native touch SFTP/local browsing",
+      "status": "Proposed",
+      "details": "Study existing Blink plumbing and fork UX; no custom SSH-stack replacement or new file manager is claimed.",
+      "evidence": [
+        "docs/UX-RESEARCH.md",
+        "ROADMAP.md"
+      ]
+    },
+    {
+      "id": "ha-pilot",
+      "kind": "thread",
+      "title": "Existing Home Assistant action to GameCube and notification pilot",
+      "status": "Proposed",
+      "details": "M4 research using existing applications first; needs a selected safe operation before execution.",
+      "evidence": [
+        "docs/IOS-INTEGRATIONS.md"
+      ]
+    },
+    {
+      "id": "trace-incubation",
+      "kind": "thread",
+      "title": "Incubate TRACE transcript concept after current roadmap stabilization",
+      "status": "Proposed",
+      "details": "Keep discussion reachable; no rename, transcript recorder or live AI integration commitment.",
+      "evidence": [
+        "docs/PRODUCT-DIRECTION.md"
+      ]
+    }
+  ]
+}

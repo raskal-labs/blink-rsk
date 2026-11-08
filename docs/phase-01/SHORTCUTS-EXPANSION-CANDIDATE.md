@@ -1,6 +1,8 @@
 # Combined Shortcuts candidate — October 27, 2026
 
-**Verified by user-reported functional acceptance; PR #7 merged and issue #2 closed by the owner.** Supersedes the October 26 build deferral: the user authorizes one additional candidate CI dispatch after implementation/preflight. No install, replacement, provider reset, signing change or merge is authorized. PR #7 stays draft. The October 24 artifact/receipts remain historical, unchanged and available for rollback.
+**Verified by user-reported functional acceptance; PR #7 merged and issue #2 closed by the owner.** The authorization/build language below describes historical checkpoints, not a current work order.
+
+**Historical October 27 work order:** supersedes the October 26 build deferral: the user authorizes one additional candidate CI dispatch after implementation/preflight. No install, replacement, provider reset, signing change or merge is authorized. PR #7 stays draft. The October 24 artifact/receipts remain historical, unchanged and available for rollback.
 
 Current device evidence: existing host/session links and all three original Shortcuts actions work by user report. Bookmark persistence has positive feedback; broader failure/recovery and refresh acceptance remains In Progress. The user withdrew the October 26 Files sync failure as mistaken. That report is superseded, is not an active blocker, and supplies no successful transfer test.
 

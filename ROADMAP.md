@@ -1,9 +1,15 @@
 # Blink-RSK — Product roadmap
 
-**Updated:** 2026-10-28 (customization candidate compiled, signed, packaged and archived; device results pending)
+**Updated:** 2026-11-07 (repository/Atlas reconciliation; accepted foundation on main, customization device evidence pending)
 **Status:** Proposed (product direction); individual capabilities have their own statuses below  
 **Primary repository:** [raskal-labs/blink-rsk](https://github.com/raskal-labs/blink-rsk)  
 **Audience:** Private/personal iOS installation; not currently intended for distribution.
+
+## Current continuation
+
+[PROJECT.yaml](PROJECT.yaml) owns current project state and the next checkpoint; [TASKS.yaml](TASKS.yaml) owns actionable follow-ups and retained threads. This file remains the sole milestone roadmap. [Reconciliation](docs/RECONCILIATION-2026-11-07.md) records branch disposition, evidence limits and completed work.
+
+PR #7 is merged and issue #2 is closed after user-reported functional acceptance. PR #8's customization source is implemented and native-built, but remains draft/unmerged with no recorded device checklist results. Documentation describing that candidate is present on main for continuity; its three customization patches and workflow changes remain only on `work/customization-foundation`. The next checkpoint is to identify the installed candidate and record the customization device results, then resolve observed faults and review PR #8 for merge. No additional build is needed merely to repeat the successful packaging check.
 
 ## 1. Direction
 
@@ -93,7 +99,7 @@ Milestones are **dependency ordered, not date estimates**. Ship one narrow incre
 **Research boundaries:** renderer/backpressure replacements and claims to repair scrolling freezes, complete native Mosh scrollback/mouse experiments, remote multiplexer-history retrieval, new cloud integrations, new extensions and identity/migration changes are not automatically imported by “go big.” Retain their research. Local retained-buffer copying and explicitly targeted remote tmux/Zellij history are different workflows. No CI dispatch, installation, reset or merge occurs in this scope revision.
 
 #### M1 — Daily terminal usability
-**Status:** Proposed; former issue #3 returns HTTP 410 (deleted), observed October 26
+**Status:** Proposed; former issue #3 returns HTTP 410 (deleted), observed October 26; current follow-ups are retained in TASKS.yaml
 
 **Goal:** Remove high-frequency frustrations with minimal terminal regressions.
 
@@ -178,7 +184,7 @@ Candidates: personalized dashboard/widgets and Control Centre extensions, lightw
 - **On iPhone:** native interaction, secure local configuration, terminal renderer, SSH/Mosh, File Provider, Shortcuts entry points, lightweight previews/caches.
 - **On GameCube/other hosts:** development/build workflows, indexing, analytics, heavy processing, code-server, project canonical data, durable automation.
 - **Atlas:** project documents/tasks/approvals and their canonical state; the app displays and interacts with it.
-- **Polaris:** institutional records/registries, evidence and stable source-of-truth services; do not replicate internally.
+- **Polaris:** observation, provenance and candidate changes; it does not own canonical Atlas project state or silently promote observations into accepted decisions.
 - **Porygon:** replaceable assistant/agent capability, invoked selectively and subject to authority limits.
 - **Home Assistant/u64/Oxygen:** retain ownership of their respective device and infrastructure functions.
 
@@ -186,9 +192,9 @@ Use narrowly scoped adapters to existing commands/APIs. Avoid designing a genera
 
 ## 6. Build, release and task workflow
 
-- `blink-rsk` is the verified source/planning repository. `main` is integration; `phase/01-upstream-parity` remains its execution branch until its closeout decision. The existing archive/baseline branches are historical references, not extra product lines.
+- `blink-rsk` is the verified source/planning repository. `main` is integration; `fix/bookmarks-session-actions` is fully merged via PR #7 and has no unique commits. `work/customization-foundation` is the only open implementation branch, in draft PR #8. The existing archive/baseline branches are historical references, not extra product lines.
 - Treat `/lab/blink-rsk-release/` on GameCube as the documented local artifact archive until the status of any separate GitHub `blink-rsk-release` repository is confirmed.
-- This roadmap tracks **why and in what order**. GitHub issues track actionable tasks; do not duplicate issue #2's entire diagnostic checklist or issue #3's entire UX criteria here.
+- This roadmap tracks **why and in what order**. TASKS.yaml tracks current actionable work/threads; PRs and historical issues retain execution evidence. Do not duplicate their detailed acceptance checklists here.
 - Implement one small vertical slice per PR and test through the existing SideStore app identity wherever safe. Record exact installed build and on-device result before merging/tagging a functional change.
 - If blocked, search resolved upstream/SideStore/iOS reports first, then perform the smallest discriminating test; limit repeated builds. Keep raw logs, secrets and private host material off public GitHub.
 - Do not make a risky signing, bundle identity, migration, installed-app replacement, or data-deletion decision without user approval.

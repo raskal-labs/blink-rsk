@@ -1,5 +1,7 @@
 # Blink-RSK
 
+**Current state:** [PROJECT.yaml](PROJECT.yaml); **tasks/threads:** [TASKS.yaml](TASKS.yaml); **reconciliation:** [repository and evidence audit](docs/RECONCILIATION-2026-11-07.md).
+
 **Current roadmap:** [ROADMAP.md](ROADMAP.md). Blink-RSK is a terminal-first personal iOS workspace built incrementally on Blink; the historical build details below are not the current work queue. [Phase 01 issue #2](https://github.com/raskal-labs/blink-rsk/issues/2) tracks SideStore/File Provider acceptance.
 
 Reproducible, auditable SideStore builds of [Blink Shell](https://github.com/blinksh/blink), with Raskal Labs command extensions planned on top of Blink's `ios_system` environment.
@@ -12,13 +14,13 @@ Reproducible, auditable SideStore builds of [Blink Shell](https://github.com/bli
 - **[UX research](docs/UX-RESEARCH.md)** — detailed upstream issues and usability evidence.
 - **[AGENTS.md](AGENTS.md)** — operating rules and safety gates for contributors and agents.
 - **[Historical roadmap](docs/ROADMAP.md)** — superseded four-stage plan, retained as evidence.
-- **[Phase 01 evidence](docs/phase-01/PHASE-01.md)** and **[2026-10-12 execution runbook](docs/phase-01/CODEX-PHASE-01.md)** — archived acceptance/signing records; [issue #2](https://github.com/raskal-labs/blink-rsk/issues/2) remains the live tracker.
+- **[Phase 01 evidence](docs/phase-01/PHASE-01.md)** and **[2026-10-12 execution runbook](docs/phase-01/CODEX-PHASE-01.md)** — archived acceptance/signing records; [issue #2](https://github.com/raskal-labs/blink-rsk/issues/2) is closed after owner acceptance; PR #8 and TASKS.yaml track current work.
 
 **Maintenance rule:** canonical decisions belong in product direction, milestones in the root roadmap, accepted work in issues, research/evidence in supporting docs. Do not promote proposed capabilities to working features without device verification.
 
 ## Current checkpoint
 
-The user reports the combined Shortcuts candidate passing and is ready to move forward. PR #7 is merged and issue #2 closed by the owner. [Device acceptance and evidence limits](docs/phase-01/SHORTCUTS-EXPANSION-CANDIDATE.md#device-acceptance--2026-10-27) remain separate from the historical checker-only CI failure and independent package validation. The user rejected a small follow-on build: the next target is a substantial combined customization release covering configurable touch/D-pad, input/keyboard modes, clipboard/output/paste, sessions, workspace navigation and appearance. The seven-workstream batch is now implemented in three guarded source patches and passes combined local preflight. [Concrete behavior, local receipts and device checklist](docs/customization/CUSTOMIZATION-CANDIDATE.md). The single authorized [customization run](https://github.com/raskal-labs/blink-rsk/actions/runs/40798686069) passed native compilation, signatures and metadata/packaging. [Candidate download](https://github.com/raskal-labs/blink-rsk/actions/runs/40798686069/artifacts/12865551302). Device behavior remains pending; no installation or merge occurred.
+The user reports the combined Shortcuts candidate passing and is ready to move forward. PR #7 is merged and issue #2 closed by the owner. [Device acceptance and evidence limits](docs/phase-01/SHORTCUTS-EXPANSION-CANDIDATE.md#device-acceptance--2026-10-27) remain separate from the historical checker-only CI failure and independent package validation. The user rejected a small follow-on build: the next target is a substantial combined customization release covering configurable touch/D-pad, input/keyboard modes, clipboard/output/paste, sessions, workspace navigation and appearance. The seven-workstream batch is implemented on `work/customization-foundation` (draft PR #8), not in main; three guarded source patches pass combined local preflight. [Concrete behavior, local receipts and device checklist](docs/customization/CUSTOMIZATION-CANDIDATE.md). The single authorized [customization run](https://github.com/raskal-labs/blink-rsk/actions/runs/40798686069) passed native compilation, signatures and metadata/packaging. [Candidate download](https://github.com/raskal-labs/blink-rsk/actions/runs/40798686069/artifacts/12865551302). Device behavior remains pending; no installation or merge occurred.
 
 ## Build workflow roles
 
